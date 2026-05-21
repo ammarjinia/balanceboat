@@ -1,0 +1,130 @@
+@charset "UTF-8";
+/* CSS Document */
+body {font-size:1.3em; line-height:1.6em; font-family:"Neue Frutiger W01",Arial,Helvetica,sans-serif; font-weight: 400; font-style: normal;}
+h1, h2, h3, h4, h5, h6, .intro_title h3{
+    font-weight: 800; font-style: normal;
+}
+a {
+    color: #ff3366;
+}
+/* ---- Header ----*/
+header {
+    background: #333;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+#logo_home h1 a,
+header.sticky #logo_home h1 a,
+header#plain #logo_home h1 a,
+header#colored #logo_home h1 a {
+    background-image: url(../img/balanceboat-header-logo.png);
+    background-position: left center;
+    background-size: auto auto;
+    text-indent: -9999px;
+}
+#top_line {
+    font-size: 14px;
+}
+ul#top_tools a {
+    color: #333;
+}
+
+.sticky ul#top_tools a {
+    color: #333;
+}
+
+#hero {
+    height: 600px;
+    background: #4d536d url(../img/slide_hero2.jpg) no-repeat center center;
+    background-size: cover;
+}
+.intro_title {
+    vertical-align: bottom;
+    text-align: left;
+    padding: 0 110px 100px;
+}
+.intro_title h3, .parallax-content-2 div h1 {
+    font-weight: 200;
+    text-shadow:2px 2px 1px #333;
+}
+.intro_title p, .main_title p {
+    font-style: italic;
+}
+
+#search_bar_container {
+    background: #333;
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.top_search i {
+    top:7px;
+}
+.top_search::before {
+    top: 2px;
+}
+a.button_intro, .button_intro {
+    padding: 6px 25px;
+}
+.main_title p {
+    font-family:"Neue Frutiger W01",Arial,Helvetica,sans-serif; font-weight: 200; font-style: italic;
+    margin-top: 5px;
+}
+.main_title h2, .box_style_1 h3.inner, #single_tour_desc h3{
+    font-weight: 200; font-style: normal;
+}
+.short_info {
+    font-weight: 200; font-style: normal;
+    background: url(../img/shadow_tour.png) repeat-x left bottom;
+    min-height: 78px;
+    font-size: 22px;
+    background: #333;
+    text-align: center;
+    padding: 60px 25px 0;
+    background-color: rgba(0,0,0,0.4);
+    height: 100%;
+    margin-top: 0px;
+    top: inherit;
+    bottom: -1px;
+}
+.img_list a img, .img_container img { width: 100%; }
+#single_tour_desc img .fullwidth { width: 100%; }
+.price_list .normal_price_list {
+    font-size: 16px;
+    text-decoration: none;
+    font-weight: 600;
+}
+.text-red {
+   color:#e74c3c;
+}
+.tour_list_desc h3 {
+    font-size: 18px;
+    line-height: 22px;
+}
+.parallax-content-2 div {
+    font-style: italic;
+}
+.price_list-min {
+    margin-top: 0;
+    height: auto;
+}
+.img_list a img, .img_container img {
+    -webkit-transform: none;
+    transform: none;
+    -webkit-transition: none;
+    transition: none;
+    -webkit-backface-visibility: none;
+
+    position: inherit;
+    left: auto;
+}
+.img_list a:hover img, .img_container a:hover img {
+    -webkit-transform: none;
+    transform: none;
+}
+
+.text-italic {
+    font-style: italic;
+}
+
+footer h3 {
+    font-weight: 800;
+}

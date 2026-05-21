@@ -1,0 +1,749 @@
+@charset "UTF-8";
+/* CSS Document */
+/*-------- 1.1 Typography --------*/
+
+body {
+    background: #f9f9f9;
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 26px;
+    font-family: "Neue Frutiger W01";
+    color: #484848;
+    -webkit-font-smoothing: antialiased;
+}
+
+/*-------- 1.1.1 Heading h1-to-h6--------*/
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    -webkit-font-smoothing: antialiased;
+    color: #484848;
+}
+
+h3 {
+    font-size: 22px;
+    font-weight: 400;
+}
+h2 {
+    font-weight: 800;
+}
+
+.box_style_1 h3.inner {
+    margin: -15px -15px 20px;
+    border: 0px;
+    border-bottom: 1px solid #ddd
+}
+
+.main_title h2 {
+    font-weight:300;
+    font-size: 2.1875em;
+    line-height: 48px;
+    letter-spacing: normal;
+    color: #333c4e;
+}
+
+
+.main_title {
+    text-align: center;
+    font-size: 16px;
+    margin-bottom: 64px;
+    font-family:"Neue Frutiger W01";
+}
+
+/*-------- 1.1.2 Paragraphs--------*/
+
+p {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    color: #383838;
+    line-height: 26px;
+}
+
+.main_title p {
+    font-weight: 200;
+    font-size: 18px;
+    font-style: italic;
+    color: #484848;
+}
+
+
+
+/*-------- 1.1.3 Links <a> --------*/
+a {
+    color: #484848;
+}
+a:hover,
+a:focus {
+    color: #484848;
+    text-decoration: underline;
+}
+
+/*-------- 1.2 Buttons --------*/
+#search_bar_container a.button_intro, #search_bar_container .button_intro {
+    font-family: "Neue Frutiger W01";
+    font-weight: 400;
+    font-size: 16px;
+    padding: 7px 25px;
+    background: #ff3366;
+    color: inherit !important;
+}
+#search_bar_container a.button_intro:hover, #search_bar_container  .button_intro:hover {    
+    background: #ff3366;
+}
+
+a.button_intro,
+.button_intro {
+    font-family: "Neue Frutiger W01";
+    font-weight: 400;
+    font-size: 16px;
+    padding: 7px 25px;
+    background: none;
+    color: #ff3366 !important;
+}
+a.button_intro:hover,
+.button_intro:hover {    
+    background: none;
+}
+
+a.button_drop:hover,
+.button_drop:hover {
+    background: #ededed;
+    color: #484848;
+}
+
+a.button_drop.outline:hover,
+.button_drop.outline:hover {
+    background: #ededed;
+    color: #484848;
+    border: 2px solid #ededed;
+}
+
+a.btn_1,
+.btn_1 {
+    font-weight: 400;
+}
+
+a.btn_1.white:hover,
+.btn_1.white a:hover {
+    background: #484848;
+    color: #fff;
+}
+
+a.btn_1:hover,
+.btn_1:hover {
+    background: #ff3366;
+    color: #fff;
+}
+
+a.btn_map:hover {
+    background: #484848;
+}
+
+a.btn_full:hover,
+.btn_full:hover {
+    background: #484848;
+}
+a.btn_full_outline {    
+    color: #ff3366;
+    border: 2px solid #ff3366;
+}
+
+a.btn_full_outline:hover {
+    border: 2px solid #484848;
+    color: #484848;
+}
+
+.btn-pink, 
+.btn-pink:hover {
+    color: #fff;
+    background-color: #ff3366;
+    border-color: #ff3366;
+}
+
+/*-------- 1.3 Structure --------*/
+
+
+header {
+    background: #484848;
+    background-color: rgba(255, 255, 255, 0.95);
+}
+#logo_home h2 {
+    margin: 10px 0 0;
+    padding: 0;
+}
+header.sticky #logo_home h2 {
+    margin: 0px 0 10px;
+    padding: 0;
+}
+#logo_home h2 a,
+header.sticky #logo_home h2 a,
+header#plain #logo_home h2 a,
+header#colored #logo_home h2 a {
+    height: 44px;
+    display: block;
+    background-image: url(../img/balanceboat-header-logo.png);
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: auto auto;
+    text-indent: -9999px;
+}
+
+
+ul#top_tools {
+    top: -10px;
+}
+
+ul#top_tools a {
+    color: #484848;
+}
+
+.sticky ul#top_tools a {
+    color: #484848;
+}
+
+header#plain ul#top_tools a {
+    color: #484848;
+}
+
+header#plain ul#top_links a {
+    color: #888;
+}
+
+header#plain ul#top_links :hover a {
+    color: #484848;
+}
+
+ul#cart_items li strong > a {
+    color: #484848;
+    display: block;
+}
+
+ul#cart_items li a.action:hover {
+    color: #484848;
+    background: none;
+}
+
+ul#cart_items li:last-child span {
+    color: #484848;
+}
+
+a#forgot_pw:hover {
+    color: #484848 !important;
+}
+
+.input-group button {
+    background-color: #484848;
+    color: #fff;
+    border-color: #484848
+}
+
+/* Footer */
+footer {
+    background-color: #ddd;
+}
+footer h3 {
+    color: #777;
+}
+
+footer a {
+    color: #484848;
+}
+
+footer a:hover {
+    color: #484848;
+}
+
+#social_footer ul li a {
+    color: #aaa;
+}
+
+/*============================================================================================*/
+
+/* 2.  CONTENT  */
+
+/*============================================================================================*/
+
+/*-------- 2.1 Home --------*/
+
+.other_tours ul li a {
+    color: #484848;
+}
+
+.intro_title {
+    display: table-cell;
+    vertical-align: bottom;
+    text-align: left;
+    padding:0  0px 110px 0px;
+}
+.subtitle .intro_title{ padding:0  30px 30px 30px;}
+
+.intro_title h3 {
+    font-size: 60px;
+    margin-bottom: 5px;
+    color: #fff;
+    text-shadow: 4px 2px 8px #484848;
+    font-family:"Neue Frutiger W01";
+    font-weight: 200;
+
+}
+
+.intro_title p{ 
+    text-shadow: 4px 2px 8px #484848;
+    font-family:"Neue Frutiger W01";
+    font-weight: 300;
+    font-style: italic;
+    font-size: 24px;
+    color: #fff;
+}
+
+#search_bar_container {
+    background: #ffffff;
+}
+
+#searchDropdownBox {
+    font-family: "Neue Frutiger W01";
+    font-weight: 400;
+}
+
+#twotabsearchtextbox {
+    color: #484848;
+}
+
+/* Map */
+
+.marker_info {
+    font-family: "Neue Frutiger W01";
+}
+
+.tour_list_desc h3 {
+    font-weight: 800;
+    font-size: 18px;
+    line-height: 22px;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.tour_list_desc .rating {
+    margin: 5px 0 3px -3px;
+    font-size: 15px;
+}
+
+.tour_list_desc .rating p{
+    font-size: 15px;
+    font-weight: 300;
+}
+
+
+.price_list {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ff3366;
+    line-height: 34px;
+}
+
+.price_list del {
+    display: block;
+    line-height: 24px;
+}
+
+.price_list p {
+    padding: 0;
+    margin: 0;
+    color: #ff3366;
+    font-size: 24px;
+}
+
+.price_list-min {
+    height: auto;
+    margin: 0 10px;
+}
+
+.parallax-content-2 {
+    background: none;
+}
+.parallax-content-2 div h1 {
+    text-shadow: 4px 2px 1px #484848;
+}
+
+.parallax-content-2 div { text-shadow: unset;}
+
+#single_tour_desc h3 {
+    font-size: 26px;
+    margin: 26px 0;
+}
+
+.feature1 i {
+    color: #ff3366;
+}
+
+#login {
+    color: #484848;
+}
+
+#pass-info {
+    font: 12px/25px "Neue Frutiger W01";
+}
+
+/*-------- 3.2 Map listing --------*/
+
+.marker_info_2 {
+    font-family: "Neue Frutiger W01";
+}
+
+/*============================================================================================*/
+
+/* 3.  COMMON  */
+
+/*============================================================================================*/
+
+.box_style_1 {
+    background: rgba(255,255,255,1);
+    color: #484848;
+}
+
+.box_style_1 .form-group{
+    margin: 10px;
+}
+
+/* Input form style */
+
+.form-control {
+    color: #484848;
+}
+
+/*List*/
+
+ul.list_ok {
+    list-style: none;
+    margin: 0 0 10px 0;
+    padding: 0;
+    line-height: 22px;
+}
+
+ul.list_ok li {
+    position: relative;
+    margin-bottom: 2px;
+    padding-left: 25px;
+    font-weight: 400;
+    color: #484848;
+    font-style: italic;
+    font-size: 15px;
+}
+
+ul.list_ok li:before {
+    color: #aaa;
+}
+
+/** Pagination **/
+
+
+.pagination > li > a:hover,
+.pagination > li > span:hover,
+.pagination > li > a:focus,
+.pagination > li > span:focus {
+    color: #484848 !important;
+    background-color: #f9f9f9;
+}
+
+/* Drop down select footer */
+
+.styled-select select {
+    color: #484848;
+}
+
+.styled-select {
+    background: #aaa url(../img/down_arrow_select.png) no-repeat right center;
+}
+
+/* Tours boxes*/
+
+.short_info {
+    font-size: 26px;
+}
+
+.tooltip-content {
+    background: #484848;
+}
+
+.tooltip-content::after {
+    border-top-color: #484848;
+}
+
+/* Position  breadcrumbs */
+
+#position {
+    background-color: #fff;
+}
+
+#position ul li a {
+    color: #ff3366;
+}
+
+#position ul li a:hover {
+    color: #484848;
+}
+
+/*Banners*/
+#hero {
+    background-image:none;
+}
+.banner h4 {
+    font-family: "Neue Frutiger W01";
+}
+
+/** Collapse updated v.1.8 **/
+
+.panel-title a:hover .indicator {
+    color: #484848;
+}
+
+/** Blockquote **/
+
+blockquote.styled {
+    font-family:"Neue Frutiger W01";
+}
+
+/*============================================================================================*/
+
+/* 4.  UPDATES  */
+
+/*============================================================================================*/
+
+/* 4.1 Home 7: search function */
+
+#search .tab-content {
+    color: #484848;
+}
+
+.dd-option {
+    color: #484848;
+}
+
+.pricing-table.black .heading {
+    background-color: #484848;
+}
+
+/*============================================================================================*/
+
+/* 5.  UPDATES Version 3.0/3.1  */
+
+/*============================================================================================*/
+
+/*-------- 5.2 Footer styles --------*/
+
+/* Footer 3 */
+
+footer#pattern_2 {
+    background: #484848 url(../img/pattern_3.png) repeat 0 0;
+}
+
+/* Footer 6 */
+
+footer#pattern_3 {
+    background: #484848 url(../img/pattern_4.png) repeat 0 0;
+}
+
+/* Footer 7 */
+
+footer#pattern_4 {
+    background: #484848 url(../img/pattern_5.png) repeat 0 0;
+}
+
+/*-------- 5.5 Map infobox + map listing --------*/
+
+.btn_infobox_get_directions:hover,
+a.btn_infobox_phone:hover {
+    color: #484848;
+}
+
+a.btn_infobox:hover,
+.btn_infobox:hover {
+    background: #484848;
+}
+
+/*============================================================================================*/
+
+/* 6.  UPDATES Version 3.2  */
+
+/*============================================================================================*/
+
+/*-------- 6.1 Footer fixed --------*/
+
+main {
+    z-index: unset;
+}
+
+.customized_notify.alert-info h4 {
+    color: #484848;
+}
+
+/*-------- 6.4 Header 7 --------*/
+
+.top_search i {
+    position: absolute;
+    top: 7px;
+    left: 20px;
+    color: #999;
+    font-size: 21px;
+}
+
+.top_search select {
+    text-indent: 1.2em;
+    padding-left: inherit;
+    color: #999;
+    font-size: 16px;
+    font-family: "Neue Frutiger W01";
+    font-weight:200;
+}
+
+/*----------- EXTRAS --------------*/
+
+/* ----------------  */
+.category_hover.yoga{  background-color: #E80C7A!important}
+
+.category_hover.ayruved{  background-color: #1ACC83!important}
+
+.category_hover.meditation{  background-color: #484848!important}
+
+.category_hover.teacher{  background-color: #783CF7!important}
+
+.category_hover.pilates{  background-color: #F7C21E!important}
+
+.category_hover.yoga .img_container:hover img, .category_hover.ayruved .img_container:hover img, .category_hover.meditation .img_container:hover img, .category_hover.teacher .img_container:hover img, .category_hover.pilates .img_container:hover img{ opacity: .5}
+
+.category_hover.yoga a, .category_hover.ayruved a, .category_hover.meditation a, .category_hover.teacher a, .category_hover.pilates a{ color: #fff;}
+
+.single_tour_desc1{ border: 1px solid #ededed; background: #fff; padding-top: 20px; padding-bottom: 20px}
+
+.mb20{margin-bottom: 20px;}
+
+.img_sec{border: 1px solid #ededed; background: #fff; padding: 5px; margin-bottom: 15px;}
+
+.sp_txt{ position: relative}
+
+.sp_txt div{ position: absolute; bottom: 0;}
+
+.top_search {position: relative;}
+
+.top_search::before{content:'>'; position: absolute; right: 18px; top:2px; background: #fff; width: 30px; height: 30px; pointer-events: none; color: #999; -ms-transform: rotate(90deg); /* IE 9 */
+                    -webkit-transform: rotate(90deg); /* Chrome, Safari, Opera */
+                    transform: rotate(90deg); padding: 12px}
+
+#freshwidget-frame {
+    margin-top:60px; 
+}
+
+.text-default {
+    color: #484848;
+}
+.text-pink {
+    color: #ff3366;
+}
+.price_list small {
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+.text-days {
+    font-size: 18px;
+    font-weight: 400;
+    color: #484848;
+    display: block;
+    line-height: 22px;
+}
+
+.margin_b_20 {
+    margin-bottom: 20px;
+}
+
+/* Error Validation */
+label.error {
+    position: inherit;
+    background: none;
+    color: #f40000 !important;
+    line-height: inherit;
+    padding: 0 !important;
+    height: auto;
+    font-size: 14px !important;   
+}
+input.error {
+    border-color: #f40000 !important;
+    color: #f40000 !important;
+}
+/* End */
+
+a#phone:hover, a#email_footer:hover {
+    color: #484848;
+}
+
+.strip_all_tour_list {
+    overflow: hidden;
+}
+
+.tags span {
+    display:inline-block;
+    margin:5px 14px 10px 0;
+    height:33px;
+    line-height:33px;
+    background: #ededed url(../img/tag_bg.png) no-repeat 91% center;
+    padding:0 28px 0 11px;
+    color:#555;	
+    -webkit-border-top-right-radius: 20px;
+    -webkit-border-bottom-right-radius: 20px;
+    -moz-border-radius-topright: 20px;
+    -moz-border-radius-bottomright: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    transition: background .5s ease; 
+}
+.tags span:hover {
+    background-color:#099ad1;
+    color:#fff;
+    text-decoration:none;
+}
+
+nav {
+    margin-top:5px;
+}
+.sticky nav {
+    margin-top: 0px;
+}
+.main-menu > ul > li > a {
+    color: #484848;
+}
+
+#contactaddress {
+    display: block;
+    position: relative;
+    color: #484848;
+    font-size: 16px;
+    padding-left: 40px;
+    margin: 20px 0 0;
+}
+a#phone,a#email_footer {
+    margin: 10px 0;
+}
+
+#contactaddress:hover {
+    color: #484848;
+}
+
+#contactaddress:before {
+    font-style: normal;
+    font-weight: normal;
+    font-family: "icon_set_1";
+    position: absolute;
+}
+
+#contactaddress:before {
+    font-size: 30px;
+    content: "\45";
+    left: 0;
+    top: 0;
+}
+.badge_save {right: 10px;}
+.form_title h3 strong {
+    top: -7px;
+}

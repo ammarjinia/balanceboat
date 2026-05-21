@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+//use App\User;
+
+class TeacherController extends Controller {
+
+    public function __construct() {
+        //$this->middleware(['auth', 'isAdmin']);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index($slug = '') {
+        $data = array();
+        if ($slug) {
+            $techParam['where'] = array("slug" => $slug);
+            $teachers = \App\Teachers::get_data($techParam);
+            $data['teacher'] = (@$teachers[0]) ? : array();
+
+            if (@$data['teacher']) {
+                $paramCRT['order'] = "ASC";
+                $paramCRT['orderby'] = "name";
+                $data['certificates'] = \App\Certificates::get_data($paramCRT);
+
+                $paramSP['order'] = "ASC";
+                $paramSP['orderby'] = "name";
+                $data['specialities'] = \App\Expertise::get_data($paramSP);
+
+                // Get Teacher's experience
+                /* $data['teacher_experiences'] = \App\Experiences::select("experiences.*")
+                  ->join("experience_teachers", "experiences.id", "=", "experience_teachers.experience_id")
+                  ->where("experience_teachers.teacher_id", @$data['teacher']->id)->distinct()->get(); */
+
+                $data['teacher_experiences'] = array();
+                $expIds = \App\ExperienceTeachers::select("experience_id")->where("teacher_id", @$data['teacher']->id)->distinct()->get();
+                if (sizeof($expIds) > 0) {
+                    $arExpId = array();
+                    foreach ($expIds as $expId) {
+                        array_push($arExpId, $expId->experience_id);
+                    }
+                    if (sizeof($arExpId) > 0) {
+                        $cnd = ' AND e.id IN ("' . implode('","', (array)$arExpId) . '")';
+                        $data["teacher_experiences"] = \App\Experiences::get_exp_price_data($cnd);
+                    }
+                }
+                return view('teacher_detail', $data);
+            } else {
+                return redirect("/experiences");
+            }
+        } else {
+            $data = array();
+            $techParam['order'] = "DESC";
+            $techParam['orderby'] = "updated_at";
+            $techParam['limit'] = "10";
+            $data['teachers'] = \App\Teachers::get_data($techParam);
+            return view('teachers', $data);
+        }
+    }
+
+}

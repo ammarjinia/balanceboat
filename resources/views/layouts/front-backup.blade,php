@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="ie ie8"> <![endif]-->
+<!--[if IE 9]><html class="ie ie9"> <![endif]-->
+<html lang="{{ config('app.locale')}}">
+    <head>
+        <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-WHF23B4');</script>
+<!-- End Google Tag Manager -->
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <?php /*<script async src="https://www.googletagmanager.com/gtag/js?id=UA-121305677-1"></script>
+        <script>
+window.dataLayer = window.dataLayer || [];
+function gtag() {
+    dataLayer.push(arguments);
+}
+gtag('js', new Date());
+
+gtag('config', 'UA-121305677-1');
+        </script>
+        <!-- Google Tag Manager -->
+        <script>
+            (function (w, d, s, l, i) {
+                w[l] = w[l] || [];
+                w[l].push({'gtm.start':
+                            new Date().getTime(), event: 'gtm.js'});
+                var f = d.getElementsByTagName(s)[0],
+                        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+                j.async = true;
+                j.src =
+                        'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+                f.parentNode.insertBefore(j, f);
+            })(window, document, 'script', 'dataLayer', 'GTM-TCWWWQG');
+        </script>*/?>
+        <!-- End Google Tag Manager -->
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name=keywords content="@yield('keywords','yoga on the beach, yoga holiday, yoga retreats, yoga teacher training, YTT, 200hrs YTT, 300hrs YTT, yoga vacation, yoga teacher training goa, yoga teacher training dharamsala, yoga teacher training bali, yoga teacher training rishikesh, maldives yoga retreat, yoga and diving holiday, yoga retreat in maldives, yoga retreat in goa, Ayurvedic massage training, yoga therapy teacher training')" />
+        <meta name="description" content="@yield('description','Booking website for holiday retreats and professional trainings in Yoga, Meditation, Ayurveda, Detox and Wellness')" />
+        <meta itemprop=name content="@yield('meta_title','BalanceBoat.com &#x7C; Holiday Retreats and Professional trainings Worldwide')" />
+        <meta itemprop=description content="@yield('description','Booking website for holiday retreats and professional trainings in Yoga, Meditation, Ayurveda, Detox and Wellness')" />
+        <meta itemprop=image content="@yield('image',asset('public/basicfront/img/social-share-image-1.jpg'))" />
+        <meta name=twitter:card content="summary" />
+        <meta name=twitter:title content="@yield('meta_title','BalanceBoat.com &#x7C; Holiday Retreats and Professional trainings Worldwide')" />
+        <meta name=twitter:description content="@yield('description', 'Booking website for holiday retreats and professional trainings in Yoga, Meditation, Ayurveda, Detox and Wellness')" />
+        <meta name=twitter:site content="https://twitter.com/book_yoga" />
+        <meta name=twitter:image:src content="@yield('image',asset('public/basicfront/img/social-share-image-1.jpg'))" />
+        <meta property=og:title content="@yield('meta_title','BalanceBoat.com &#x7C; Holiday Retreats and Professional trainings Worldwide')" />
+        <meta property=og:description content="@yield('description', 'Booking website for holiday retreats and professional trainings in Yoga, Meditation, Ayurveda, Detox and Wellness')" />
+        <meta property=og:image content="@yield('image',asset('public/basicfront/img/social-share-image-1.jpg'))" />
+        <meta property=og:url content="{{ url()->current() }}" />
+        <meta property=og:site_name content="{{ url("/") }}" />
+        <meta property=og:type content="website" />
+
+        <!-- CSRF Token -->
+        <meta name="csrf-token" content="{{csrf_token()}}">
+        <link rel="icon" type="image/x-icon" href="{{asset('public/basicfront/img/favicon.ico')}}">
+        <title>{{config('app.name', 'Balanceboat')}} | @yield('title', "Booking website for holiday retreats and professional trainings in Yoga, Meditation, Ayurveda, Detox and Wellness")</title>
+        <!-- Google web fonts -->
+        <!--link href="https://fonts.google.com/?query=PT+sans&selection.family=PT+Sans|PT+Sans+Narrow" rel="stylesheet"-->
+        <!-- CSS -->
+        <link href="{{asset('public/basicfront/css/all_merged.css')}}" rel="stylesheet" media="all" />            
+        <!--link href="{{asset('public/basicfront/css/base.css')}}" rel="stylesheet" media="all" /-->
+        <link href="{{asset('public/basicfront/css/custom.css')}}" rel="stylesheet" media="all" />
+        <link href="{{asset('public/basicfront/css/fontello/css/all-fontello.min.css')}}" rel="stylesheet" media="all" />
+        <link href="{{asset('public/basicfront/css/new_icons/css/icon_set_all.min.css')}}" rel="stylesheet" media="all" />
+        <!-- CSS -->
+        <link href="{{asset('public/basicfront/fonts.css')}}" rel="stylesheet" media="all" onload="if (media != 'all')
+                    media = 'all'" defer />
+
+        <!--[if lt IE 9]>
+              <script src="{{asset('public/basicfront/js/html5shiv.min.js')}}"></script>
+              <script src="{{asset('public/basicfront/js/respond.min.js')}}"></script>
+            <![endif]-->
+
+        <!-- Common scripts -->
+        <script src="{{asset('public/basicfront/js/jquery-2.2.4.min.js')}}"></script>
+        @yield('head')
+        <!-- Facebook Pixel Code -->
+       <?php /* <script>
+            !function (f, b, e, v, n, t, s)
+            {
+                if (f.fbq)
+                    return;
+                n = f.fbq = function () {
+                    n.callMethod ?
+                            n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+                };
+                if (!f._fbq)
+                    f._fbq = n;
+                n.push = n;
+                n.loaded = !0;
+                n.version = '2.0';
+                n.queue = [];
+                t = b.createElement(e);
+                t.async = !0;
+                t.src = v;
+                s = b.getElementsByTagName(e)[0];
+                s.parentNode.insertBefore(t, s)
+            }(window, document, 'script',
+                    'https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init', '264245854381851');
+            fbq('track', 'PageView');
+        </script>
+        <noscript>
+    <img height="1" width="1" 
+         src="https://www.facebook.com/tr?id=264245854381851&ev=PageView
+         &noscript=1"/>
+    </noscript>*/?>
+    <!-- End Facebook Pixel Code -->
+</head>
+
+<body>
+    <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WHF23B4"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+    <div class="layer"></div>
+    <!-- Mobile menu overlay mask -->
+
+    <!-- Header================================================== -->
+    <header>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 col-sm-4 col-xs-4">
+                    <div id="logo_home">
+                        <h1><a href="{{ url("/") }}" title="Balanceboat"></a></h1>
+                    </div>
+                </div>
+                <nav class="col-md-8 col-sm-8 col-xs-8">
+                    <div id="header_menu"></div>
+                    <a class="cmn-toggle-switch cmn-toggle-switch__htx open_close" href="javascript:void(0);"><span>Menu mobile</span></a>
+                    <div class="main-menu">
+                        <div id="header_menu"></div>
+                        <a href="#" class="open_close" id="close_in"><i class="icon_set_1_icon-77"></i></a>
+                        <ul>
+                            <li class="submenu">
+                                <a href="{{ url("/contact-us") }}" class="show-submenu">List on BalanceBoat</a>
+                            </li>
+                            <li class="submenu">
+                                <a href="{{ url("/blog") }}" class="show-submenu">Articles</a>
+                            </li>
+                            @if (Auth::guest())
+                            <li class="submenu">
+                                <a href="{{ url("/login") }}" class="">My Bookings</a>
+                            </li>
+                            @else
+                            <li class="submenu">
+                                <a href="{{ url("/myaccount") }}" class="">My Bookings</a>
+                            </li>
+                            <li class="submenu">
+                                <a href="{{ url("/logout") }}" class="">Logout</a>
+                            </li>
+                            @endif
+                            <li class="submenu">
+                                <a href="{{ url("/help") }}" class="show-submenu">Help</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- End main-menu -->
+                </nav>
+            </div>
+        </div>
+        <!-- container -->
+    </header>
+    <!-- End Header -->
+    @yield('banner')
+    <main>
+        @yield('content')
+    </main>
+    <div class="cleafix"></div>
+    <!-- End main -->
+    <footer class="">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 col-sm-3">
+                    <h3>Need help?</h3>
+                    <a href="javascript:void(0);" id="contactaddress">68 Maqbara Road, Hazrathganj,<br /> Lucknow - 226001, India</a>
+                    <a href="tel://+917800080808" id="phone">+91-7800080808</a>
+                    <a href="mailto:zen@balanceboat.com" id="email_footer">zen@balanceboat.com</a>
+                </div>
+                <div class="col-md-3 col-sm-3">
+                    <h3>About</h3>
+                    <ul>
+                        <li><a href="{{ url("/about-us") }}">About BalanceBoat</a></li>
+                        <li><a href="{{ url("/contact-us#contact_us") }}">Contact Us</a></li>
+                        <li><a href="{{ url("/contact-us") }}">List on BalanceBoat</a></li>
+                        <li><a href="{{ url("/help") }}">Help</a></li>
+                        <li><a href="{{ url("/terms-and-conditions") }}">Terms and condition</a></li>
+                        <li><a href="{{ url("/privacy-policy") }}">Privacy Policy</a></li>
+                        <li><a href="{{ url("/cookie-policy") }}">Cookie Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 col-sm-3">
+                    <h3>Discover</h3>
+                    <ul>
+                        <li><a href="{{ url("/category/yoga") }}">Yoga</a></li>
+                        <li><a href="{{ url("/category/ayurveda") }}">Ayurveda</a></li>
+                        <li><a href="{{ url("/category/meditation") }}">Meditation</a></li>
+                        <li><a href="{{ url("/category/yoga-teacher-training") }}">Yoga Teacher Training</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 col-sm-3">
+                    <h3>Currency</h3>
+                    <div class="styled-select">
+                        <form id="frmGlobalCurrency" method="get">
+                            {{ csrf_field() }}
+                            <select class="form-control global_site_currency" name="global_site_currency" id="global_site_currency">
+                                @foreach(\App\Http\Helpers\CommonHelper::get_currency() as $currency)
+                                <option value="{{ $currency }}" <?php echo \App\Http\Helpers\CommonHelper::get_site_currency() == $currency ? "selected" : ""; ?>>{{ $currency }}</option>
+                                @endforeach                                    
+                            </select>
+                        </form>
+                    </div>
+                    <div>
+                        <img data-src="{{ asset('public/basicfront/img/cards.png') }}" alt="Cards" class="cards img-responsive lazy" />
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <!-- End row -->
+            <div class="row">
+                <div class="col-md-3 col-sm-3">
+                    <h3>Yoga Teacher Training</h3>
+                    <ul>
+                        <li><a href="{{ url("/location/india?category=yoga-teacher-training") }}">Yoga Teacher Training in India</a></li>
+                        <li><a href="{{ url("/location/thailand?category=yoga-teacher-training") }}">Yoga Teacher Training in Thailand</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 col-sm-3">
+                    <h3>Yoga & Wellness Retreats</h3>
+                    <ul>
+                        <li><a href="{{ url("/location/maldives?category=yoga") }}">Yoga Retreats in Maldives</a></li>
+                        <li><a href="{{ url("/location/maldives?category=yoga-diving") }}">Yoga & Wellness Retreats in Thailand</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 col-sm-3">
+                    <h3>Ayurveda Experiences</h3>
+                    <ul>
+                        <li><a href="{{ url("/category/ayurveda/ayurveda-massage-training") }}">Ayurveda Massage Training</a></li>
+                        <li><a href="{{ url("/category/ayurveda/ayurvedic-panchakarma") }}">Ayurvedic Panchakarma</a></li>
+                        <li><a href="{{ url("/category/ayurveda/ayurvedic-rejuvenation") }}">Ayurvedic Rejuvenation</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 col-sm-3">
+                    <h3>Partner Websites</h3>
+                    <p><a href="http://balancegurus.com/">BalanceGurus - World's Largest Wellness Listing Website</a></p>
+                </div>
+            </div>
+            <!-- End row -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div id="social_footer">
+                        <ul>
+                            <li><a href="https://www.facebook.com/balanceboat"><i class="icon-facebook"></i></a></li>
+                            <li><a href="https://www.pinterest.com/balanceboat"><i class="icon-pinterest"></i></a></li>
+                            <li><a href="https://www.instagram.com/thebalanceboat"><i class="icon-instagram"></i></a></li>
+                        </ul>
+                        <p>©2018 balanceboat.com</p>
+                    </div>
+                </div>
+            </div>
+            <!-- End row -->
+        </div>
+        <!-- End container -->
+    </footer>
+    <!-- End footer -->
+
+    <div id="toTop"></div>
+    <!-- Back to top button -->
+
+    <!-- Search Menu -->
+    <div class="search-overlay-menu">
+        <span class="search-overlay-close"><i class="icon_set_1_icon-77"></i></span>
+        <form role="search" id="searchform" method="get">
+            <input value="" name="q" type="search" placeholder="Search..." />
+            <button type="submit"><i class="icon_set_1_icon-78"></i>
+            </button>
+        </form>
+    </div>
+    <!-- End Search Menu -->
+    <script type="text/javascript" src="{{ asset('public/basicfront/js/jquery.lazy.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('public/basicfront/js/bootstrap-datepicker.js') }}"></script>
+    <script src="{{asset('public/basicfront/js/common_scripts_min.js')}}"></script>
+    <script src="{{asset('public/basicfront/js/functions.min.js')}}"></script><!-- Scripts -->
+    @yield('footer')
+    <!-- Load Facebook SDK for JavaScript -->
+   <?php /*<div id="fb-root"></div>
+    <script type="text/javascript">
+        APP_URL = '<?php echo url("/"); ?>';
+        //Search bar
+        $(function () {
+            "use strict";
+            $("#searchDropdownBox").change(function () {
+                var Search_Str = $(this).val();
+                //replace search str in span value
+                $("#nav-search-in-content").text(Search_Str);
+            });
+        });
+        
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id))
+                return;
+            js = d.createElement(s);
+            js.id = id;
+            js.src = 'https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js#xfbml=1&version=v2.12&autoLogAppEvents=1';
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));</script>
+
+    <!-- Your customer chat code -->
+    <<div class="fb-customerchat"
+         attribution=install_email
+         page_id="369110713286876"
+         theme_color="#ff5ca1"
+         logged_in_greeting="Namaste! Need help to select a suitable retreat or need the best rates? "
+         logged_out_greeting="Namaste! Need help to select a suitable retreat or need the best rates? ">
+    </div>*/?>
+    
+    <!-- Start of HubSpot Embed Code -->
+ <!--script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/4379104.js"></script-->
+<!-- End of HubSpot Embed Code -->
+</body>
+</html>

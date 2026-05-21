@@ -1,0 +1,98 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use \Spatie\Sitemap\SitemapGenerator;
+use DB;
+
+//use App\User;
+
+class IndexController extends Controller {
+
+    public function __construct() {
+        //$this->middleware(['auth', 'isAdmin']);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index() {
+        $data = array();
+        $param['order'] = "ASC";
+        $param['orderby'] = "name";
+        $param['limit'] = "6";
+        $data['categories'] = \App\ExperienceCategory::select('category.*', DB::raw('count(experience_category.experience_id) as total'))
+                        ->join("category", "category_id", "=", "category.id")
+                        ->join("experiences", "experiences.id", "=", "experience_category.experience_id")
+                        ->where('is_draft', 0)->where('category.type', 0)->where('category.display_on_home', 1)->orderBy('total', 'desc')->groupBy('category.name')->limit(6)->get();
+        $data['Destinations'] = \App\ExperienceCategory::select('category.*', DB::raw('count(experience_category.experience_id) as total'))
+                        ->join("category", "category_id", "=", "category.id")
+                        ->join("experiences", "experiences.id", "=", "experience_category.experience_id")
+                        ->where('is_draft', 0)->where('category.type', 1)->where('category.display_on_home', 1)->orderBy('total', 'desc')->groupBy('category.name')->limit(8)->get();
+        /*$data['featured_countries'] = \App\ExperienceCategory::select('category.*', DB::raw('count(experience_category.experience_id) as total'))
+                        ->join("category", "category_id", "=", "category.id")
+                        ->join("experiences", function($query) {
+                            $query->on("experiences.id", "=", "experience_category.experience_id");
+                            $query->where("experiences.featured_countries", "=", 2);
+                        })
+                        ->where('is_draft', 0)->where('category.type', 1)->orderBy('total', 'desc')->groupBy('category.name')->limit(8)->get();
+        $data['featured_cities'] = \App\ExperienceCategory::select('category.*', DB::raw('count(experience_category.experience_id) as total'))
+                        ->join("category", "category_id", "=", "category.id")
+                        ->join("experiences", function($query) {
+                            $query->on("experiences.id", "=", "experience_category.experience_id");
+                            $query->where("experiences.featured_cities", "=", 2);
+                        })
+                        ->where('is_draft', 0)->where('category.type', 1)->where('category.parent', ">", 0)->orderBy('total', 'desc')->groupBy('category.name')->limit(8)->get();*/
+        $data['experiences'] = \App\Experiences::get_exp_price_data(" and e.display_on_home=1", "e.updated_at", "DESC", 7);
+        $data['featured_experiences'] = \App\Experiences::get_exp_price_data(" and e.featured_experiences = 2 ", "e.updated_at", "DESC", 8);
+        $data['best_off_season_deals'] = \App\Experiences::get_exp_price_data(" and e.best_off_season_deals = 2 ", "e.updated_at", "DESC", 8);
+        $data['deals_of_the_month'] = \App\Experiences::get_exp_price_data(" and e.deals_of_the_month = 2 ", "e.updated_at", "DESC", 8);
+        $data['advance_trainings'] = \App\Experiences::get_exp_price_data(" and e.advance_trainings = 2 ", "e.updated_at", "DESC", 8);
+        return view('index', $data);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function home() {
+        $data = array();
+        $data['categories'] = \App\ExperienceCategory::select('category.*', DB::raw('count(experience_category.experience_id) as total'))
+                        ->join("category", "category_id", "=", "category.id")
+                        ->join("experiences", "experiences.id", "=", "experience_category.experience_id")
+                        ->where('is_draft', 0)->where('category.type', 0)->where('category.display_on_home', 1)->orderBy('total', 'desc')->groupBy('category.name')->limit(6)->get();
+        $data['featured_countries'] = \App\ExperienceCategory::select('category.*', DB::raw('count(experience_category.experience_id) as total'))
+                        ->join("category", "category_id", "=", "category.id")
+                        ->join("experiences", "experiences.id", "=", "experience_category.experience_id")
+                        ->where('is_draft', 0)->where('category.type', 1)->where('category.display_on_home', 1)->orderBy('total', 'desc')->groupBy('category.name')->limit(8)->get();
+        $data['featured_cities'] = \App\ExperienceCategory::select('category.*', DB::raw('count(experience_category.experience_id) as total'))
+                        ->join("category", "category_id", "=", "category.id")
+                        ->join("experiences", "experiences.id", "=", "experience_category.experience_id")
+                        ->where('is_draft', 0)->where('category.type', 1)->where('category.parent', ">", 0)->where('category.display_on_home', 1)->orderBy('total', 'desc')->groupBy('category.name')->limit(8)->get();
+        $data['experiences'] = \App\Experiences::get_exp_price_data(" and e.display_on_home=1", "e.updated_at", "DESC", 7);
+        $data['featured_experiences'] = \App\Experiences::get_exp_price_data(" and e.featured_experiences = 2 ", "e.updated_at", "DESC", 8);
+        $data['best_off_season_deals'] = \App\Experiences::get_exp_price_data(" and e.best_off_season_deals = 2 ", "e.updated_at", "DESC", 8);
+        $data['deals_of_the_month'] = \App\Experiences::get_exp_price_data(" and e.deals_of_the_month = 2 ", "e.updated_at", "DESC", 8);
+        $data['advance_trainings'] = \App\Experiences::get_exp_price_data(" and e.advance_trainings = 2 ", "e.updated_at", "DESC", 8);
+        $data['weekend_retreats'] = \App\Experiences::get_exp_price_data(" and e.weekend_retreats = 2 ", "e.updated_at", "DESC", 8);
+        $data['couple_retreats'] = \App\Experiences::get_exp_price_data(" and e.couple_retreats = 2 ", "e.updated_at", "DESC", 8);
+        $data['blessed_by_the_sea'] = \App\Experiences::get_exp_price_data(" and e.blessed_by_the_sea = 2 ", "e.updated_at", "DESC", 8);
+        $data['retreats_by_the_mountains'] = \App\Experiences::get_exp_price_data(" and e.retreats_by_the_mountains = 2 ", "e.updated_at", "DESC", 8);
+        $data['luxury_retreats'] = \App\Experiences::get_exp_price_data(" and e.luxury_retreats = 2 ", "e.updated_at", "DESC", 8);
+        return view('home', $data);
+    }
+
+    /**
+     * sitemap generator.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function generatesitemap() {
+        SitemapGenerator::create(url("/"))->writeToFile(base_path("/sitemap.xml"));
+    }
+
+}

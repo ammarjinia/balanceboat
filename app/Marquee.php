@@ -1,0 +1,15 @@
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+class Marquee extends Model {
+
+    protected $table = "marquee";
+    protected $primaryKey = 'id';
+    protected $dates = ['created_at'];
+    protected $guarded = [
+        'id'
+    ];
+
+}
