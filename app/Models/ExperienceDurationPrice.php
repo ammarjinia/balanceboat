@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
+
 class ExperienceDurationPrice extends Model
 {
     protected $fillable = [

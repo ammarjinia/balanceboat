@@ -47,9 +47,10 @@ class Center extends Model
     // Relations
     public function users()
     {
-        return $this->belongsToMany(User::class)
+        /*return $this->belongsToMany(User::class)
             ->withPivot('role', 'status')
-            ->withTimestamps();
+            ->withTimestamps();*/
+        return \App\Models\User::find(1);
     }
 
     public function experiences()

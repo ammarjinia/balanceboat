@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
+
 class ExperienceAccommodationPrice extends Model
 {
     protected $table = 'experience_accomodation_prices';

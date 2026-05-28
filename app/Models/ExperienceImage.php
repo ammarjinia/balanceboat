@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
+
 class ExperienceImage extends Model
 {
     protected $table = 'experience_image_gallery';

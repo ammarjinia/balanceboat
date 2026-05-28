@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
+
 class CenterImage extends Model
 {
     protected $table = 'center_image_gallery';

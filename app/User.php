@@ -52,19 +52,20 @@ class User extends Authenticatable
     // Relations
     public function centers()
     {
-        return $this->belongsToMany(Center::class)
+        /*return $this->belongsToMany(\App\Models\Center::class)
             ->withPivot('role', 'status')
-            ->withTimestamps();
+            ->withTimestamps();*/
+        return \App\Models\Center::find(2166);    
     }
 
     public function primary_center()
     {
-        return $this->belongsTo(Center::class, 'primary_center_id');
+        return $this->belongsTo(\App\Models\Center::class, 'primary_center_id');
     }
 
     public function bookings()
     {
-        return $this->hasMany(Booking::class);
+        return $this->hasMany(\App\Models\Booking::class);
     }
 
     // Attributes
