@@ -42,7 +42,7 @@
                 {{-- Image --}}
                 <div class="relative h-48 overflow-hidden bg-gradient-to-br from-purple-100 to-pink-100">
                     @if ($retreat->banner_image_url)
-                        <img src="{{ asset('storage/' . $retreat->banner_image_url) }}" alt="{{ $retreat->name }}"
+                        <img src="{{ Storage::disk('azure')->url($retreat->banner_image_url) }}" alt="{{ $retreat->name }}"
                             class="w-full h-full object-cover">
                     @else
                         <div class="w-full h-full flex items-center justify-center text-4xl">🧘</div>
@@ -79,7 +79,7 @@
                 <div class="p-5">
                     <h3 class="font-bold text-gray-900 text-lg mb-1 line-clamp-2">{{ $retreat->name }}</h3>
 
-                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $retreat->experience_summary }}</p>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">{!! $retreat->experience_summary !!}</p>
 
                     <div class="grid grid-cols-2 gap-3 mb-4 text-sm">
                         <div>

@@ -23,7 +23,7 @@ class Accommodation extends Model
 
     public function centers()
     {
-        return $this->belongsToMany(Center::class, 'center_accommodations');
+        return $this->belongsToMany(Center::class, 'center_accomodations');
     }
 
     public function experienceAccommodations()

@@ -38,17 +38,17 @@
 
                     <div class="flex justify-between">
                         <dt class="text-gray-600">Accommodation</dt>
-                        <dd class="font-semibold text-gray-900">{{ $booking->accommodation->title }}</dd>
+                        <dd class="font-semibold text-gray-900">{{ $booking->accommodation?->title }}</dd>
                     </div>
 
                     <div class="flex justify-between">
                         <dt class="text-gray-600">Arrival Date</dt>
-                        <dd class="font-semibold text-gray-900">{{ $booking->arrival_date->format('M d, Y') }}</dd>
+                        <dd class="font-semibold text-gray-900">{{ $booking->arrival_date?->format('M d, Y') }}</dd>
                     </div>
 
                     <div class="flex justify-between">
                         <dt class="text-gray-600">Departure Date</dt>
-                        <dd class="font-semibold text-gray-900">{{ $booking->end_date_time->format('M d, Y') }}</dd>
+                        <dd class="font-semibold text-gray-900">{{ $booking->end_date_time?->format('M d, Y') }}</dd>
                     </div>
 
                     <div class="flex justify-between">
@@ -71,24 +71,24 @@
                     <div>
                         <p class="text-gray-600 text-sm">Name</p>
                         <p class="font-semibold text-gray-900">
-                            {{ $booking->userInfo->firstname }} {{ $booking->userInfo->lastname }}
+                            {{ $booking->userInfo?->firstname }} {{ $booking->userInfo?->lastname }}
                         </p>
                     </div>
 
                     <div>
                         <p class="text-gray-600 text-sm">Email</p>
-                        <p class="font-semibold text-gray-900">{{ $booking->userInfo->email }}</p>
+                        <p class="font-semibold text-gray-900">{{ $booking->userInfo?->email }}</p>
                     </div>
 
                     <div>
                         <p class="text-gray-600 text-sm">Phone</p>
-                        <p class="font-semibold text-gray-900">{{ $booking->userInfo->phone }}</p>
+                        <p class="font-semibold text-gray-900">{{ $booking->userInfo?->phone }}</p>
                     </div>
 
                     @if ($booking->addressInfo)
                         <div>
                             <p class="text-gray-600 text-sm">City</p>
-                            <p class="font-semibold text-gray-900">{{ $booking->addressInfo->billing_city }}</p>
+                            <p class="font-semibold text-gray-900">{{ $booking->addressInfo?->billing_city }}</p>
                         </div>
                     @endif
                 </div>
@@ -103,7 +103,7 @@
                 <div class="grid grid-cols-4 gap-6">
                     <div>
                         <p class="text-gray-600 text-sm">Transaction ID</p>
-                        <p class="font-semibold text-gray-900">{{ $booking->transactionInfo->tracking_id ?? 'N/A' }}</p>
+                        <p class="font-semibold text-gray-900">{{ $booking->transactionInfo?->tracking_id ?? 'N/A' }}</p>
                     </div>
 
                     <div>
@@ -113,7 +113,7 @@
 
                     <div>
                         <p class="text-gray-600 text-sm">Mode</p>
-                        <p class="font-semibold text-gray-900">{{ $booking->transactionInfo->payment_mode ?? 'N/A' }}</p>
+                        <p class="font-semibold text-gray-900">{{ $booking->transactionInfo?->payment_mode ?? 'N/A' }}</p>
                     </div>
 
                     <div>

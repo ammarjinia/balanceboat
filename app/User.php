@@ -81,6 +81,6 @@ class User extends Authenticatable
 
     public function hasCenter($centerId)
     {
-        return $this->centers()->where('center_id', $centerId)->exists();
+        return $this->centers()->where('id', $centerId)->exists();
     }
 }

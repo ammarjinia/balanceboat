@@ -60,7 +60,7 @@ class Center extends Model
 
     public function accommodations()
     {
-        return $this->belongsToMany(Accommodation::class, 'center_accommodations');
+        return $this->belongsToMany(Accommodation::class, 'center_accomodations', 'center_id', 'accomodation_id');
     }
 
     public function commission()

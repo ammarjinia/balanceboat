@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\User;
+use App\User;
 use App\Models\Booking;
 
 class BookingPolicy

@@ -25,12 +25,12 @@ class BookingController extends Controller
     {
         $center = auth()->user()->primary_center ?? auth()->user()->centers()->first();
 
-        $bookings = $center->experiences()
-            ->with('bookings.user')
-            ->get()
-            ->map(fn($exp) => $exp->bookings)
-            ->flatten()
-            ->sortByDesc('created_at');
+        $experienceIds = $center->experiences()->pluck('id');
+
+        $bookings = Booking::with('user')
+            ->whereIn('experience_id', $experienceIds)
+            ->orderByDesc('created_at')
+            ->paginate(20);
 
         $totalRevenue = Booking::whereIn('experience_id', $center->experiences->pluck('id'))
             ->where('payment_status', 'completed')
@@ -41,7 +41,7 @@ class BookingController extends Controller
             ->count();
 
         return view('booking.index', [
-            'bookings' => collect($bookings)->paginate(20),
+            'bookings' => $bookings,
             'total_revenue' => $totalRevenue,
             'confirmed_count' => $confirmedCount,
         ]);

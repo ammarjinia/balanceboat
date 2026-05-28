@@ -98,7 +98,7 @@ class Booking extends Model
     public function canBeCancelled()
     {
         return $this->order_status !== self::STATUS_CANCELLED &&
-            $this->arrival_date->isFuture();
+            $this->arrival_date?->isFuture();
     }
 
     public function getTotalNightsAttribute()
