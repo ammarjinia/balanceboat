@@ -2,34 +2,38 @@
 
 namespace App;
 
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasRoles;
-    use Notifiable;
+    use HasApiTokens, Notifiable, HasRoles;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'first_name',
         'last_name',
-        'email', 'password',
-        // 'google_id'
+        'email',
+        'password',
+        'phone_number',
+        'date_of_birth',
+        'street_address',
+        'city',
+        'zipcode',
+        'country',
+        'profile_image_url',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'date_of_birth' => 'date',
     ];
 
     public function setPasswordAttribute($password)
@@ -43,5 +47,39 @@ class User extends Authenticatable
     public function center()
     {
         return $this->hasOne('App\Centers')->select('id','name');
+    }
+
+    // Relations
+    public function centers()
+    {
+        return $this->belongsToMany(Center::class)
+            ->withPivot('role', 'status')
+            ->withTimestamps();
+    }
+
+    public function primary_center()
+    {
+        return $this->belongsTo(Center::class, 'primary_center_id');
+    }
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    // Attributes
+    public function getFullNameAttribute()
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    public function getPrimaryCenter()
+    {
+        return $this->centers()->wherePivot('role', 'admin')->first();
+    }
+
+    public function hasCenter($centerId)
+    {
+        return $this->centers()->where('center_id', $centerId)->exists();
     }
 }
