@@ -3,47 +3,38 @@
 namespace App\Http\Controllers\Booking;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\Experience;
 use App\Models\User;
-use App\Http\Requests\StoreBookingRequest;
 use App\Services\BookingService;
-use App\Services\PricingEngine;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
-    public function __construct(
-        private BookingService $bookingService,
-        private PricingEngine $pricingEngine
-    ) {
-        $this->middleware('auth')->except(['preview']);
-    }
+    public function __construct(private BookingService $bookingService)
+    {}
 
     public function index()
     {
-        $center = auth()->user()->primary_center ?? auth()->user()->centers()->first();
+        $user = Auth::user();
+        $center = $user->getPrimaryCenter();
 
-        $experienceIds = $center->experiences()->pluck('id');
+        if (!$center) {
+            return view('dashboard.no-center');
+        }
 
-        $bookings = Booking::with('user')
-            ->whereIn('experience_id', $experienceIds)
-            ->orderByDesc('created_at')
-            ->paginate(20);
-
-        $totalRevenue = Booking::whereIn('experience_id', $center->experiences->pluck('id'))
-            ->where('payment_status', 'completed')
-            ->sum('pay_amount');
-
-        $confirmedCount = Booking::whereIn('experience_id', $center->experiences->pluck('id'))
+        $bookings = $center->experiences()
+            ->with('bookings')
+            ->get()
+            ->flatMap(fn($e) => $e->bookings)
             ->where('order_status', 'confirmed')
-            ->count();
+            ->sortByDesc('created_at')
+            ->paginate(15);
 
         return view('booking.index', [
+            'center' => $center,
             'bookings' => $bookings,
-            'total_revenue' => $totalRevenue,
-            'confirmed_count' => $confirmedCount,
         ]);
     }
 
@@ -52,68 +43,40 @@ class BookingController extends Controller
         $this->authorize('view', $booking);
 
         return view('booking.show', [
-            'booking' => $booking->load([
-                'experience',
-                'accommodation',
-                'user',
-                'userInfo',
-                'addressInfo',
-                'transactionInfo'
-            ]),
+            'booking' => $booking,
+            'user_info' => $booking->userInfo,
+            'transaction_info' => $booking->transactionInfo,
+            'address_info' => $booking->addressInfo,
         ]);
     }
 
-    public function preview(Experience $retreat, Request $request)
+    public function preview(Experience $experience)
     {
-        $request->validate([
-            'accommodation_id' => 'required|integer',
-            'arrival_date' => 'required|date',
-            'departure_date' => 'required|date',
-            'guest_count' => 'required|integer|min:1',
-        ]);
-
-        $accommodation = $retreat->accommodations()->find($request->accommodation_id);
-
-        if (!$accommodation) {
-            return abort(404);
-        }
-
-        $pricing = $this->pricingEngine->calculateBookingPrice(
-            $retreat,
-            $accommodation,
-            Carbon::parse($request->arrival_date),
-            Carbon::parse($request->departure_date),
-            $request->guest_count,
-            $request->coupon_code ?? null
-        );
+        $accommodation = $experience->accommodations()->first();
 
         return view('booking.preview', [
-            'retreat' => $retreat,
+            'experience' => $experience,
             'accommodation' => $accommodation,
-            'pricing' => $pricing,
-            'arrival_date' => $request->arrival_date,
-            'departure_date' => $request->departure_date,
-            'guest_count' => $request->guest_count,
         ]);
     }
 
-    public function store(StoreBookingRequest $request)
+    public function store(StoreBookingRequest $request, Experience $experience)
     {
-        $experience = Experience::findOrFail($request->experience_id);
-        $accommodation = $experience->accommodations()->findOrFail($request->accommodation_id);
+        $accommodation = $experience->accommodations()
+            ->where('id', $request->input('accommodation_id'))
+            ->first() ?? $experience->accommodations()->first();
+
+        $user = User::firstOrCreate(
+            ['email' => $request->input('email')],
+            [
+                'first_name' => $request->input('first_name'),
+                'last_name' => $request->input('last_name'),
+                'phone_number' => $request->input('phone'),
+                'password' => bcrypt('temporary-password'),
+            ]
+        );
 
         try {
-            // Get or create user
-            $user = User::firstOrCreate(
-                ['email' => $request->email],
-                [
-                    'first_name' => $request->first_name,
-                    'last_name' => $request->last_name,
-                    'phone_number' => $request->phone,
-                    'password' => bcrypt(uniqid()),
-                ]
-            );
-
             $booking = $this->bookingService->createBooking(
                 $experience,
                 $accommodation,
@@ -121,38 +84,39 @@ class BookingController extends Controller
                 $request->validated()
             );
 
-            return redirect()
-                ->route('booking.payment', $booking)
-                ->with('success', 'Booking created. Please complete payment.');
+            return redirect()->route('booking.payment', $booking)
+                ->with('success', 'Booking created! Please complete payment.');
         } catch (\Exception $e) {
-            return back()
-                ->withInput()
-                ->withErrors(['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
-    public function confirm(Booking $booking, Request $request)
+    public function confirm(Booking $booking)
     {
-        $this->authorize('update', $booking);
+        if ($booking->order_status === 'confirmed') {
+            return redirect()->back()->with('info', 'Booking already confirmed.');
+        }
 
-        $request->validate([
-            'transaction_id' => 'required|string',
-        ]);
+        $transactionId = request('transaction_id');
 
-        $this->bookingService->confirmBooking($booking, $request->transaction_id);
-
-        return back()->with('success', 'Booking confirmed successfully');
+        try {
+            $this->bookingService->confirmBooking($booking, $transactionId);
+            return redirect()->route('booking.success', $booking)
+                ->with('success', 'Booking confirmed successfully!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function cancel(Booking $booking)
     {
-        $this->authorize('update', $booking);
+        $this->authorize('view', $booking);
 
         try {
-            $this->bookingService->cancelBooking($booking);
-            return back()->with('success', 'Booking cancelled');
+            $this->bookingService->cancelBooking($booking, request('reason'));
+            return redirect()->back()->with('success', 'Booking cancelled successfully!');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 }

@@ -2,30 +2,19 @@
 
 namespace App\Policies;
 
-use App\User;
+use App\Models\User;
 use App\Models\Booking;
 
 class BookingPolicy
 {
-    public function view(User $user, Booking $booking): bool
+    public function view(User $user, Booking $booking)
     {
-        // Center admin can view bookings for their center
-        if ($user->hasCenter($booking->experience->center_id)) {
-            return true;
-        }
-
-        // Booking user can view their own booking
-        return $booking->user_id === $user->id;
+        return $user->id === $booking->user_id ||
+            $user->centers()->where('center_id', $booking->experience->center_id)->exists();
     }
 
-    public function update(User $user, Booking $booking): bool
+    public function cancel(User $user, Booking $booking)
     {
-        return $user->hasCenter($booking->experience->center_id);
-    }
-
-    public function cancel(User $user, Booking $booking): bool
-    {
-        return $user->hasCenter($booking->experience->center_id) ||
-            $booking->user_id === $user->id;
+        return $this->view($user, $booking);
     }
 }

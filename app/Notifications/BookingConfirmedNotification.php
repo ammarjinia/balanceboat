@@ -14,28 +14,30 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
 
     public function __construct(public Booking $booking) {}
 
-    public function via($notifiable): array
+    public function via($notifiable)
     {
         return ['mail', 'database'];
     }
 
-    public function toMail($notifiable): MailMessage
+    public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->greeting("Booking Confirmed!")
-            ->line("Your booking for {$this->booking->experience->name} is confirmed.")
-            ->line("Arrival Date: {$this->booking->arrival_date->format('M d, Y')}")
-            ->line("Total Amount: ₹" . number_format($this->booking->pay_amount))
+            ->subject('Your Retreat Booking is Confirmed!')
+            ->greeting('Hello ' . $notifiable->first_name . '!')
+            ->line('Your booking for ' . $this->booking->experience->name . ' has been confirmed.')
+            ->line('Arrival Date: ' . $this->booking->arrival_date->format('M d, Y'))
+            ->line('Departure Date: ' . $this->booking->end_date_time->format('M d, Y'))
+            ->line('Total Amount: ₹' . number_format($this->booking->pay_amount, 0))
             ->action('View Booking', route('booking.show', $this->booking))
-            ->line('Thank you for choosing BalanceBoat!');
+            ->line('Thank you for booking with us!');
     }
 
-    public function toDatabase($notifiable): array
+    public function toDatabase($notifiable)
     {
         return [
             'booking_id' => $this->booking->id,
-            'experience_name' => $this->booking->experience->name,
-            'amount' => $this->booking->pay_amount,
+            'message' => 'Your booking has been confirmed',
+            'retreat_name' => $this->booking->experience->name,
         ];
     }
 }

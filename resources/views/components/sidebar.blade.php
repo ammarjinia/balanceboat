@@ -1,58 +1,54 @@
 <aside
-    class="fixed left-0 top-0 h-full w-72 bg-gradient-to-b from-purple-50 via-pink-50 to-green-50 border-r border-purple-200 flex flex-col">
+    class="fixed left-0 top-0 w-72 h-screen bg-gradient-to-b from-purple-100 to-pink-50 border-r border-purple-200 p-6">
     {{-- Logo --}}
-    <div class="px-6 py-6 border-b border-purple-200">
-        <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-            <div
-                class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                🧘
-            </div>
-            <span class="text-lg font-bold bg-gradient-to-r from-purple-700 to-pink-600 bg-clip-text text-transparent">
-                BalanceBoat
-            </span>
-        </a>
+    <div class="flex items-center gap-3 mb-8 pb-6 border-b border-purple-200">
+        <div
+            class="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center text-white text-xl">
+            🧘
+        </div>
+        <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            BalanceBoat
+        </span>
     </div>
 
     {{-- Navigation --}}
-    <nav class="flex-1 px-4 py-6 space-y-1">
-        <a href="{{ route('dashboard') }}"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-medium text-sm transition-all duration-200 hover:bg-purple-100 @if (request()->routeIs('dashboard')) bg-purple-100 text-purple-900 @endif">
-            <span class="text-xl">📊</span>
-            <span>Dashboard</span>
+    <nav class="space-y-2 flex-1">
+        <a href="{{ route('dashboard.index') }}"
+            class="block px-4 py-3 rounded-lg {{ request()->routeIs('dashboard.index') ? 'bg-white text-purple-600 font-semibold shadow' : 'text-gray-600 hover:bg-white/50' }}">
+            <i class="fas fa-chart-line mr-3"></i>Dashboard
         </a>
-
-        <a href="{{ route('account.show') }}"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-medium text-sm transition-all duration-200 hover:bg-purple-100 @if (request()->routeIs('account.*')) bg-purple-100 text-purple-900 @endif">
-            <span class="text-xl">👤</span>
-            <span>Account</span>
-        </a>
-
         <a href="{{ route('retreat.index') }}"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-medium text-sm transition-all duration-200 hover:bg-purple-100 @if (request()->routeIs('retreat.*')) bg-purple-100 text-purple-900 @endif">
-            <span class="text-xl">🏛️</span>
-            <span>Retreats</span>
+            class="block px-4 py-3 rounded-lg {{ request()->routeIs('retreat.*') ? 'bg-white text-purple-600 font-semibold shadow' : 'text-gray-600 hover:bg-white/50' }}">
+            <i class="fas fa-spa mr-3"></i>Retreats
         </a>
-
         <a href="{{ route('booking.index') }}"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-medium text-sm transition-all duration-200 hover:bg-purple-100 @if (request()->routeIs('booking.*')) bg-purple-100 text-purple-900 @endif">
-            <span class="text-xl">📅</span>
-            <span>Bookings</span>
+            class="block px-4 py-3 rounded-lg {{ request()->routeIs('booking.*') ? 'bg-white text-purple-600 font-semibold shadow' : 'text-gray-600 hover:bg-white/50' }}">
+            <i class="fas fa-calendar-check mr-3"></i>Bookings
+        </a>
+        <a href="{{ route('dashboard.account.show') }}"
+            class="block px-4 py-3 rounded-lg {{ request()->routeIs('dashboard.account.*') ? 'bg-white text-purple-600 font-semibold shadow' : 'text-gray-600 hover:bg-white/50' }}">
+            <i class="fas fa-user-cog mr-3"></i>Account
         </a>
     </nav>
 
-    {{-- Footer --}}
-    <div class="px-4 py-4 border-t border-purple-200">
-        <div class="flex items-center gap-3 p-3 bg-white rounded-lg border border-purple-200">
+    {{-- User Card --}}
+    <div class="border-t border-purple-200 pt-4 mt-4">
+        <div class="flex items-center gap-3 p-3 bg-white rounded-lg">
             <div
-                class="w-9 h-9 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">
-                {{ substr(auth()->user()->first_name, 0, 1) . substr(auth()->user()->last_name, 0, 1) }}
+                class="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+                {{ substr(Auth::user()->first_name, 0, 1) }}{{ substr(Auth::user()->last_name, 0, 1) }}
             </div>
             <div class="flex-1 min-w-0">
-                <div class="text-sm font-semibold text-gray-900 truncate">
-                    {{ auth()->user()->primary_center?->name ?? 'No Center' }}
-                </div>
-                <div class="text-xs text-gray-500">Admin</div>
+                <p class="text-sm font-semibold text-gray-900 truncate">{{ Auth::user()->full_name }}</p>
+                <p class="text-xs text-gray-500">Admin</p>
             </div>
         </div>
+        <form method="POST" action="{{ route('logout') }}" class="mt-3">
+            @csrf
+            <button type="submit"
+                class="w-full text-left px-4 py-2 text-gray-600 hover:bg-white/50 rounded-lg text-sm">
+                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+            </button>
+        </form>
     </div>
 </aside>

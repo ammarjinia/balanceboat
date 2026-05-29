@@ -13,23 +13,31 @@ class DateRange
 
     public static function getDaysBetween(Carbon $start, Carbon $end): int
     {
-        return $end->diffInDays($start);
-    }
-
-    public static function getMonthsBetween(Carbon $start, Carbon $end): int
-    {
-        return $end->diffInMonths($start);
+        return $end->diffInDays($start) + 1;
     }
 
     public static function isInPeakSeason(Carbon $date): bool
     {
         $month = $date->month;
-        return in_array($month, [10, 11, 12, 1, 2, 3]);
+        return in_array($month, [1, 2, 3, 10, 11, 12]);
     }
 
-    public static function isInMonsooon(Carbon $date): bool
+    public static function isInMonsoon(Carbon $date): bool
     {
         $month = $date->month;
         return in_array($month, [6, 7, 8, 9]);
+    }
+
+    public static function getSeasonName(Carbon $date): string
+    {
+        $month = $date->month;
+
+        return match ($month) {
+            1, 2, 3 => 'Winter',
+            4, 5 => 'Summer',
+            6, 7, 8, 9 => 'Monsoon',
+            10, 11, 12 => 'Autumn',
+            default => 'Unknown'
+        };
     }
 }

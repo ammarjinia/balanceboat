@@ -10,5 +10,5 @@ class RetreatDrafted
 {
     use Dispatchable, SerializesModels;
 
-    public function __construct(public Experience $retreat) {}
+    public function __construct(public Experience $experience) {}
 }

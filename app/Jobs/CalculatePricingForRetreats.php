@@ -15,18 +15,11 @@ class CalculatePricingForRetreats implements ShouldQueue
 
     public function handle()
     {
-        // Update pricing recommendations for all active retreats
-        Experience::where('is_bookable', true)
-            ->chunk(100, function ($retreats) {
-                foreach ($retreats as $retreat) {
-                    // Calculate recommendations based on:
-                    // - Occupancy trends
-                    // - Seasonal demand
-                    // - Historical booking patterns
-                    // - Competitor pricing
-                }
-            });
+        // Recalculate pricing for all experiences
+        $experiences = Experience::all();
 
-        \Log::info("Pricing calculations completed");
+        foreach ($experiences as $experience) {
+            // Update pricing rules based on occupancy
+        }
     }
 }

@@ -6,50 +6,42 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAccountRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): bool
     {
-        return auth()->check();
+        return true;
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
-            'center_name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
             'business_name' => 'nullable|string|max:255',
-            'contact_person' => 'required|string|max:255',
-            'year_of_foundation' => 'nullable|integer|min:1800|max:' . date('Y'),
-            'email_address' => 'required|email|max:255',
-            'phone_number' => 'required|string|regex:/^[0-9\+\-\s]{10,}$/',
-            'whatsapp_number' => 'nullable|string|regex:/^[0-9\+\-\s]{10,}$/',
+            'email_address' => 'nullable|email',
+            'contact_number' => 'nullable|string|max:20',
+            'whatsapp_number' => 'nullable|string|max:20',
             'website' => 'nullable|url',
             'facebook_url' => 'nullable|url',
             'instagram_url' => 'nullable|url',
-            'billing_address' => 'required|string|max:500',
-            'city' => 'required|string|max:100',
-            'country' => 'required|string|max:100',
-            'gst_number' => 'nullable|string|regex:/^[A-Z0-9]{15}$/',
-            'pan_number' => 'nullable|string|regex:/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/',
-            'account_holder_name' => 'nullable|string|max:255',
-            'bank_name' => 'nullable|string|max:255',
-            'account_number' => 'nullable|string|regex:/^[0-9]{8,17}$/',
-            'ifsc_code' => 'nullable|string|regex:/^[A-Z]{4}0[A-Z0-9]{6}$/',
-            'upi_id' => 'nullable|string|regex:/^[\w.-]+@[\w.-]+$/',
+            'gst_number' => 'nullable|regex:/^[0-9A-Z]{15}$/',
+            'pan_number' => 'nullable|regex:/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/',
+            'billing_address' => 'nullable|string',
+            'account_holder_name' => 'nullable|string|max:100',
+            'bank_name' => 'nullable|string|max:100',
+            'account_number' => 'nullable|regex:/^[0-9]{8,17}$/',
+            'ifsc_code' => 'nullable|regex:/^[A-Z]{4}0[A-Z0-9]{6}$/',
             'preferred_payout_cycle' => 'nullable|in:weekly,bi-weekly,monthly',
+            'upi_id' => 'nullable|regex:/^[a-zA-Z0-9.-]{3,}@[a-zA-Z]{3,}$/',
         ];
     }
 
-    public function messages()
+    public function messages(): array
     {
         return [
-            'center_name.required' => 'Center name is required',
-            'contact_person.required' => 'Contact person name is required',
-            'email_address.email' => 'Please provide a valid email',
-            'phone_number.regex' => 'Please provide a valid phone number',
-            'gst_number.regex' => 'Please provide a valid GST number (15 characters)',
-            'pan_number.regex' => 'Please provide a valid PAN number',
-            'account_number.regex' => 'Please provide a valid bank account number',
-            'ifsc_code.regex' => 'Please provide a valid IFSC code',
-            'upi_id.regex' => 'Please provide a valid UPI ID',
+            'gst_number.regex' => 'GST number must be 15 alphanumeric characters.',
+            'pan_number.regex' => 'PAN number format is invalid.',
+            'account_number.regex' => 'Account number must be 8-17 digits.',
+            'ifsc_code.regex' => 'IFSC code format is invalid.',
+            'upi_id.regex' => 'UPI ID format is invalid.',
         ];
     }
 }

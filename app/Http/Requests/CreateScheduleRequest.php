@@ -6,29 +6,25 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CreateScheduleRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): bool
     {
-        return auth()->check();
+        return true;
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
-            'schedules' => 'required|array|min:1',
-            'schedules.*.day' => 'required|string|max:50',
-            'schedules.*.start_time' => 'nullable|date_format:H:i',
-            'schedules.*.end_time' => 'nullable|date_format:H:i',
-            'schedules.*.activity' => 'required|string|max:1000',
+            'schedule_day' => 'required|integer|min:1',
+            'schedule_start_time' => 'required|date_format:H:i',
+            'schedule_end_time' => 'required|date_format:H:i|after:schedule_start_time',
+            'activity_description' => 'required|string|min:10',
         ];
     }
 
-    public function messages()
+    public function messages(): array
     {
         return [
-            'schedules.required' => 'At least one schedule day is required',
-            'schedules.*.activity.required' => 'Activity description is required for each day',
-            'schedules.*.start_time.date_format' => 'Start time must be in HH:mm format',
-            'schedules.*.end_time.date_format' => 'End time must be in HH:mm format',
+            'schedule_end_time.after' => 'End time must be after start time.',
         ];
     }
 }

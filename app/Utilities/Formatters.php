@@ -6,28 +6,36 @@ class Formatters
 {
     public static function price($amount, $currency = 'INR'): string
     {
-        return match ($currency) {
-            'INR' => '₹' . number_format($amount, 2),
-            'USD' => '$' . number_format($amount, 2),
-            'EUR' => '€' . number_format($amount, 2),
-            'GBP' => '£' . number_format($amount, 2),
-            default => number_format($amount, 2),
-        };
+        if ($currency === 'INR') {
+            return '₹' . number_format($amount, 2);
+        }
+
+        return $currency . ' ' . number_format($amount, 2);
     }
 
-    public static function percentage($value, $total): string
+    public static function percentage($value, $decimals = 0): string
     {
-        if ($total === 0) return '0%';
-        return round(($value / $total) * 100, 2) . '%';
+        return round($value, $decimals) . '%';
     }
 
-    public static function dateRange($startDate, $endDate): string
+    public static function dateRange($startDate, $endDate, $format = 'M d'): string
     {
-        return $startDate->format('M d') . ' - ' . $endDate->format('M d, Y');
+        return $startDate->format($format) . ' - ' . $endDate->format($format);
     }
 
     public static function shortName($firstName, $lastName): string
     {
         return substr($firstName, 0, 1) . substr($lastName, 0, 1);
+    }
+
+    public static function phoneNumber($phone): string
+    {
+        $cleaned = preg_replace('/\D/', '', $phone);
+
+        if (strlen($cleaned) === 10) {
+            return '+91 ' . substr($cleaned, 0, 5) . ' ' . substr($cleaned, 5);
+        }
+
+        return $phone;
     }
 }

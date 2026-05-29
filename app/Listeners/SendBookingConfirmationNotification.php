@@ -11,12 +11,12 @@ class SendBookingConfirmationNotification
     {
         $booking = $event->booking;
 
-        // Send confirmation email to guest
+        // Notify guest
         $booking->user->notify(new BookingConfirmedNotification($booking));
 
-        // Notify center admin
-        foreach ($booking->experience->center->users as $admin) {
-            $admin->notify(new \App\Notifications\NewBookingNotification($booking));
+        // Notify center admins
+        foreach ($booking->experience->center->users as $user) {
+            $user->notify(new BookingConfirmedNotification($booking));
         }
     }
 }

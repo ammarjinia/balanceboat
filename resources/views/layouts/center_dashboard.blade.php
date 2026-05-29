@@ -4,56 +4,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'BalanceBoat - Center Dashboard')</title>
+    <title>@yield('title') - BalanceBoat</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        * {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-    </style>
-    @stack('styles')
 </head>
 
 <body class="bg-gray-50">
-    <div class="min-h-screen flex">
+    <div class="flex min-h-screen">
         {{-- Sidebar --}}
         @include('components.sidebar')
 
         {{-- Main Content --}}
-        <div class="flex-1 flex flex-col overflow-hidden ml-72">
-            {{-- Top Bar --}}
+        <div class="flex-1 ml-72">
+            {{-- Topbar --}}
             @include('components.topbar')
 
-            {{-- Content --}}
-            <main class="flex-1 overflow-y-auto">
-                <div class="px-8 py-6">
-                    {{-- Alerts --}}
-                    @if ($errors->any())
-                    <div class="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
-                        <ul class="list-disc list-inside">
+            {{-- Page Content --}}
+            <main class="p-8">
+                {{-- Alerts --}}
+                @if ($errors->any())
+                    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <h3 class="text-red-800 font-semibold mb-2">Errors</h3>
+                        <ul class="text-red-700 text-sm">
                             @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
+                                <li>• {{ $error }}</li>
                             @endforeach
                         </ul>
                     </div>
-                    @endif
+                @endif
 
-                    @if (session('success'))
-                    <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
-                        {{ session('success') }}
+                @if (session('success'))
+                    <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
+                        <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
                     </div>
-                    @endif
+                @endif
 
-                    @yield('main-content')
-                </div>
+                @if (session('error'))
+                    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+                        <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
+                    </div>
+                @endif
+
+                {{-- Page Content --}}
+                @yield('content')
             </main>
         </div>
     </div>
-
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    @stack('scripts')
 </body>
 
 </html>

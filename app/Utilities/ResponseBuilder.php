@@ -4,25 +4,30 @@ namespace App\Utilities;
 
 class ResponseBuilder
 {
-    public static function success($data, $message = 'Operation successful', $code = 200)
+    public static function success($data = null, $message = 'Success', $statusCode = 200)
     {
         return response()->json([
             'success' => true,
             'message' => $message,
             'data' => $data,
-        ], $code);
+        ], $statusCode);
     }
 
-    public static function error($message = 'Operation failed', $code = 400, $errors = [])
+    public static function error($message = 'Error', $statusCode = 400, $errors = null)
     {
-        return response()->json([
+        $response = [
             'success' => false,
             'message' => $message,
-            'errors' => $errors,
-        ], $code);
+        ];
+
+        if ($errors) {
+            $response['errors'] = $errors;
+        }
+
+        return response()->json($response, $statusCode);
     }
 
-    public static function paginated($items, $message = 'Data retrieved')
+    public static function paginated($items, $message = 'Data retrieved successfully')
     {
         return response()->json([
             'success' => true,

@@ -2,15 +2,24 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\PricingController;
+use App\Http\Controllers\Api\AvailabilityController;
+use App\Http\Controllers\Api\RetreatController as ApiRetreatController;
 
 Route::middleware('auth:sanctum')->group(function () {
-    // Pricing API
-    Route::post('/pricing/calculate', 'App\Http\Controllers\Api\PricingController@calculate');
+    // Pricing
+    Route::post('/pricing/calculate', [PricingController::class, 'calculate']);
 
-    // Availability API
-    Route::get('/availability/calendar', 'App\Http\Controllers\Api\AvailabilityController@calendar');
+    // Availability
+    Route::get('/availability/calendar', [AvailabilityController::class, 'calendar']);
+    Route::get('/availability/check', [AvailabilityController::class, 'checkAvailability']);
 
-    // Retreat API
-    Route::get('/retreat/{retreat}/summary', 'App\Http\Controllers\Api\RetreatController@summary');
-    Route::get('/retreat/{retreat}/availability', 'App\Http\Controllers\Api\RetreatController@availability');
+    // Retreat
+    Route::get('/retreat/{retreat}/summary', [ApiRetreatController::class, 'summary']);
+    Route::get('/retreat/{retreat}/availability', [ApiRetreatController::class, 'availability']);
+
+    // User
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 });
