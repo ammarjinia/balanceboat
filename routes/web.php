@@ -369,6 +369,36 @@ Route::get('/generate-sitemap', function() {
     $exitCode = Artisan::call('sitemap:generate');
 });
 
+// ============================================================
+// CENTER ACCESS PANEL ROUTES
+// ============================================================
+Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\Center'], function() {
+    // Public routes (no authentication required)
+    Route::get('/login', 'CenterAuthController@showLoginForm')->name('center-panel.login');
+    Route::post('/login', 'CenterAuthController@login')->name('center-panel.login.submit');
+    
+    // Protected routes (authentication required)
+    Route::group(['middleware' => 'center.auth'], function() {
+        Route::get('/dashboard', 'CenterDashboardController@index')->name('center-panel.dashboard');
+        Route::get('/logout', 'CenterAuthController@logout')->name('center-panel.logout');
+        
+        // Experiences Management
+        Route::get('/experiences', 'CenterDashboardController@experiences')->name('center-panel.experiences');
+        
+        // Bookings Management
+        Route::get('/bookings', 'CenterDashboardController@bookings')->name('center-panel.bookings');
+        
+        // Settings Management
+        Route::get('/settings', 'CenterDashboardController@settings')->name('center-panel.settings');
+        Route::post('/settings/update', 'CenterDashboardController@updateSettings')->name('center-panel.settings.update');
+        
+        // API endpoints
+        Route::get('/api/overview', 'CenterDashboardController@getOverviewData')->name('center-panel.api.overview');
+    });
+});
+
+// ============================================================
+
 Route::get('/payment_new', '\App\Http\Controllers\PaymentController@index_new');
 Route::post('payment-new-stor', '\App\Http\Controllers\PaymentController@payment')->name('payment-new-stor');
 
