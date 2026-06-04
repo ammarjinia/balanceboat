@@ -64,7 +64,7 @@ class CenterAuthController extends Controller
         }
 
         // Check if user has an associated center
-        $center = \App\Centers::first();//$user->center()->first();
+        $center = $user->center()->first();
         if (!$center) {
             return back()->withErrors(['email' => 'No center associated with this account.'])->withInput();
         }
