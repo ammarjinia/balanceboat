@@ -415,6 +415,3 @@ route::get('test-inquiry', function() {
     (new \App\Services\ActiveCampaignService())->trackCartActivity("ammarjinia@gmail.com", $eventData, "Lead: New");
 
 });
-
-
-require __DIR__.'/centerDashboard.php';
