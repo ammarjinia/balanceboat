@@ -46,6 +46,7 @@ class CentersController extends Controller {
         $data['accomodations'] = \App\Accomodation::get_data($param);
         $data['categories'] = \App\Category::get_data($param);
         $data['amenities'] = \App\Amenities::select("id","name")->orderBy("name","ASC")->get();
+        $data['owners'] = User::role('Owner')->orderBy('first_name', 'ASC')->get();
         return view('admin.centers.create', $data);
     }
 
@@ -56,10 +57,67 @@ class CentersController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
-        $this->validate($request, [
+        $rules = [
             'name' => 'required',
             'slug' => 'required',
-        ]);
+        ];
+
+        // If owner_email is provided and no existing owner selected, validate email and password
+        if ($request->filled('owner_email')) {
+            $existingUser = User::where('email', $request['owner_email'])->first();
+            if (!$existingUser) {
+                // New user: email must be unique, password required
+                $rules['owner_email'] = 'email|unique:users,email';
+                $rules['owner_password'] = 'required|min:6';
+            } else {
+                // Existing user: ensure it's the same owner already linked to this center
+                if (!empty($request['id'])) {
+                    $currentCenter = \App\Centers::find($request['id']);
+                    if ($currentCenter && $currentCenter->user_id != $existingUser->id) {
+                        $rules['owner_email'] = 'email|unique:users,email';
+                    }
+                } else {
+                    // Creating a new center but email already taken
+                    $rules['owner_email'] = 'email|unique:users,email';
+                }
+                if ($request->filled('owner_password')) {
+                    $rules['owner_password'] = 'min:6';
+                }
+            }
+        }
+
+        $this->validate($request, $rules);
+
+        // Handle Owner user creation/update
+        $user_id = null;
+        $owner_email = $request['owner_email'];
+        $owner_password = $request['owner_password'];
+
+        if (!empty($owner_email)) {
+            $ownerUser = User::where('email', $owner_email)->first();
+            if ($ownerUser) {
+                // Update existing user's password if provided
+                if (!empty($owner_password)) {
+                    $ownerUser->password = $owner_password;
+                    $ownerUser->save();
+                }
+                // Ensure user has Owner role
+                if (!$ownerUser->hasRole('Owner')) {
+                    $ownerUser->assignRole('Owner');
+                }
+                $user_id = $ownerUser->id;
+            } else {
+                // Create new Owner user
+                $ownerUser = User::create([
+                    'first_name' => $request['name'],
+                    'last_name' => '',
+                    'email' => $owner_email,
+                    'password' => $owner_password,
+                ]);
+                $ownerUser->assignRole('Owner');
+                $user_id = $ownerUser->id;
+            }
+        }
 
         $name = $request['name'];
         $slug = $request['slug'];
@@ -116,6 +174,7 @@ class CentersController extends Controller {
             if ($objCenter) {
                 $objCenter->name = $name;
                 $objCenter->slug = $slug;
+                $objCenter->user_id = $user_id;
                 $objCenter->meta_title = $meta_title;
                 $objCenter->keywords = $keywords;
                 $objCenter->meta_description = $meta_description;
@@ -263,6 +322,7 @@ class CentersController extends Controller {
                 $objCenter = new \App\Centers();
                 $objCenter->name = $name;
                 $objCenter->slug = $slug;
+                $objCenter->user_id = $user_id;
                 $objCenter->meta_title = $meta_title;
                 $objCenter->keywords = $keywords;
                 $objCenter->meta_description = $meta_description;
@@ -423,6 +483,7 @@ class CentersController extends Controller {
             }
         }
         $data['amenities'] = \App\Amenities::select("id","name")->orderBy("name","ASC")->get();
+        $data['owners'] = User::role('Owner')->orderBy('first_name', 'ASC')->get();
         return view('admin.centers.edit', $data);
     }
 

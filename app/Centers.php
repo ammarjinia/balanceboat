@@ -33,5 +33,13 @@ class Centers extends Model {
         $resCenter = $objCenter->orderBy($orderby, $order)->get();
         return $resCenter;
     }
+    
+    /**
+     * Get the User record associated with the user.
+     */
+    public function user()
+    {
+        return $this->belongsTo('App\User');
+    }
 
 }
