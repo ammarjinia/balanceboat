@@ -101,9 +101,9 @@ class CenterDashboardController extends Controller
     {
         $centerId = Session::get('center_id');
         $center = Centers::findOrFail($centerId);
-        $experiences = [];//Experiences::where('center_id', $centerId)->paginate(15);
+        $experiences = Experiences::where('center_id', $centerId)->orderBy("id", "DESC")->paginate(15);
 
-        $totalExperiences = 0;//Experiences::where('center_id', $centerId)->count();
+        $totalExperiences = Experiences::where('center_id', $centerId)->count();
         $totalBookings = 0;//Bookings::where('center_id', $centerId)->count();
         $activeDistributionListings = intval(ceil($totalExperiences * 0.6));
         $upcomingCyclePipelines = max(0, min(12, intval(floor($totalExperiences / 2))));
@@ -274,7 +274,7 @@ class CenterDashboardController extends Controller
         $exp->experience_overview = $request->input('experience_overview');
         $exp->experience_details  = $request->input('experience_details');
         $exp->experience_highlights = $request->input('experience_highlights');
-        $exp->experience_schedule = $request->input('experience_schedule');
+        $exp->schedule = $request->input('experience_schedule');
         $exp->what_is_included    = $request->input('what_is_included');
         $exp->what_is_not_included = $request->input('what_is_not_included');
         $exp->how_to_get_here     = $request->input('how_to_get_here');

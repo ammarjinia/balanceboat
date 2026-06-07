@@ -60,16 +60,13 @@
                     @foreach($experiences as $exp)
                         <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all relative group">
                             <div class="absolute top-5 right-5 flex items-center space-x-2">
-                                <button type="button" class="text-xs text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 px-3 py-1 rounded-2xl border border-slate-200 transition-all font-medium">
-                                    <i class="fa-regular fa-copy mr-1"></i> Smart Duplicate Structure
-                                </button>
                                 @if(isset($exp->is_draft) && $exp->is_draft)
                                     <span class="h-7 px-3 bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider rounded-2xl flex items-center border border-amber-200">
-                                        <span class="h-2 w-2 bg-amber-500 rounded-full mr-2"></span> Draft
+                                        <span class="h-2 w-2 bg-amber-400 rounded-full mr-2"></span> Draft
                                     </span>
                                 @else
                                     <span class="h-7 px-3 bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-wider rounded-2xl flex items-center border border-emerald-200">
-                                        <span class="h-2 w-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span> Production Active Listing
+                                        <span class="h-2 w-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span> Live
                                     </span>
                                 @endif
                             </div>
@@ -95,25 +92,41 @@
                             <div class="pt-4 border-t border-slate-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4 text-xs">
                                 <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-6 gap-3">
                                     <div>
-                                        <span class="block text-[9px] font-medium text-slate-400 uppercase">Baseline Package Base Value</span>
+                                        <span class="block text-[9px] font-medium text-slate-400 uppercase">Baseline Price</span>
                                         <span class="font-mono text-slate-900 font-bold">
-                                            {{ $exp->currency ?? '$' }}{{ number_format($exp->price ?? 1980) }}
-                                            <span class="text-[9px] text-slate-400 font-normal">/ person base</span>
+                                            {{ $exp->currency ?? '' }}{{ number_format($exp->avg_price ?? 0) }}
+                                            <span class="text-[9px] text-slate-400 font-normal">/ person</span>
                                         </span>
                                     </div>
                                     <div>
-                                        <span class="block text-[9px] font-medium text-slate-400 uppercase">Live Pipeline Occupancy Velocity</span>
-                                        <div class="flex items-center space-x-2 mt-1">
-                                            <div class="w-20 h-1 bg-slate-100 rounded-full overflow-hidden">
-                                                <div class="h-full bg-emerald-500" style="width: {{ $pipelineOccupancyVelocity }}%"></div>
-                                            </div>
-                                            <span class="font-bold text-emerald-600 text-[10px]">{{ $pipelineOccupancyVelocity }}% Inventory Lock</span>
-                                        </div>
+                                        <span class="block text-[9px] font-medium text-slate-400 uppercase">Duration</span>
+                                        <span class="font-mono text-slate-900 font-bold">{{ $exp->duration ?? '—' }} <span class="text-[9px] text-slate-400 font-normal">nights</span></span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-[9px] font-medium text-slate-400 uppercase">Status</span>
+                                        @if(isset($exp->is_draft) && $exp->is_draft)
+                                            <span class="font-semibold text-amber-600">Draft</span>
+                                        @else
+                                            <span class="font-semibold text-emerald-600">Live</span>
+                                        @endif
                                     </div>
                                 </div>
-                                <div class="flex items-center space-x-2 text-[10px] text-slate-400">
-                                    <i class="fa-regular fa-calendar-check"></i>
-                                    <span>Targeted Allocation: {{ now()->format('F Y') }} Distribution Cycle</span>
+
+                                {{-- Action Buttons --}}
+                                <div class="flex items-center space-x-2 shrink-0">
+                                    @if($exp->slug)
+                                        <a href="{{ url('/experience/' . $exp->slug) }}" target="_blank" rel="noopener"
+                                           class="inline-flex items-center space-x-1.5 py-2 px-3.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-2xl text-[11px] font-semibold transition-all shadow-sm group">
+                                            <i class="fa-regular fa-eye text-slate-400 group-hover:text-slate-600 text-xs"></i>
+                                            <span>Preview</span>
+                                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px] text-slate-300 group-hover:text-slate-500"></i>
+                                        </a>
+                                    @endif
+                                    <a href="{{ route('center-panel.experience.edit', $exp->id) }}"
+                                       class="inline-flex items-center space-x-1.5 py-2 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-[11px] font-semibold transition-all shadow-sm">
+                                        <i class="fa-regular fa-pen-to-square text-xs"></i>
+                                        <span>Edit</span>
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -163,11 +176,11 @@
                 {{-- Quick Actions Panel --}}
                 <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 pb-2 border-b border-slate-100">Quick Actions</h3>
-                    <button type="button" onclick="toggleStudioWizardModal(true)"
+                    <a href="{{ route('center-panel.experience.create') }}"
                         class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-semibold transition-all flex items-center space-x-2 shadow-sm">
                         <i class="fa-solid fa-plus text-xs"></i>
                         <span>Add New Retreat Program</span>
-                    </button>
+                    </a>
                     <button type="button"
                         class="w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-2xl text-xs font-medium transition-all flex items-center space-x-2">
                         <i class="fa-regular fa-copy text-xs"></i>
