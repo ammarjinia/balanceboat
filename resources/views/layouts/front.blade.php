@@ -418,7 +418,6 @@
                                 </div>
                             </div>
 
-                            <!-- STEP 2: Budget + Timeline -->
                             <div class="step" id="s2" style="display: none;">
                                 <div style="margin-bottom: 24px;">
                                     <div style="font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #C9933A; margin-bottom: 11px; display: flex; align-items: center; gap: 10px;">
@@ -457,7 +456,6 @@
                                 </div>
                             </div>
 
-                            <!-- STEP 3: Contact -->
                             <div class="step" id="s3" style="display: none;">
                                 <div style="margin-bottom: 15px;">
                                     <label style="display: block; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E6659; font-weight: 500; margin-bottom: 8px;">Your Name *</label>
@@ -484,7 +482,6 @@
                                 </div>
                             </div>
 
-                            <!-- Navigation & Trust -->
                             <div style="display: flex; gap: 10px; margin-top: 24px;">
                                 <button type="button" class="btn-back" id="backBtn" onclick="goBack()" style="display: none; flex: 0 0 48px; background: transparent; border: 1px solid rgba(255,255,255,0.09); color: #6E6659; font-size: 18px; padding: 15px 18px; border-radius: 13px; cursor: pointer; transition: all 0.22s ease;">←</button>
                                 <button type="button" class="btn-cta" id="nextBtn" onclick="goNext()" style="flex: 1; padding: 15px 18px; border-radius: 13px; background: linear-gradient(135deg, #C9933A 0%, #7A4F14 100%); color: #0A0A0A; font-weight: 600; letter-spacing: 0.015em; border: none; font-size: 14px; cursor: pointer; transition: all 0.22s ease; box-shadow: 0 6px 22px rgba(201,147,58,0.28);">Continue →</button>
@@ -497,7 +494,6 @@
                                 <div style="display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: #6E6659;">🌿 Expert curated</div>
                             </div>
 
-                            <!-- Hidden fields -->
                             <input type="hidden" name="ref_url" value="{{ url()->current() }}" />
                             <input type="hidden" id="hRetreatType" name="retreat_type" />
                             <input type="hidden" id="hDestination" name="destination" />
@@ -511,7 +507,6 @@
         </div>
     </div>
 
-        <!-- End Search Menu -->
             document.querySelectorAll('#' + gridId + ' button[data-v]').forEach(el => {
                 el.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -528,8 +523,7 @@
             });
         }
 
-        <!-- End Search Menu -->
-        <!--<script src="{{asset('basicfront/js/jquery-2.2.4.min.js')}}"></script>
+        <script src="{{asset('basicfront/js/jquery-2.2.4.min.js')}}"></script>
         <script type="text/javascript" src="{{ asset('basicfront/js/bootstrap-datepicker.js') }}" defer></script>
         <script type="text/javascript" src="{{ asset('basicfront/js/jquery.lazy.min.js') }}"  defer></script>
         <script src="{{asset('basicfront/js/common_scripts_min.js')}}"  defer></script>
@@ -577,6 +571,7 @@
             return false;
         });
         
+        @if (Request::path() != 'find-your-retreat')
         if (!$.cookie('chat-popup')) {
             setTimeout(function(){ $("#chatPopup").show(); }, 10000);
         
@@ -590,6 +585,7 @@
         $("#chatPopup .close").on("click", function(){
            $("#chatPopup").hide();
         });
+        @endif
         
         
         $(".btnRequestCallForm").on("click", function () {

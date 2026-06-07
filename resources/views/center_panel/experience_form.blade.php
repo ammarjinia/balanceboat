@@ -40,6 +40,22 @@
 {{-- Wizard Container --}}
 <div x-data="wizardApp()" x-init="init()" class="space-y-6">
 
+    {{-- Client-side validation banner --}}
+    <div x-show="Object.keys(errors).length > 0"
+         x-transition
+         class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-2xl px-5 py-3 flex items-start space-x-3"
+         style="display:none">
+        <i class="fa-solid fa-triangle-exclamation text-red-400 mt-0.5 shrink-0"></i>
+        <div>
+            <p class="font-semibold mb-1">Please fix the following before continuing:</p>
+            <ul class="space-y-0.5">
+                <template x-for="msg in Object.values(errors)" :key="msg">
+                    <li x-text="msg" class="before:content-['•'] before:mr-1.5"></li>
+                </template>
+            </ul>
+        </div>
+    </div>
+
     {{-- Step Progress Bar --}}
     <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
         <div class="flex items-center justify-between gap-2">
@@ -107,11 +123,13 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div class="md:col-span-2">
                         <label class="wiz-label">Retreat Title <span class="text-red-400">*</span></label>
-                        <input type="text" name="name" id="field_name" required
+                        <input type="text" name="name" id="field_name"
                                value="{{ old('name', $experience?->name) }}"
-                               @input="autoSlug()"
+                               x-on:input="autoSlug(); clearError('name')"
+                               :class="errors.name ? 'border-red-400 bg-red-50 focus:border-red-400' : ''"
                                class="wiz-input" placeholder="e.g., 7-Day Ayurvedic Panchakarma Retreat in Kerala">
                         @error('name')<p class="wiz-err">{{ $message }}</p>@enderror
+                        <p class="wiz-err mt-1" x-show="errors.name" x-text="errors.name" style="display:none"></p>
                     </div>
 
                     <div>
@@ -681,7 +699,7 @@
                         Review all steps before submitting.
                         <a href="{{ route('center-panel.experiences') }}" class="text-red-500 hover:underline ml-1">Cancel</a>
                     </p>
-                    <button type="submit" id="finalSubmitBtn"
+                    <button type="button" id="finalSubmitBtn" @click="submit()"
                             class="py-3 px-8 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-bold transition-all flex items-center space-x-2 shadow-md hover:scale-[1.01]">
                         <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
                         <span>{{ $experience ? 'Update Retreat' : 'Create Retreat' }}</span>
@@ -772,9 +790,14 @@ document.addEventListener('alpine:init', () => {
         currentStep: 1,
         depositPolicy: '{{ old('deposit_policy', $experience?->deposit_policy ?? 1) }}',
         cancelCondition: '{{ old('cancellation_policy_condition', $experience?->cancellation_policy_condition ?? 1) }}',
+        errors: {},
+
+        // Which fields are required in each step (field name → label)
+        _stepRules: {
+            1: { name: 'Retreat title' },
+        },
 
         init() {
-            // Bind deposit/cancel radio changes
             document.querySelectorAll('input[name="deposit_policy"]').forEach(r => {
                 r.addEventListener('change', () => this.depositPolicy = r.value);
             });
@@ -783,11 +806,58 @@ document.addEventListener('alpine:init', () => {
             });
         },
 
+        clearError(field) {
+            const updated = { ...this.errors };
+            delete updated[field];
+            this.errors = updated;
+        },
+
+        // Validate only the current step's required fields
+        validateCurrentStep() {
+            const rules = this._stepRules[this.currentStep] || {};
+            const newErrors = {};
+            for (const [fieldName, label] of Object.entries(rules)) {
+                const el = document.querySelector(`[name="${fieldName}"]`);
+                if (!el || !el.value.trim()) {
+                    newErrors[fieldName] = `${label} is required.`;
+                }
+            }
+            this.errors = { ...this.errors, ...newErrors };
+            return Object.keys(newErrors).length === 0;
+        },
+
+        // Validate all steps before final submit; jump to first step with an error
+        validateAll() {
+            const allErrors = {};
+            let firstErrorStep = null;
+            for (let step = 1; step <= 6; step++) {
+                const rules = this._stepRules[step] || {};
+                for (const [fieldName, label] of Object.entries(rules)) {
+                    const el = document.querySelector(`[name="${fieldName}"]`);
+                    if (!el || !el.value.trim()) {
+                        allErrors[fieldName] = `${label} is required.`;
+                        if (firstErrorStep === null) firstErrorStep = step;
+                    }
+                }
+            }
+            this.errors = allErrors;
+            if (firstErrorStep !== null) {
+                this.currentStep = firstErrorStep;
+                this.$nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+                return false;
+            }
+            return true;
+        },
+
         goTo(step) {
             if (step >= 1 && step <= 6) this.currentStep = step;
         },
 
         next() {
+            if (!this.validateCurrentStep()) {
+                this.$nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+                return;
+            }
             if (this.currentStep < 6) {
                 this.currentStep++;
                 this.$nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
@@ -798,6 +868,12 @@ document.addEventListener('alpine:init', () => {
             if (this.currentStep > 1) {
                 this.currentStep--;
                 this.$nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+            }
+        },
+
+        submit() {
+            if (this.validateAll()) {
+                document.getElementById('experienceForm').submit();
             }
         }
     }));

@@ -287,7 +287,7 @@
         <div class="fyr-trust-row">
             <div class="fyr-trust-chip">🔒 100% Private</div>
             <div class="fyr-trust-chip">✅ Completely Free</div>
-            <div class="fyr-trust-chip">⚡ Response in 2 Hours</div>
+            <div class="fyr-trust-chip">⚡ Response in Few Hours</div>
             <div class="fyr-trust-chip">🌿 Expert Curated</div>
         </div>
     </div>
