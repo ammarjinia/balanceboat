@@ -76,6 +76,7 @@
         </main>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script>
         document.addEventListener('click', function(event) {
             const menu = document.getElementById('userMenu');
@@ -84,5 +85,6 @@
             }
         });
     </script>
+    @yield('scripts')
 </body>
 </html>

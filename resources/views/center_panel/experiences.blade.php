@@ -9,11 +9,11 @@
             <h1 class="text-3xl font-serif font-light text-slate-900">Retreat Blueprint Studio</h1>
             <p class="text-xs text-slate-500 mt-1">Deploy, modify, copy, or instantiate luxury holistic programming profiles into the global availability registry.</p>
         </div>
-        <button type="button" onclick="toggleStudioWizardModal(true)"
+        <a href="{{ route('center-panel.experience.create') }}"
             class="py-3 px-5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-semibold shadow-md flex items-center space-x-2 transition-all hover:scale-[1.01] glow-ai shrink-0">
             <i class="fa-solid fa-sparkles text-amber-300"></i>
-            <span>Launch Guided Program Studio Wizard</span>
-        </button>
+            <span>Create New Retreat Program</span>
+        </a>
     </div>
 
     {{-- KPI Stats Grid --}}
@@ -128,11 +128,11 @@
                             <h4 class="text-base font-serif font-semibold text-slate-800">No Retreat Programs Yet</h4>
                             <p class="text-xs text-slate-400 max-w-xs leading-relaxed">Launch the Guided Program Studio Wizard to create and publish your first luxury retreat program into the global availability registry.</p>
                         </div>
-                        <button type="button" onclick="toggleStudioWizardModal(true)"
+                        <a href="{{ route('center-panel.experience.create') }}"
                             class="py-2.5 px-5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-semibold transition-all flex items-center space-x-2 shadow-md">
                             <i class="fa-solid fa-sparkles text-amber-300"></i>
                             <span>Create First Retreat Program</span>
-                        </button>
+                        </a>
                     </div>
                 @endif
             </div>

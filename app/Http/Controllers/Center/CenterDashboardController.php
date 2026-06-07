@@ -9,6 +9,9 @@ use Redirect;
 use App\Centers;
 use App\Experiences;
 use App\Bookings;
+use App\Category;
+use App\ExperienceCategory;
+use Illuminate\Support\Str;
 
 class CenterDashboardController extends Controller
 {
@@ -181,5 +184,152 @@ class CenterDashboardController extends Controller
         $center->save();
 
         return back()->with('success', 'Center settings updated successfully.');
+    }
+
+    // ── Experience Create / Edit Wizard ────────────────────────────────────
+
+    private function experienceFormData(): array
+    {
+        return [
+            'retreatCategories' => Category::where('type', 0)->where('parent', 0)->orderBy('name')->get(),
+            'destinations'      => Category::where('type', 1)->where('parent', 0)->orderBy('name')->get(),
+            'currencies'        => ['INR' => '₹ INR', 'USD' => '$ USD', 'EUR' => '€ EUR', 'GBP' => '£ GBP', 'AED' => 'AED', 'SGD' => 'SGD'],
+        ];
+    }
+
+    public function experienceCreate()
+    {
+        $centerId = Session::get('center_id');
+        $center   = Centers::findOrFail($centerId);
+
+        return view('center_panel.experience_form', array_merge($this->experienceFormData(), [
+            'center'     => $center,
+            'userName'   => Session::get('center_user_name'),
+            'experience' => null,
+            'pageTitle'  => 'Create New Retreat Program',
+            'formAction' => route('center-panel.experience.store'),
+        ]));
+    }
+
+    public function experienceStore(Request $request)
+    {
+        $centerId = Session::get('center_id');
+
+        $request->validate(['name' => 'required|string|max:255']);
+
+        $slug = $request->input('slug') ?: Str::slug($request->input('name'));
+
+        $exp = new Experiences();
+        $this->fillExperienceFromRequest($exp, $request, $centerId, $slug);
+        $exp->save();
+
+        $this->syncCategories($exp->id, $request->input('experience_category_id', []));
+
+        return redirect()->route('center-panel.experiences')
+            ->with('success', 'Retreat program created successfully.');
+    }
+
+    public function experienceEdit($id)
+    {
+        $centerId = Session::get('center_id');
+        $center   = Centers::findOrFail($centerId);
+
+        $experience = Experiences::where('id', $id)->where('center_id', $centerId)->firstOrFail();
+
+        $experience->selectedCategories = ExperienceCategory::where('experience_id', $id)
+            ->pluck('category_id')->toArray();
+
+        return view('center_panel.experience_form', array_merge($this->experienceFormData(), [
+            'center'     => $center,
+            'userName'   => Session::get('center_user_name'),
+            'experience' => $experience,
+            'pageTitle'  => 'Edit Retreat Program',
+            'formAction' => route('center-panel.experience.update', $id),
+        ]));
+    }
+
+    public function experienceUpdate(Request $request, $id)
+    {
+        $centerId = Session::get('center_id');
+        $request->validate(['name' => 'required|string|max:255']);
+
+        $exp  = Experiences::where('id', $id)->where('center_id', $centerId)->firstOrFail();
+        $slug = $request->input('slug') ?: Str::slug($request->input('name'));
+
+        $this->fillExperienceFromRequest($exp, $request, $centerId, $slug);
+        $exp->save();
+
+        $this->syncCategories($id, $request->input('experience_category_id', []));
+
+        return redirect()->route('center-panel.experiences')
+            ->with('success', 'Retreat program updated successfully.');
+    }
+
+    private function fillExperienceFromRequest(Experiences $exp, Request $request, $centerId, string $slug): void
+    {
+        $exp->center_id           = $centerId;
+        $exp->name                = $request->input('name');
+        $exp->slug                = $slug;
+        $exp->experience_summary  = $request->input('experience_summary');
+        $exp->experience_overview = $request->input('experience_overview');
+        $exp->experience_details  = $request->input('experience_details');
+        $exp->experience_highlights = $request->input('experience_highlights');
+        $exp->experience_schedule = $request->input('experience_schedule');
+        $exp->what_is_included    = $request->input('what_is_included');
+        $exp->what_is_not_included = $request->input('what_is_not_included');
+        $exp->how_to_get_here     = $request->input('how_to_get_here');
+        $exp->booking_info        = $request->input('booking_info');
+        $exp->batch_size          = $request->input('batch_size');
+        $exp->duration            = $request->input('duration');
+        $exp->avg_price           = $request->input('avg_price');
+        $exp->currency            = $request->input('currency', 'INR');
+        $exp->is_bookable         = $request->input('is_bookable', 1);
+        $exp->is_draft            = $request->input('is_draft', 1);
+        $exp->language_spoken     = is_array($request->input('language_spoken'))
+            ? implode('||', $request->input('language_spoken'))
+            : $request->input('language_spoken');
+        $exp->skill_level         = $request->input('skill_level');
+        $exp->video_url           = $request->input('video_url');
+        $exp->cancellation_policy = $request->input('cancellation_policy');
+        $exp->cancellation_policy_condition = $request->input('cancellation_policy_condition', 1);
+        $exp->cancellation_policy_days = $request->input('cancellation_policy_days');
+        $exp->deposit_policy      = $request->input('deposit_policy', 1);
+        $exp->deposit_amount      = $request->input('deposit_amount');
+        $exp->rest_of_payment     = $request->input('rest_of_payment', 1);
+        $exp->food                = $request->input('food');
+        $exp->area                = $request->input('area');
+        $exp->atmosphere          = $request->input('atmosphere');
+        $exp->gps                 = $request->input('gps');
+        $exp->meta_title          = $request->input('meta_title') ?: $request->input('name');
+        $exp->meta_description    = $request->input('meta_description') ?: $request->input('experience_summary');
+        $exp->tags                = $request->input('tags');
+
+        // Thumbnail image upload
+        if ($request->hasFile('thumbnail_image') && $request->file('thumbnail_image')->isValid()) {
+            $file = $request->file('thumbnail_image');
+            $filename = time() . '_thumb_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('public/experiences', $filename);
+            $exp->thumbnail_image_url = \Storage::url($path);
+        }
+
+        // Banner image upload
+        if ($request->hasFile('banner_image') && $request->file('banner_image')->isValid()) {
+            $file = $request->file('banner_image');
+            $filename = time() . '_banner_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('public/experiences', $filename);
+            $exp->banner_image_url   = \Storage::url($path);
+            $exp->banner_image_title = $file->getClientOriginalName();
+        }
+    }
+
+    private function syncCategories(int $experienceId, array $categoryIds): void
+    {
+        ExperienceCategory::where('experience_id', $experienceId)->delete();
+        foreach (array_filter($categoryIds) as $catId) {
+            ExperienceCategory::create([
+                'experience_id' => $experienceId,
+                'category_id'   => (int) $catId,
+            ]);
+        }
     }
 }

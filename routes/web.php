@@ -139,6 +139,7 @@ Route::post('/send-register-your-business-email', '\App\Http\Controllers\EmailCo
 Route::post('/send-contact-us-email', '\App\Http\Controllers\EmailController@send_contact_us_email')->middleware(ProtectAgainstSpam::class);
 Route::post('/send-inquiry-email', '\App\Http\Controllers\EmailController@send_inquiry_email')->middleware(ProtectAgainstSpam::class);
 Route::post('/api/save-quick-lead', '\App\Http\Controllers\EmailController@save_quick_lead')->name('save.quick-lead');
+Route::get('/find-your-retreat', function () { return view('find-your-retreat'); })->name('find-your-retreat');
 
 Route::post('send-check-availability', '\App\Http\Controllers\EmailController@send_check_availability_email');
 Route::get('check-availability-response', '\App\Http\Controllers\EmailController@check_availability_response')->name('check-availability.response');
@@ -384,6 +385,10 @@ Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\C
         
         // Experiences Management
         Route::get('/experiences', 'CenterDashboardController@experiences')->name('center-panel.experiences');
+        Route::get('/experiences/create', 'CenterDashboardController@experienceCreate')->name('center-panel.experience.create');
+        Route::post('/experiences/store', 'CenterDashboardController@experienceStore')->name('center-panel.experience.store');
+        Route::get('/experiences/{id}/edit', 'CenterDashboardController@experienceEdit')->name('center-panel.experience.edit');
+        Route::post('/experiences/{id}/update', 'CenterDashboardController@experienceUpdate')->name('center-panel.experience.update');
         
         // Bookings Management
         Route::get('/bookings', 'CenterDashboardController@bookings')->name('center-panel.bookings');
