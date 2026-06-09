@@ -225,7 +225,7 @@ class CenterDashboardController extends Controller
         $exp->save();
 
         $this->syncCategories($exp->id, $request->input('experience_category_id', []));
-        $this->syncGalleryImages($exp->id, $exp->_gallery_files ?? []);
+        $this->syncGalleryImages($exp->id, $request->file('image_galleries', []));
 
         return redirect()->route('center-panel.experiences')
             ->with('success', 'Retreat program created successfully.');
@@ -262,7 +262,7 @@ class CenterDashboardController extends Controller
         $exp->save();
 
         $this->syncCategories($id, $request->input('experience_category_id', []));
-        $this->syncGalleryImages($id, $exp->_gallery_files ?? []);
+        $this->syncGalleryImages($id, $request->file('image_galleries', []));
 
         return redirect()->route('center-panel.experiences')
             ->with('success', 'Retreat program updated successfully.');
@@ -331,9 +331,6 @@ class CenterDashboardController extends Controller
             $exp->banner_image_url   = $folderName . "/" . $filename;
             $exp->banner_image_title = $file->getClientOriginalName();
         }
-
-        // Store gallery image upload info for later syncing
-        $exp->_gallery_files = $request->file('image_galleries', []);
     }
 
     private function syncCategories(int $experienceId, array $categoryIds): void
