@@ -115,7 +115,7 @@
                                 {{-- Action Buttons --}}
                                 <div class="flex items-center space-x-2 shrink-0">
                                     @if($exp->slug)
-                                        <a href="{{ url('/experience/' . $exp->slug) }}" target="_blank" rel="noopener"
+                                        <a href="{{ url('/experience/' . $exp->slug) }}?preview=1" target="_blank" rel="noopener"
                                            class="inline-flex items-center space-x-1.5 py-2 px-3.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-2xl text-[11px] font-semibold transition-all shadow-sm group">
                                             <i class="fa-regular fa-eye text-slate-400 group-hover:text-slate-600 text-xs"></i>
                                             <span>Preview</span>

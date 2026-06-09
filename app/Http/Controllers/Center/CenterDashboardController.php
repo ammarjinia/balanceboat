@@ -11,6 +11,7 @@ use App\Experiences;
 use App\Bookings;
 use App\Category;
 use App\ExperienceCategory;
+use App\ExperienceImageGallery;
 use Illuminate\Support\Str;
 
 class CenterDashboardController extends Controller
@@ -224,6 +225,7 @@ class CenterDashboardController extends Controller
         $exp->save();
 
         $this->syncCategories($exp->id, $request->input('experience_category_id', []));
+        $this->syncGalleryImages($exp->id, $exp->_gallery_files ?? []);
 
         return redirect()->route('center-panel.experiences')
             ->with('success', 'Retreat program created successfully.');
@@ -260,6 +262,7 @@ class CenterDashboardController extends Controller
         $exp->save();
 
         $this->syncCategories($id, $request->input('experience_category_id', []));
+        $this->syncGalleryImages($id, $exp->_gallery_files ?? []);
 
         return redirect()->route('center-panel.experiences')
             ->with('success', 'Retreat program updated successfully.');
@@ -307,19 +310,30 @@ class CenterDashboardController extends Controller
         // Thumbnail image upload
         if ($request->hasFile('thumbnail_image') && $request->file('thumbnail_image')->isValid()) {
             $file = $request->file('thumbnail_image');
-            $filename = time() . '_thumb_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('public/experiences', $filename);
-            $exp->thumbnail_image_url = \Storage::url($path);
+            $baseFileName = strtolower($file->getClientOriginalName());
+            $ext = strtolower($file->getClientOriginalExtension());
+            $filenameWithoutExt = preg_replace("~\." . $ext . "$~i", '', $baseFileName);
+            $filename = preg_replace('/[^A-Za-z0-9 ]/', '', $filenameWithoutExt) . time() . "." . $ext;
+            $folderName = 'experiences/' . date("Y") . "/" . date("m") . "/" . date("d");
+            $file->storeAs($folderName, $filename, ['disk' => 'azure']);
+            $exp->thumbnail_image_url = $folderName . "/" . $filename;
         }
 
         // Banner image upload
         if ($request->hasFile('banner_image') && $request->file('banner_image')->isValid()) {
             $file = $request->file('banner_image');
-            $filename = time() . '_banner_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('public/experiences', $filename);
-            $exp->banner_image_url   = \Storage::url($path);
+            $baseFileName = strtolower($file->getClientOriginalName());
+            $ext = strtolower($file->getClientOriginalExtension());
+            $filenameWithoutExt = preg_replace("~\." . $ext . "$~i", '', $baseFileName);
+            $filename = preg_replace('/[^A-Za-z0-9 ]/', '', $filenameWithoutExt) . time() . "." . $ext;
+            $folderName = 'experiences/' . date("Y") . "/" . date("m") . "/" . date("d");
+            $file->storeAs($folderName, $filename, ['disk' => 'azure']);
+            $exp->banner_image_url   = $folderName . "/" . $filename;
             $exp->banner_image_title = $file->getClientOriginalName();
         }
+
+        // Store gallery image upload info for later syncing
+        $exp->_gallery_files = $request->file('image_galleries', []);
     }
 
     private function syncCategories(int $experienceId, array $categoryIds): void
@@ -329,6 +343,36 @@ class CenterDashboardController extends Controller
             ExperienceCategory::create([
                 'experience_id' => $experienceId,
                 'category_id'   => (int) $catId,
+            ]);
+        }
+    }
+
+    private function syncGalleryImages(int $experienceId, array $galleryFiles): void
+    {
+        if (empty($galleryFiles)) {
+            return;
+        }
+
+        foreach ($galleryFiles as $file) {
+            if (!$file || !$file->isValid()) {
+                continue;
+            }
+
+            // Generate filename similar to admin pattern
+            $baseFileName = strtolower($file->getClientOriginalName());
+            $ext = strtolower($file->getClientOriginalExtension());
+            $filenameWithoutExt = preg_replace("~\." . $ext . "$~i", '', $baseFileName);
+            $renamefile = preg_replace('/[^A-Za-z0-9 ]/', '', $filenameWithoutExt) . time() . "." . $ext;
+
+            // Store to Azure blob storage
+            $folderName = 'experiences/' . date("Y") . "/" . date("m") . "/" . date("d");
+            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            $imageUrl = $folderName . "/" . $renamefile;
+
+            ExperienceImageGallery::create([
+                'experience_id' => $experienceId,
+                'image_url'     => $imageUrl,
+                'image_title'   => $file->getClientOriginalName(),
             ]);
         }
     }

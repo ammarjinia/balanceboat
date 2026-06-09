@@ -459,15 +459,59 @@
 
                 <div>
                     <label class="wiz-label">Daily Schedule / Timetable</label>
-                    <textarea name="experience_schedule" rows="6" class="wiz-input resize-y font-mono text-[11px]"
-                              placeholder="06:00  Morning Pranayama & Meditation&#10;08:00  Breakfast (Sattvic)&#10;09:30  Yoga Asana Session&#10;12:30  Lunch Break&#10;15:00  Ayurvedic Treatment&#10;18:00  Evening Yin Yoga&#10;19:30  Dinner">{{ old('experience_schedule', $experience?->schedule) }}</textarea>
+                    <div x-data="scheduleBuilder()" x-init="init()" class="space-y-3">
+                        <div id="schedule-rows-container" class="space-y-2 border-l-4 border-blue-300 pl-4 ml-2 relative bg-white/40 p-4 rounded-2xl">
+                            <template x-for="(entry, idx) in entries" :key="idx">
+                                <div class="relative bg-white p-3 border border-slate-100 rounded-xl shadow-sm flex items-center justify-between text-xs hover:border-blue-300 transition-all">
+                                    <input type="time" x-model="entry.time"
+                                           @change="syncScheduleData()"
+                                           class="font-mono text-blue-600 font-bold w-20 bg-transparent border-none outline-none text-xs focus:ring-2 focus:ring-blue-300 rounded px-1">
+                                    <input type="text" x-model="entry.activity"
+                                           @change="syncScheduleData()"
+                                           placeholder="Activity description..."
+                                           class="flex-1 font-semibold text-slate-900 px-3 bg-transparent border-none outline-none text-xs focus:ring-2 focus:ring-blue-300 rounded">
+                                    <button type="button" @click="removeScheduleRow(idx)"
+                                            class="text-slate-300 hover:text-red-500 transition-all">
+                                        <i class="fa-solid fa-xmark text-[10px]"></i>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                        <button type="button" @click="addScheduleRow()"
+                                class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center space-x-1.5 pt-1 transition-all">
+                            <i class="fa-solid fa-plus-circle"></i>
+                            <span>Add Schedule Entry</span>
+                        </button>
+                        <textarea name="experience_schedule" id="scheduleDataField" class="hidden" rows="1">{{ old('experience_schedule', $experience?->experience_schedule ?? '') }}</textarea>
+                    </div>
                 </div>
 
                 <div>
                     <label class="wiz-label">Experience Highlights</label>
-                    <textarea name="experience_highlights" rows="4" class="wiz-input resize-y"
-                              placeholder="• Personalised Ayurvedic consultation on arrival&#10;• Daily yoga and meditation sessions&#10;• Traditional Panchakarma therapies&#10;• Organic sattvic meals included">{{ old('experience_highlights', $experience?->experience_highlights) }}</textarea>
-                    <p class="text-[10px] text-slate-400 mt-1">Use bullet points (one per line) for best display on the listing.</p>
+                    <div x-data="highlightsBuilder()" x-init="init()" class="space-y-3">
+                        <div id="highlights-rows-container" class="space-y-2 border-l-4 border-purple-300 pl-4 ml-2 relative bg-white/40 p-4 rounded-2xl">
+                            <template x-for="(entry, idx) in entries" :key="idx">
+                                <div class="relative bg-white p-3 border border-slate-100 rounded-xl shadow-sm flex items-center justify-between text-xs hover:border-purple-300 transition-all">
+                                    <span class="text-purple-600 font-bold w-6 text-center">•</span>
+                                    <input type="text" x-model="entry.text"
+                                           @change="syncHighlightsData()"
+                                           placeholder="Add a highlight..."
+                                           class="flex-1 font-semibold text-slate-900 px-2 bg-transparent border-none outline-none text-xs focus:ring-2 focus:ring-purple-300 rounded">
+                                    <button type="button" @click="removeHighlightRow(idx)"
+                                            class="text-slate-300 hover:text-red-500 transition-all">
+                                        <i class="fa-solid fa-xmark text-[10px]"></i>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                        <button type="button" @click="addHighlightRow()"
+                                class="text-xs font-semibold text-purple-600 hover:text-purple-700 flex items-center space-x-1.5 pt-1 transition-all">
+                            <i class="fa-solid fa-plus-circle"></i>
+                            <span>Add Highlight</span>
+                        </button>
+                        <p class="text-[10px] text-slate-400">Bullet points are added automatically.</p>
+                        <textarea name="experience_highlights" id="highlightsDataField" class="hidden" rows="1">{{ old('experience_highlights', $experience?->experience_highlights ?? '') }}</textarea>
+                    </div>
                 </div>
 
                 <div>
@@ -571,6 +615,31 @@
                                value="{{ old('video_url', $experience?->video_url) }}"
                                class="wiz-input pl-8" placeholder="https://www.youtube.com/watch?v=...">
                     </div>
+                </div>
+
+                {{-- Image Gallery --}}
+                <div>
+                    <label class="wiz-label">Image Gallery <span class="text-slate-400 font-normal">(multiple photos of the retreat)</span></label>
+
+                    <div class="relative border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center hover:border-rose-400 transition-colors group cursor-pointer"
+                         ondragover="event.preventDefault(); this.classList.add('border-rose-400', 'bg-rose-50')"
+                         ondragleave="event.preventDefault(); this.classList.remove('border-rose-400', 'bg-rose-50')"
+                         ondrop="event.preventDefault(); this.classList.remove('border-rose-400', 'bg-rose-50'); document.getElementById('galleryFiles').files = event.dataTransfer.files; previewGalleryImages(event.dataTransfer.files)"
+                         onclick="document.getElementById('galleryFiles').click()">
+                        <i class="fa-regular fa-images text-3xl text-slate-300 group-hover:text-rose-400 transition-colors mb-2"></i>
+                        <p class="text-xs text-slate-500 font-medium">Click to upload or drag images here</p>
+                        <p class="text-[10px] text-slate-400 mt-1">JPG, PNG, WebP · Max 5 MB each · Multiple files supported</p>
+                        <input type="file" id="galleryFiles" name="image_galleries[]"
+                               accept="image/jpeg,image/png,image/webp" multiple class="sr-only"
+                               onchange="previewGalleryImages(this.files)">
+                    </div>
+
+                    {{-- Gallery Preview Grid --}}
+                    <div id="galleryPreviewContainer" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        <!-- Image previews populated by JS -->
+                    </div>
+
+                    <p class="text-[10px] text-slate-400 mt-2">Selected images will be uploaded when you submit the form.</p>
                 </div>
             </div>
         </div>
@@ -879,7 +948,87 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 
-// Auto-generate slug from title
+// ══════════════════════════════════════════════════════════════
+// SCHEDULE BUILDER — Interactive timeline for daily schedule
+// ══════════════════════════════════════════════════════════════
+function scheduleBuilder() {
+    return {
+        entries: [],
+
+        init() {
+            const dataField = document.getElementById('scheduleDataField');
+            if (dataField && dataField.value.trim()) {
+                this.entries = this.parseScheduleData(dataField.value);
+            } else {
+                this.entries = [{ time: '06:00', activity: 'Morning Activity' }];
+            }
+        },
+
+        parseScheduleData(text) {
+            return text.split('\n').filter(l => l.trim()).map(line => {
+                const match = line.match(/^(\d{2}:\d{2})\s+(.+)$/);
+                if (match) {
+                    return { time: match[1], activity: match[2] };
+                }
+                return { time: '12:00', activity: line.trim() };
+            });
+        },
+
+        addScheduleRow() {
+            this.entries.push({ time: '12:00', activity: 'New Activity' });
+            this.$nextTick(() => this.syncScheduleData());
+        },
+
+        removeScheduleRow(idx) {
+            this.entries.splice(idx, 1);
+            this.$nextTick(() => this.syncScheduleData());
+        },
+
+        syncScheduleData() {
+            const text = this.entries.map(e => `${e.time}  ${e.activity}`).join('\n');
+            document.getElementById('scheduleDataField').value = text;
+        }
+    };
+}
+
+// ══════════════════════════════════════════════════════════════
+// HIGHLIGHTS BUILDER — Interactive bullet-point list
+// ══════════════════════════════════════════════════════════════
+function highlightsBuilder() {
+    return {
+        entries: [],
+
+        init() {
+            const dataField = document.getElementById('highlightsDataField');
+            if (dataField && dataField.value.trim()) {
+                this.entries = this.parseHighlightsData(dataField.value);
+            } else {
+                this.entries = [{ text: 'Expert guidance from experienced instructors' }];
+            }
+        },
+
+        parseHighlightsData(text) {
+            return text.split('\n')
+                .filter(l => l.trim())
+                .map(line => ({ text: line.replace(/^•\s*/, '').trim() }));
+        },
+
+        addHighlightRow() {
+            this.entries.push({ text: 'New highlight' });
+            this.$nextTick(() => this.syncHighlightsData());
+        },
+
+        removeHighlightRow(idx) {
+            this.entries.splice(idx, 1);
+            this.$nextTick(() => this.syncHighlightsData());
+        },
+
+        syncHighlightsData() {
+            const text = this.entries.map(e => `• ${e.text}`).join('\n');
+            document.getElementById('highlightsDataField').value = text;
+        }
+    };
+}
 function autoSlug() {
     const name = document.getElementById('field_name').value;
     const slugField = document.getElementById('field_slug');
@@ -907,6 +1056,53 @@ function previewImage(input, previewId) {
         };
         reader.readAsDataURL(input.files[0]);
     }
+}
+
+// Gallery preview handler for multiple images
+let galleryFilesStore = [];
+
+function previewGalleryImages(fileList) {
+    const container = document.getElementById('galleryPreviewContainer');
+    galleryFilesStore = Array.from(fileList);
+
+    container.innerHTML = galleryFilesStore.map((file, idx) => {
+        const reader = new FileReader();
+        const previewDiv = document.createElement('div');
+
+        reader.onload = e => {
+            previewDiv.innerHTML = `
+                <div class="relative aspect-square bg-slate-100 rounded-2xl overflow-hidden group shadow-sm">
+                    <img src="${e.target.result}" alt="Gallery preview" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                        <button type="button" onclick="removeGalleryImage(${idx})" class="text-white text-xs font-semibold">
+                            <i class="fa-solid fa-trash mr-1"></i>Remove
+                        </button>
+                    </div>
+                </div>
+            `;
+        };
+        reader.readAsDataURL(file);
+
+        return previewDiv;
+    }).reduce((fragment, div) => {
+        const wrapper = document.createElement('div');
+        const clone = div.cloneNode(true);
+        wrapper.innerHTML = clone.innerHTML;
+        container.appendChild(wrapper);
+        return fragment;
+    }, null);
+}
+
+function removeGalleryImage(idx) {
+    galleryFilesStore.splice(idx, 1);
+    document.getElementById('galleryFiles').value = '';
+
+    // Create a new DataTransfer object with remaining files
+    const dataTransfer = new DataTransfer();
+    galleryFilesStore.forEach(file => dataTransfer.items.add(file));
+    document.getElementById('galleryFiles').files = dataTransfer.files;
+
+    previewGalleryImages(galleryFilesStore);
 }
 </script>
 
