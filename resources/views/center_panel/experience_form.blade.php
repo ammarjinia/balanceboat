@@ -267,7 +267,7 @@
                             </label>
                         @endforeach
                     </div>
-                @else
+                <?php /*@else
                     {{-- Fallback hardcoded modalities --}}
                     @php
                     $hardModalities = [
@@ -304,7 +304,7 @@
                                 </div>
                             </label>
                         @endforeach
-                    </div>
+                    </div>*/?>
                 @endif
             </div>
 
@@ -482,7 +482,7 @@
                             <i class="fa-solid fa-plus-circle"></i>
                             <span>Add Schedule Entry</span>
                         </button>
-                        <textarea name="experience_schedule" id="scheduleDataField" class="hidden" rows="1">{{ old('experience_schedule', $experience?->experience_schedule ?? '') }}</textarea>
+                        <textarea name="experience_schedule" id="scheduleDataField" class="hidden" rows="1">{{ old('experience_schedule', $experience?->schedule ?? '') }}</textarea>
                     </div>
                 </div>
 
@@ -563,7 +563,7 @@
                     <label class="wiz-label">Thumbnail Image <span class="text-slate-400 font-normal">(shown in search listings)</span></label>
                     @if($experience?->thumbnail_image_url)
                         <div class="mb-3">
-                            <img src="{{ $experience->thumbnail_image_url }}" alt="Current thumbnail"
+                            <img src="{{ Storage::disk('azure')->url($experience->thumbnail_image_url) }}" alt="Current thumbnail"
                                  class="h-24 w-40 object-cover rounded-2xl border border-slate-200">
                             <p class="text-[10px] text-slate-400 mt-1">Current thumbnail. Upload a new file to replace it.</p>
                         </div>
@@ -587,7 +587,7 @@
                     <label class="wiz-label">Banner / Hero Image <span class="text-slate-400 font-normal">(shown on the detail page header)</span></label>
                     @if($experience?->banner_image_url)
                         <div class="mb-3">
-                            <img src="{{ $experience->banner_image_url }}" alt="Current banner"
+                            <img src="{{ Storage::disk('azure')->url($experience->banner_image_url) }}" alt="Current banner"
                                  class="h-24 w-64 object-cover rounded-2xl border border-slate-200">
                             <p class="text-[10px] text-slate-400 mt-1">Current banner. Upload a new file to replace.</p>
                         </div>
@@ -636,7 +636,20 @@
 
                     {{-- Gallery Preview Grid --}}
                     <div id="galleryPreviewContainer" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        <!-- Image previews populated by JS -->
+                        {{-- Existing images from database --}}
+                        @if(isset($experience) && $experience->image_galleries)
+                            @foreach($experience->image_galleries as $img)
+                                <div class="relative aspect-square bg-slate-100 rounded-2xl overflow-hidden shadow-sm">
+                                    <img src="{{ Storage::disk('azure')->url($img->image_url) }}" alt="Gallery Image" class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button type="button" onclick="removeExistingGalleryImage(this, '{{ $img->id }}')"
+                                                class="text-white text-xs font-semibold px-2 py-1 bg-red-600 rounded">
+                                            <i class="fa-solid fa-trash mr-1"></i>Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
 
                     <p class="text-[10px] text-slate-400 mt-2">Selected images will be uploaded when you submit the form.</p>

@@ -533,12 +533,12 @@ class Experiences extends Model {
         return $amenities;
     }
     
-    public static function image_galleries($expId = '')
+    public function image_galleries($expId = '')
     {
         if ($expId) {
             return ExperienceImageGallery::where("experience_id", $expId)->get();
         } else {
-            return $this->hasMany(ExperienceImageGallery::class);
+            return $this->hasMany(ExperienceImageGallery::class, 'experience_id', 'id');
         }
     }
     

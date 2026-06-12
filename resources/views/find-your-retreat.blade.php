@@ -531,8 +531,8 @@
             </div>
             <div class="fyr-why-card">
                 <div class="w-icon">⚡</div>
-                <h4>2-Hour Response</h4>
-                <p>Our wellness planners reach out with personalised picks within 2 hours of your inquiry.</p>
+                <h4>Few Hours Response</h4>
+                <p>Our wellness planners reach out with personalised picks within few hours of your inquiry.</p>
             </div>
             <div class="fyr-why-card">
                 <div class="w-icon">💸</div>

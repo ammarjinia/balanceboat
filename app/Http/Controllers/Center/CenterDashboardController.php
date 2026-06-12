@@ -236,7 +236,7 @@ class CenterDashboardController extends Controller
         $centerId = Session::get('center_id');
         $center   = Centers::findOrFail($centerId);
 
-        $experience = Experiences::where('id', $id)->where('center_id', $centerId)->firstOrFail();
+        $experience = Experiences::with('image_galleries')->where('id', $id)->where('center_id', $centerId)->firstOrFail();
 
         $experience->selectedCategories = ExperienceCategory::where('experience_id', $id)
             ->pluck('category_id')->toArray();
