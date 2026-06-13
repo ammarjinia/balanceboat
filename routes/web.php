@@ -390,6 +390,12 @@ Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\C
         Route::get('/experiences/{id}/edit', 'CenterDashboardController@experienceEdit')->name('center-panel.experience.edit');
         Route::post('/experiences/{id}/update', 'CenterDashboardController@experienceUpdate')->name('center-panel.experience.update');
         
+        // Availability Management
+        Route::get('/availability', 'CenterAvailabilityController@index')->name('center-panel.availability');
+        Route::post('/availability/delete-price', 'CenterAvailabilityController@deletePrice')->name('center-panel.availability.delete_price');
+        Route::get('/availability/{experienceId}', 'CenterAvailabilityController@manage')->name('center-panel.availability.manage');
+        Route::post('/availability/{experienceId}/save', 'CenterAvailabilityController@save')->name('center-panel.availability.save');
+
         // Accommodation Management
         Route::get('/accommodations', 'CenterAccommodationController@index')->name('center-panel.accommodations');
         Route::get('/accommodations/create', 'CenterAccommodationController@create')->name('center-panel.accommodation.create');
