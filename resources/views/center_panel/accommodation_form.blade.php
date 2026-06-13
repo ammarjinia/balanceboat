@@ -5,6 +5,7 @@
 @section('head')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css" rel="stylesheet">
 <style>
+    /* ── Dropzone ─────────────────────────────────────── */
     .dropzone-custom {
         border: 2px dashed #e2e8f0;
         border-radius: 20px;
@@ -38,6 +39,14 @@
         text-align: center;
         margin-top: 4px;
     }
+
+    /* ── TinyMCE skin overrides (rounded, matches center panel) ── */
+    .mce-tinymce,
+    .mce-panel { border-radius: 16px !important; overflow: hidden; }
+    .mce-toolbar-grp { background: #f8fafc !important; border-bottom: 1px solid #e2e8f0 !important; }
+    .mce-edit-area { border: none !important; }
+    .mce-statusbar { background: #f8fafc !important; border-top: 1px solid #e2e8f0 !important; font-size: 10px !important; }
+    .mce-btn button, .mce-btn { border-radius: 6px !important; }
 </style>
 @endsection
 
@@ -129,9 +138,8 @@
                     <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
                         <i class="fa-regular fa-file-lines text-purple-500"></i> Description
                     </h2>
-                    <textarea id="description" name="description" rows="6"
-                              class="w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all resize-none"
-                              placeholder="Describe this accommodation — amenities, layout, views, and what makes it special...">{{ old('description', $accommodation->description ?? '') }}</textarea>
+                    <p class="text-xs text-slate-400">Describe this accommodation — amenities, room layout, views, and what makes it special.</p>
+                    <textarea id="description" name="description" class="tiny-editor w-full">{{ old('description', $accommodation->description ?? '') }}</textarea>
                 </div>
 
                 {{-- Gallery Images --}}
@@ -280,12 +288,40 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('admin/plugins/tinymce/tinymce.min.js') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
 <script>
 (function () {
     'use strict';
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    // ── TinyMCE editor ────────────────────────────────────────
+    tinymce.init({
+        selector: 'textarea.tiny-editor',
+        theme: 'modern',
+        height: 320,
+        skin_url: '/admin/plugins/tinymce/skins/lightgray',
+        plugins: [
+            'advlist autolink link lists charmap',
+            'searchreplace wordcount',
+            'code paste textcolor'
+        ],
+        toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright | bullist numlist | link | forecolor | code',
+        content_style: 'body { font-family: Inter, sans-serif; font-size: 14px; color: #334155; line-height: 1.6; }',
+        menubar: false,
+        statusbar: true,
+        branding: false,
+        setup: function (editor) {
+            // Keep textarea in sync on every change
+            editor.on('change keyup', function () { editor.save(); });
+        }
+    });
+
+    // Sync TinyMCE to textarea before form submits
+    document.getElementById('frmAccommodation')?.addEventListener('submit', function () {
+        if (typeof tinymce !== 'undefined') tinymce.triggerSave();
+    });
 
     // ── Name → Slug auto-generate ──────────────────────────────
     const nameInput = document.getElementById('name');
@@ -320,24 +356,17 @@
     document.getElementById('btn_delete_banner')?.addEventListener('click', async function (e) {
         e.preventDefault();
         if (!confirm('Remove this banner image?')) return;
-
         this.disabled = true;
         try {
             const res  = await fetch(this.dataset.url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
                 body: JSON.stringify({ id: this.dataset.id }),
             });
-            const text = await res.text();
-            if (text === '1') {
+            if ((await res.text()) === '1') {
                 document.getElementById('banner_img_container')?.remove();
             }
-        } finally {
-            this.disabled = false;
-        }
+        } finally { this.disabled = false; }
     });
 
     // ── Delete existing gallery image ──────────────────────────
@@ -345,33 +374,25 @@
         btn.addEventListener('click', async function (e) {
             e.preventDefault();
             if (!confirm('Remove this image?')) return;
-
             this.disabled = true;
             try {
                 const res  = await fetch(this.dataset.url, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
                     body: JSON.stringify({ id: this.dataset.id }),
                 });
-                const text = await res.text();
-                if (text === '1') {
+                if ((await res.text()) === '1') {
                     document.getElementById('gallery-img-' + this.dataset.id)?.remove();
                 }
-            } finally {
-                this.disabled = false;
-            }
+            } finally { this.disabled = false; }
         });
     });
 
     // ── Dropzone gallery upload ────────────────────────────────
     Dropzone.autoDiscover = false;
-
     const dzEl = document.getElementById('image_gallery');
     if (dzEl) {
-        const myDropzone = new Dropzone(dzEl, {
+        new Dropzone(dzEl, {
             url: document.getElementById('dropzone_url').value,
             addRemoveLinks: true,
             acceptedFiles: 'image/*',
@@ -381,22 +402,16 @@
                 this.on('success', function (file, response) {
                     if (response && response.success) {
                         const el   = document.getElementById('image_gallery_ids');
-                        const prev = el.value;
-                        el.value   = prev ? prev + '|@|@|' + response.filename : response.filename;
+                        el.value   = el.value ? el.value + '|@|@|' + response.filename : response.filename;
                     }
                 });
                 this.on('removedfile', function (file) {
                     if (!file.xhr) return;
                     try {
-                        const response = JSON.parse(file.xhr.responseText);
-                        const el       = document.getElementById('image_gallery_ids');
-                        el.value       = el.value
-                            .replace('|@|@|' + response.filename, '')
-                            .replace(response.filename, '');
+                        const r  = JSON.parse(file.xhr.responseText);
+                        const el = document.getElementById('image_gallery_ids');
+                        el.value = el.value.replace('|@|@|' + r.filename, '').replace(r.filename, '');
                     } catch (_) {}
-                });
-                this.on('error', function (file, msg) {
-                    console.error('Upload error:', msg);
                 });
             },
         });
