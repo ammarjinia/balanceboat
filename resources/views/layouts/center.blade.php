@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Center Panel — BalanceBoat')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    @yield('head')
     <style>
+        [x-cloak] { display: none !important; }
         .glass {
             background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(18px);
@@ -55,6 +58,10 @@
                 <a href="{{ route('center-panel.experiences') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.experiences') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
                     <i class="fa-regular fa-spa text-sm w-4 text-purple-600"></i>
                     <span>Retreat Management</span>
+                </a>
+                <a href="{{ route('center-panel.accommodations') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.accommodations') || request()->routeIs('center-panel.accommodation.*') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
+                    <i class="fa-regular fa-bed text-sm w-4 text-purple-600"></i>
+                    <span>Accommodations</span>
                 </a>
                 <a href="{{ route('center-panel.bookings') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.bookings') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
                     <i class="fa-regular fa-calendar-check text-sm w-4"></i>

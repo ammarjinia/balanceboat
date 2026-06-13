@@ -390,6 +390,17 @@ Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\C
         Route::get('/experiences/{id}/edit', 'CenterDashboardController@experienceEdit')->name('center-panel.experience.edit');
         Route::post('/experiences/{id}/update', 'CenterDashboardController@experienceUpdate')->name('center-panel.experience.update');
         
+        // Accommodation Management
+        Route::get('/accommodations', 'CenterAccommodationController@index')->name('center-panel.accommodations');
+        Route::get('/accommodations/create', 'CenterAccommodationController@create')->name('center-panel.accommodation.create');
+        Route::post('/accommodations/store', 'CenterAccommodationController@store')->name('center-panel.accommodation.store');
+        Route::get('/accommodations/{id}/edit', 'CenterAccommodationController@edit')->name('center-panel.accommodation.edit');
+        Route::post('/accommodations/{id}/update', 'CenterAccommodationController@update')->name('center-panel.accommodation.update');
+        Route::post('/accommodations/destroy', 'CenterAccommodationController@destroy')->name('center-panel.accommodation.destroy');
+        Route::post('/accommodations/upload-gallery-image', 'CenterAccommodationController@uploadGalleryImage')->name('center-panel.accommodation.upload_gallery_image');
+        Route::post('/accommodations/delete-gallery-image', 'CenterAccommodationController@deleteGalleryImage')->name('center-panel.accommodation.delete_gallery_image');
+        Route::post('/accommodations/delete-banner-image', 'CenterAccommodationController@deleteBannerImage')->name('center-panel.accommodation.delete_banner_image');
+
         // Bookings Management
         Route::get('/bookings', 'CenterDashboardController@bookings')->name('center-panel.bookings');
         
