@@ -4,6 +4,7 @@
 
 @section('head')
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ asset('admin/plugins/dropzone-master/dist/min/dropzone.min.css') }}">
 <style>
     .bb-serif { font-family: 'Playfair Display', serif; }
     .bb-sans  { font-family: 'Outfit', sans-serif; }
@@ -47,8 +48,8 @@
 
     .wizard-tab {
         flex: 1;
-        min-width: 40px;
-        padding: 7px 8px;
+        min-width: 38px;
+        padding: 6px 6px;
         text-align: center;
         border-radius: 10px;
         font-size: 11px;
@@ -64,9 +65,53 @@
     .wizard-tab:hover { color: #2F6F57; background: rgba(47,111,87,0.05); }
     .wizard-tab.active { background: #2F6F57; color: #fff; box-shadow: 0 2px 8px rgba(47,111,87,0.25); }
 
-    /* TinyMCE overrides inside wizard */
+    /* TinyMCE overrides */
     .mce-panel  { border-color: rgba(47,111,87,0.18) !important; }
     .mce-toolbar { border-color: rgba(47,111,87,0.1) !important; }
+
+    /* Gallery Dropzone */
+    .dz-gallery {
+        border: 2px dashed rgba(47,111,87,0.25);
+        border-radius: 16px;
+        background: rgba(47,111,87,0.02);
+        min-height: 120px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: 'Outfit', sans-serif;
+    }
+    .dz-gallery:hover, .dz-gallery.dz-drag-hover {
+        border-color: rgba(47,111,87,0.5);
+        background: rgba(47,111,87,0.05);
+    }
+    .dz-gallery .dz-message { margin: 0; color: #64748B; text-align: center; }
+    .dz-gallery .dz-preview .dz-image { border-radius: 8px; }
+    .dz-gallery .dz-remove { font-size: 11px; margin-top: 4px; }
+
+    /* Amenity pill toggles */
+    .amenity-pill input[type="checkbox"] { display: none; }
+    .amenity-pill label {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 12px;
+        font-size: 11.5px;
+        font-weight: 500;
+        border: 1.5px solid rgba(47,111,87,0.2);
+        border-radius: 20px;
+        cursor: pointer;
+        background: #fff;
+        color: #4B5563;
+        transition: all 0.15s;
+        font-family: 'Outfit', sans-serif;
+        user-select: none;
+    }
+    .amenity-pill input[type="checkbox"]:checked + label {
+        background: #2F6F57;
+        color: #fff;
+        border-color: #2F6F57;
+    }
+    .amenity-pill label:hover { border-color: #2F6F57; color: #2F6F57; }
+    .amenity-pill input[type="checkbox"]:checked + label:hover { color: #fff; }
 
     [x-cloak] { display: none !important; }
 </style>
@@ -77,11 +122,14 @@
     $completionChecks = [
         'name', 'email_address', 'contact_number', 'address_of_center', 'city', 'country',
         'about_center', 'what_sets_us_apart', 'our_philosophy', 'our_mission',
-        'founders', 'video_url', 'meta_title', 'meta_description',
+        'founders', 'video_url', 'meta_title', 'meta_description', 'banner_image_url',
     ];
     $filled     = collect($completionChecks)->filter(fn($f) => !empty($center->$f))->count();
     $completion = round(($filled / count($completionChecks)) * 100);
-    $totalSteps = 4;
+    $totalSteps = 6;
+    $selectedAmenities = $center->amenities
+        ? array_filter(array_map('trim', explode('||', $center->amenities)))
+        : [];
 @endphp
 
 {{-- Ambient bg blobs --}}
@@ -96,28 +144,26 @@
         centerName: '{{ addslashes($center->name ?? '') }}',
         centerCity: '{{ addslashes($center->city ?? '') }}',
         centerCountry: '{{ addslashes($center->country ?? '') }}',
+        hasAccom: '{{ old('have_accomodation', $center->have_accomodation ?? 'No') }}',
 
         switchStep(n) {
             this.step = n;
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (n === 2) {
-                this.$nextTick(() => initSettingsTinyMCE());
-            }
+            if (n === 2) this.$nextTick(() => initTinyMCE(2));
+            if (n === 4) this.$nextTick(() => { initTinyMCE(4); initGalleryDropzone(); });
+            if (n === 5) this.$nextTick(() => initTinyMCE(5));
         },
         nextStep() {
             if (this.step < this.totalSteps) {
                 this.step++;
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                if (this.step === 2) {
-                    this.$nextTick(() => initSettingsTinyMCE());
-                }
+                if (this.step === 2) this.$nextTick(() => initTinyMCE(2));
+                if (this.step === 4) this.$nextTick(() => { initTinyMCE(4); initGalleryDropzone(); });
+                if (this.step === 5) this.$nextTick(() => initTinyMCE(5));
             }
         },
         prevStep() {
-            if (this.step > 1) {
-                this.step--;
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+            if (this.step > 1) { this.step--; window.scrollTo({ top: 0, behavior: 'smooth' }); }
         },
         submitForm() {
             if (typeof tinymce !== 'undefined') tinymce.triggerSave();
@@ -158,8 +204,8 @@
         <div class="lg:col-span-7 space-y-5">
 
             {{-- Step tabs --}}
-            <div class="glass-panel rounded-2xl p-2.5 flex gap-1.5 overflow-x-auto">
-                @php $stepLabels = ['Identity & Contact', 'Our Story', 'Discovery', 'SEO & Publishing']; @endphp
+            <div class="glass-panel rounded-2xl p-2.5 flex gap-1 overflow-x-auto">
+                @php $stepLabels = ['Identity', 'Our Story', 'Amenities', 'Media', 'Discovery', 'SEO']; @endphp
                 @foreach($stepLabels as $i => $label)
                 <button type="button"
                         @click="switchStep({{ $i + 1 }})"
@@ -175,6 +221,7 @@
             {{-- FORM: wraps all steps --}}
             <form id="center-settings-form"
                   method="POST"
+                  enctype="multipart/form-data"
                   action="{{ route('center-panel.settings.update') }}">
                 @csrf
 
@@ -266,15 +313,13 @@
                         <p class="text-xs text-[#64748B] font-light mt-0.5">Narrative content that defines your center's identity and philosophy.</p>
                     </div>
 
-                    {{-- About the Center --}}
                     <div>
                         <label class="fl">About the Center</label>
                         <textarea name="about_center" id="about_center" class="settings-tiny"
-                                  placeholder="Introduce guests to your sanctuary — its history, environment, and healing approach..."
+                                  placeholder="Introduce guests to your sanctuary - its history, environment, and healing approach..."
                         >{{ old('about_center', $center->about_center) }}</textarea>
                     </div>
 
-                    {{-- What Sets Us Apart --}}
                     <div>
                         <label class="fl">What Sets Us Apart</label>
                         <textarea name="what_sets_us_apart" id="what_sets_us_apart" class="settings-tiny"
@@ -282,7 +327,6 @@
                         >{{ old('what_sets_us_apart', $center->what_sets_us_apart) }}</textarea>
                     </div>
 
-                    {{-- Philosophy + Mission side by side --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label class="fl">Our Philosophy</label>
@@ -298,12 +342,11 @@
                         </div>
                     </div>
 
-                    {{-- Center Highlights — add/remove bullet builder --}}
+                    {{-- Center Highlights - add/remove bullet builder --}}
                     <div>
                         <label class="fl">Center Highlights</label>
                         <div x-data="centerHighlightsBuilder()" x-init="init()" class="space-y-2">
 
-                            {{-- Bullet rows --}}
                             <div class="space-y-2 border-l-4 border-[#2F6F57]/40 pl-4 ml-1 bg-[#2F6F57]/3 rounded-2xl p-3">
                                 <template x-for="(entry, idx) in entries" :key="idx">
                                     <div class="flex items-center gap-2 bg-white border border-[#2F6F57]/12 rounded-xl px-3 py-2.5 shadow-sm hover:border-[#2F6F57]/30 transition-all group">
@@ -320,8 +363,6 @@
                                         </button>
                                     </div>
                                 </template>
-
-                                {{-- Empty state --}}
                                 <p x-show="entries.length === 0"
                                    class="text-[11px] text-[#64748B] font-light py-2 text-center italic">
                                     No highlights yet. Click "Add Highlight" to start.
@@ -331,33 +372,234 @@
                             <button type="button"
                                     @click="addRow()"
                                     class="flex items-center gap-1.5 text-xs font-bold text-[#2F6F57] hover:text-[#255a46] transition-colors pt-1">
-                                <i class="fa-solid fa-plus-circle text-sm"></i>
-                                Add Highlight
+                                <i class="fa-solid fa-plus-circle text-sm"></i> Add Highlight
                             </button>
 
                             <p class="text-[10px] text-[#64748B] font-light">Each line becomes a bullet point on your center's profile page.</p>
 
-                            {{-- Hidden field synced to Alpine --}}
                             <textarea name="center_highlights" id="centerHighlightsField"
                                       class="hidden">{{ old('center_highlights', $center->center_highlights) }}</textarea>
                         </div>
                     </div>
-
                 </div>
 
-                {{-- ══════════════ STEP 3: Discovery ══════════════ --}}
+                {{-- ══════════════ STEP 3: Amenities & Features ══════════════ --}}
                 <div x-show="step === 3" x-cloak
+                     x-transition:enter="transition ease-out duration-250"
+                     x-transition:enter-start="opacity-0 translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="glass-panel rounded-3xl p-6 space-y-6">
+
+                    <div class="border-b border-[#2F6F57]/10 pb-3">
+                        <h3 class="bb-serif text-xl font-medium text-[#1A2421]">Amenities & Features</h3>
+                        <p class="text-xs text-[#64748B] font-light mt-0.5">Tell guests what facilities and services are available at your center.</p>
+                    </div>
+
+                    {{-- Amenities checkbox pill grid --}}
+                    <div>
+                        <label class="fl">Amenities</label>
+                        @if($amenities->isNotEmpty())
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            @foreach($amenities as $amenity)
+                            <div class="amenity-pill">
+                                <input type="checkbox"
+                                       name="amenities[]"
+                                       id="amenity_{{ $amenity->id }}"
+                                       value="{{ $amenity->id }}"
+                                       {{ in_array((string)$amenity->id, $selectedAmenities) ? 'checked' : '' }}>
+                                <label for="amenity_{{ $amenity->id }}">{{ $amenity->name }}</label>
+                            </div>
+                            @endforeach
+                        </div>
+                        @else
+                        <p class="text-xs text-[#64748B] italic mt-1">No amenities configured yet. Contact support to add amenity options.</p>
+                        @endif
+                    </div>
+
+                    {{-- Center Features --}}
+                    <div>
+                        <label class="fl">Center Features <span class="normal-case font-normal tracking-normal text-[#64748B]">(comma-separated)</span></label>
+                        <input type="text" name="center_features" class="fi"
+                               value="{{ old('center_features', $center->center_features) }}"
+                               placeholder="Private consultation rooms, Organic restaurant, Swimming pool">
+                        <p class="text-[11px] text-[#64748B] mt-1 font-light">Key physical or program features of your center.</p>
+                    </div>
+
+                    {{-- On-site Accommodation radio --}}
+                    <div class="border-t border-[#2F6F57]/10 pt-5">
+                        <label class="fl mb-2">On-site Accommodation</label>
+                        <div class="flex gap-6">
+                            <label class="flex items-center gap-2.5 cursor-pointer group">
+                                <input type="radio" name="have_accomodation" value="Yes"
+                                       @change="hasAccom = 'Yes'"
+                                       {{ old('have_accomodation', $center->have_accomodation) === 'Yes' ? 'checked' : '' }}
+                                       class="w-4 h-4 accent-[#2F6F57]">
+                                <span class="text-sm font-semibold text-[#1A2421] group-hover:text-[#2F6F57] transition-colors">Yes - we have rooms / lodges</span>
+                            </label>
+                            <label class="flex items-center gap-2.5 cursor-pointer group">
+                                <input type="radio" name="have_accomodation" value="No"
+                                       @change="hasAccom = 'No'"
+                                       {{ old('have_accomodation', $center->have_accomodation ?? 'No') !== 'Yes' ? 'checked' : '' }}
+                                       class="w-4 h-4 accent-[#2F6F57]">
+                                <span class="text-sm font-semibold text-[#1A2421] group-hover:text-[#2F6F57] transition-colors">No - day visits only</span>
+                            </label>
+                        </div>
+                        <p class="text-[11px] text-[#64748B] mt-2 font-light">Determines whether accommodation details and room pricing appear on your profile.</p>
+                    </div>
+                </div>
+
+                {{-- ══════════════ STEP 4: Media & Accommodation ══════════════ --}}
+                <div x-show="step === 4" x-cloak
+                     x-transition:enter="transition ease-out duration-250"
+                     x-transition:enter-start="opacity-0 translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="glass-panel rounded-3xl p-6 space-y-6">
+
+                    <div class="border-b border-[#2F6F57]/10 pb-3">
+                        <h3 class="bb-serif text-xl font-medium text-[#1A2421]">Media & Accommodation</h3>
+                        <p class="text-xs text-[#64748B] font-light mt-0.5">Upload photos and configure accommodation details.</p>
+                    </div>
+
+                    {{-- Banner Image --}}
+                    <div>
+                        <label class="fl">Banner / Hero Image</label>
+                        @if($center->banner_image_url)
+                        <div class="relative rounded-2xl overflow-hidden mb-3" id="banner-preview-wrap" style="height:160px">
+                            <img src="{{ Storage::disk('azure')->url($center->banner_image_url) }}"
+                                 alt="Banner"
+                                 class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                            <button type="button"
+                                    onclick="deleteBannerImage()"
+                                    class="absolute top-2 right-2 bg-rose-600 text-white text-xs px-2.5 py-1.5 rounded-lg font-semibold hover:bg-rose-700 transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-trash text-[10px]"></i> Remove
+                            </button>
+                        </div>
+                        @endif
+                        <input type="file" name="banner_image" accept="image/*" class="fi" style="padding:6px">
+                        <p class="text-[11px] text-[#64748B] mt-1 font-light">Recommended: 1600x900 px, JPG or PNG. Max 5 MB.</p>
+                    </div>
+
+                    {{-- Photo Gallery --}}
+                    <div>
+                        <label class="fl">Photo Gallery</label>
+                        @if(isset($imageGalleries) && $imageGalleries->count())
+                        <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
+                            @foreach($imageGalleries as $img)
+                            <div class="relative group rounded-xl overflow-hidden bg-[#F8FAF8]"
+                                 style="aspect-ratio:1"
+                                 id="gallery-item-{{ $img->id }}">
+                                <img src="{{ Storage::disk('azure')->url($img->image_url) }}"
+                                     alt=""
+                                     class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                                    <button type="button"
+                                            onclick="deleteGalleryImage({{ $img->id }})"
+                                            class="opacity-0 group-hover:opacity-100 bg-rose-600 text-white text-[10px] px-2.5 py-1.5 rounded-lg transition-all font-semibold">
+                                        <i class="fa-solid fa-trash text-[9px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        @endif
+                        <div id="gallery-dropzone" class="dz-gallery">
+                            <div class="dz-message flex flex-col items-center gap-2 py-4">
+                                <i class="fa-regular fa-images text-2xl text-[#2F6F57]/40"></i>
+                                <p class="text-sm text-[#64748B] font-medium">Drop photos here or click to browse</p>
+                                <p class="text-[11px] text-[#94A3B8]">JPG, PNG, WebP - Max 5 MB each</p>
+                            </div>
+                        </div>
+                        <input type="hidden" name="image_gallery_ids" id="image_gallery_ids" value="">
+                        <input type="hidden" id="gallery-upload-url" value="{{ route('center-panel.settings.upload_gallery_image') }}">
+                    </div>
+
+                    {{-- Promo Video --}}
+                    <div>
+                        <label class="fl">Promo / Cinematic Video URL</label>
+                        <div class="relative">
+                            <i class="fa-brands fa-youtube absolute left-3 top-1/2 -translate-y-1/2 text-rose-400 text-sm pointer-events-none"></i>
+                            <input type="url" name="video_url" class="fi" style="padding-left: 2.25rem"
+                                   value="{{ old('video_url', $center->video_url) }}"
+                                   placeholder="https://youtube.com/watch?v=...">
+                        </div>
+                    </div>
+
+                    {{-- Accommodation Media (shown only when hasAccom = Yes) --}}
+                    <div x-show="hasAccom === 'Yes'" x-cloak
+                         class="border-t border-[#2F6F57]/10 pt-5 space-y-5">
+
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-bed text-[#2F6F57]/60 text-sm"></i>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-[#2F6F57]/70">Accommodation Details</p>
+                        </div>
+
+                        <div>
+                            <label class="fl">Accommodation Overview</label>
+                            <textarea name="accomodation_overview" id="accomodation_overview" class="settings-tiny-4"
+                                      placeholder="Describe the rooms, suites, or retreat lodges available at your center..."
+                            >{{ old('accomodation_overview', $center->accomodation_overview) }}</textarea>
+                        </div>
+
+                        {{-- Accommodation Banner Image --}}
+                        <div>
+                            <label class="fl">Accommodation Banner Image</label>
+                            @if($center->accomodation_banner_image_url)
+                            <div class="relative rounded-2xl overflow-hidden mb-3" id="accom-banner-wrap" style="height:130px">
+                                <img src="{{ Storage::disk('azure')->url($center->accomodation_banner_image_url) }}"
+                                     alt="Accommodation Banner"
+                                     class="w-full h-full object-cover">
+                                <button type="button"
+                                        onclick="deleteAccomBannerImage()"
+                                        class="absolute top-2 right-2 bg-rose-600 text-white text-xs px-2.5 py-1.5 rounded-lg font-semibold hover:bg-rose-700 transition-colors flex items-center gap-1.5">
+                                    <i class="fa-solid fa-trash"></i> Remove
+                                </button>
+                            </div>
+                            @endif
+                            <input type="file" name="accomodation_banner_image" accept="image/*" class="fi" style="padding:6px">
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="fl">Nearest Airport / Hub</label>
+                                <input type="text" name="airport_name" class="fi"
+                                       value="{{ old('airport_name', $center->airport_name) }}"
+                                       placeholder="e.g. Goa International Airport">
+                            </div>
+                            <div>
+                                <label class="fl">Airport Pickup / Drop Cost</label>
+                                <input type="text" name="pickup_drop_cost" class="fi"
+                                       value="{{ old('pickup_drop_cost', $center->pickup_drop_cost) }}"
+                                       placeholder="e.g. INR 1,500 one-way">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Placeholder when no accommodation --}}
+                    <div x-show="hasAccom !== 'Yes'" x-cloak
+                         class="border-t border-[#2F6F57]/10 pt-5">
+                        <div class="flex items-center gap-3 bg-[#2F6F57]/4 rounded-2xl border border-[#2F6F57]/10 p-4">
+                            <i class="fa-solid fa-circle-info text-[#2F6F57]/50 text-lg shrink-0"></i>
+                            <p class="text-xs text-[#64748B]">
+                                Accommodation details are hidden because you selected "No" in Step 3. Switch to "Yes" there to unlock room and travel fields.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ══════════════ STEP 5: Discovery & Travel ══════════════ --}}
+                <div x-show="step === 5" x-cloak
                      x-transition:enter="transition ease-out duration-250"
                      x-transition:enter-start="opacity-0 translate-y-2"
                      x-transition:enter-end="opacity-100 translate-y-0"
                      class="glass-panel rounded-3xl p-6 space-y-5">
 
                     <div class="border-b border-[#2F6F57]/10 pb-3">
-                        <h3 class="bb-serif text-xl font-medium text-[#1A2421]">Discovery & Media</h3>
-                        <p class="text-xs text-[#64748B] font-light mt-0.5">Help guests discover and understand your center's heritage.</p>
+                        <h3 class="bb-serif text-xl font-medium text-[#1A2421]">Discovery & Travel</h3>
+                        <p class="text-xs text-[#64748B] font-light mt-0.5">Help guests find your center's heritage and plan their journey.</p>
                     </div>
 
-                    <div class="space-y-4">
+                    <div class="space-y-5">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="fl">Founders</label>
@@ -369,14 +611,15 @@
                                 <label class="fl">Year of Foundation</label>
                                 <input type="number" name="year_of_foundation" class="fi"
                                        value="{{ old('year_of_foundation', $center->year_of_foundation) }}"
-                                       min="1800" max="{{ date('Y') }}" placeholder="e.g. 2009">
+                                       min="1800" max="{{ date('Y') }}"
+                                       placeholder="e.g. 2009">
                             </div>
                         </div>
 
                         <div>
                             <label class="fl">Awards & Recognitions</label>
                             <textarea name="awards" rows="2" class="fi" style="resize:vertical"
-                                      placeholder="Luxury Spa Awards 2024, AYUSH Gold Certified, Condé Nast Traveller Top 10">{{ old('awards', $center->awards) }}</textarea>
+                                      placeholder="Luxury Spa Awards 2024, AYUSH Gold Certified, Conde Nast Traveller Top 10">{{ old('awards', $center->awards) }}</textarea>
                         </div>
 
                         <div>
@@ -387,26 +630,28 @@
                         </div>
 
                         <div>
-                            <label class="fl">Promo / Cinematic Video URL</label>
-                            <div class="relative">
-                                <i class="fa-brands fa-youtube absolute left-3 top-1/2 -translate-y-1/2 text-rose-400 text-sm pointer-events-none"></i>
-                                <input type="url" name="video_url" class="fi" style="padding-left: 2.25rem"
-                                       value="{{ old('video_url', $center->video_url) }}"
-                                       placeholder="https://youtube.com/watch?v=...">
-                            </div>
-                        </div>
-
-                        <div>
                             <label class="fl">BalanceGurus Profile Link</label>
                             <input type="url" name="balancegurus_profile_link" class="fi"
                                    value="{{ old('balancegurus_profile_link', $center->balancegurus_profile_link) }}"
                                    placeholder="https://balancegurus.com/centers/your-center">
                         </div>
+
+                        <div>
+                            <label class="fl">How to Get There</label>
+                            <textarea name="how_to_get_there" id="how_to_get_there" class="settings-tiny-5"
+                                      placeholder="Directions by air, rail, and road; nearest airport; transfer options...">{{ old('how_to_get_there', $center->how_to_get_there) }}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="fl">Things to Do Around the Center</label>
+                            <textarea name="things_to_do_around_the_center" id="things_to_do_around_the_center" class="settings-tiny-5"
+                                      placeholder="Local attractions, cultural sites, and experiences near your center...">{{ old('things_to_do_around_the_center', $center->things_to_do_around_the_center) }}</textarea>
+                        </div>
                     </div>
                 </div>
 
-                {{-- ══════════════ STEP 4: SEO & Publishing ══════════════ --}}
-                <div x-show="step === 4" x-cloak
+                {{-- ══════════════ STEP 6: SEO & Publishing ══════════════ --}}
+                <div x-show="step === 6" x-cloak
                      x-transition:enter="transition ease-out duration-250"
                      x-transition:enter-start="opacity-0 translate-y-2"
                      x-transition:enter-end="opacity-100 translate-y-0"
@@ -424,7 +669,7 @@
                                    value="{{ old('meta_title', $center->meta_title) }}"
                                    maxlength="255"
                                    placeholder="Amanpuri Sanctuary | Bespoke Luxury Ayurveda Retreat">
-                            <p class="text-[11px] text-[#64748B] mt-1 font-light">Optimal: 50–60 characters.</p>
+                            <p class="text-[11px] text-[#64748B] mt-1 font-light">Optimal: 50-60 characters.</p>
                         </div>
 
                         <div>
@@ -438,8 +683,8 @@
                             <label class="fl">Meta Description</label>
                             <textarea name="meta_description" rows="3" class="fi" maxlength="500"
                                       style="resize:vertical"
-                                      placeholder="A compelling 150–160 character summary of your center that appears in search results...">{{ old('meta_description', $center->meta_description) }}</textarea>
-                            <p class="text-[11px] text-[#64748B] mt-1 font-light">Optimal: 150–160 characters.</p>
+                                      placeholder="A compelling 150-160 character summary of your center that appears in search results...">{{ old('meta_description', $center->meta_description) }}</textarea>
+                            <p class="text-[11px] text-[#64748B] mt-1 font-light">Optimal: 150-160 characters.</p>
                         </div>
 
                         {{-- Read-only system info --}}
@@ -484,7 +729,7 @@
                     </button>
 
                     {{-- Dot indicators --}}
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1.5">
                         <template x-for="i in totalSteps">
                             <button type="button"
                                     @click="switchStep(i)"
@@ -566,7 +811,7 @@
                     </div>
                     <div class="bg-[#F8FAF8] rounded-2xl p-3 border border-[#2F6F57]/8">
                         <span class="text-[9px] text-[#64748B] uppercase tracking-wider font-semibold block">Category</span>
-                        <span class="text-xs font-semibold text-[#1A2421] mt-0.5 block truncate">{{ $center->center_type ?: '—' }}</span>
+                        <span class="text-xs font-semibold text-[#1A2421] mt-0.5 block truncate">{{ $center->center_type ?: '-' }}</span>
                     </div>
                     <div class="bg-[#F8FAF8] rounded-2xl p-3 border border-[#2F6F57]/8">
                         <span class="text-[9px] text-[#64748B] uppercase tracking-wider font-semibold block">Location</span>
@@ -625,6 +870,7 @@
                     <li class="flex items-start gap-2"><i class="fa-solid fa-check text-[#2F6F57]/50 text-[9px] mt-1 shrink-0"></i> GPS coordinates enable map-based search</li>
                     <li class="flex items-start gap-2"><i class="fa-solid fa-check text-[#2F6F57]/50 text-[9px] mt-1 shrink-0"></i> A strong meta description improves click rates</li>
                     <li class="flex items-start gap-2"><i class="fa-solid fa-check text-[#2F6F57]/50 text-[9px] mt-1 shrink-0"></i> Tags help match guests searching by retreat type</li>
+                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-[#2F6F57]/50 text-[9px] mt-1 shrink-0"></i> Upload gallery photos to increase bookings</li>
                 </ul>
             </div>
 
@@ -636,18 +882,25 @@
 
 @section('scripts')
 <script src="{{ asset('admin/plugins/tinymce/tinymce.min.js') }}"></script>
+<script src="{{ asset('admin/plugins/dropzone-master/dist/min/dropzone.min.js') }}"></script>
 <script>
-/* ── TinyMCE: lazy-init when Step 2 first becomes visible ── */
-let _tinyInitialized = false;
+/* ── TinyMCE: per-step lazy init ── */
+const _tinyInit = {};
 
-function initSettingsTinyMCE() {
-    if (_tinyInitialized) return;
+function initTinyMCE(step) {
+    if (_tinyInit[step]) return;
     if (typeof tinymce === 'undefined') return;
+    _tinyInit[step] = true;
 
-    _tinyInitialized = true;
+    const selectors = {
+        2: 'textarea.settings-tiny',
+        4: 'textarea.settings-tiny-4',
+        5: 'textarea.settings-tiny-5',
+    };
+    if (!selectors[step]) return;
 
     tinymce.init({
-        selector: 'textarea.settings-tiny',
+        selector: selectors[step],
         theme:    'modern',
         height:   220,
         skin_url: '/admin/plugins/tinymce/skins/lightgray',
@@ -659,6 +912,90 @@ function initSettingsTinyMCE() {
         setup: function (editor) {
             editor.on('change keyup', function () { editor.save(); });
         }
+    });
+}
+
+/* backward-compat alias */
+function initSettingsTinyMCE() { initTinyMCE(2); }
+
+/* ── Dropzone: gallery (lazy init on Step 4) ── */
+let _dzInit = false;
+
+function initGalleryDropzone() {
+    if (_dzInit) return;
+    const el = document.getElementById('gallery-dropzone');
+    if (!el || typeof Dropzone === 'undefined') return;
+    _dzInit = true;
+
+    Dropzone.autoDiscover = false;
+
+    const uploadUrl = document.getElementById('gallery-upload-url').value;
+    const csrf      = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    const dz = new Dropzone(el, {
+        url:            uploadUrl,
+        paramName:      'file',
+        maxFilesize:    5,
+        acceptedFiles:  'image/*',
+        addRemoveLinks: true,
+        dictDefaultMessage: '',
+        headers: { 'X-CSRF-TOKEN': csrf },
+        success: function (file, data) {
+            if (data && data.success) {
+                const hidden = document.getElementById('image_gallery_ids');
+                hidden.value = hidden.value ? hidden.value + '|@|@|' + data.filename : data.filename;
+                file._serverFilename = data.filename;
+            } else {
+                dz.removeFile(file);
+            }
+        },
+        error: function (file) {
+            dz.removeFile(file);
+        },
+        removedfile: function (file) {
+            if (file._serverFilename) {
+                const hidden = document.getElementById('image_gallery_ids');
+                let vals = hidden.value.split('|@|@|').filter(v => v !== file._serverFilename);
+                hidden.value = vals.join('|@|@|');
+            }
+            if (file.previewElement) file.previewElement.remove();
+        }
+    });
+}
+
+/* ── AJAX: banner / gallery image removal ── */
+const _csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+function deleteBannerImage() {
+    if (!confirm('Remove the banner image?')) return;
+    fetch('{{ route("center-panel.settings.delete_banner_image") }}', {
+        method:  'POST',
+        headers: { 'X-CSRF-TOKEN': _csrf, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({})
+    }).then(r => r.text()).then(t => {
+        if (t === '1') document.getElementById('banner-preview-wrap')?.remove();
+    });
+}
+
+function deleteAccomBannerImage() {
+    if (!confirm('Remove the accommodation banner image?')) return;
+    fetch('{{ route("center-panel.settings.delete_accommodation_image") }}', {
+        method:  'POST',
+        headers: { 'X-CSRF-TOKEN': _csrf, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({})
+    }).then(r => r.text()).then(t => {
+        if (t === '1') document.getElementById('accom-banner-wrap')?.remove();
+    });
+}
+
+function deleteGalleryImage(id) {
+    if (!confirm('Remove this photo?')) return;
+    fetch('{{ route("center-panel.settings.delete_gallery_image") }}', {
+        method:  'POST',
+        headers: { 'X-CSRF-TOKEN': _csrf, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ id: id })
+    }).then(r => r.text()).then(t => {
+        if (t === '1') document.getElementById('gallery-item-' + id)?.remove();
     });
 }
 
@@ -682,11 +1019,7 @@ document.addEventListener('alpine:init', () => {
 
         addRow() {
             this.entries.push({ text: '' });
-            this.$nextTick(() => {
-                const inputs = document.querySelectorAll('#centerHighlightsField ~ div input[type="text"]');
-                if (inputs.length) inputs[inputs.length - 1].focus();
-                this.syncData();
-            });
+            this.$nextTick(() => this.syncData());
         },
 
         removeRow(idx) {

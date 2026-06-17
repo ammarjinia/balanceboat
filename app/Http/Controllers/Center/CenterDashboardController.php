@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Session;
 use Redirect;
+use Storage;
 use App\Centers;
 use App\Experiences;
 use App\Bookings;
 use App\Category;
+use App\Amenities;
+use App\CenterImageGallery;
 use App\ExperienceCategory;
 use App\ExperienceImageGallery;
 use Illuminate\Support\Str;
@@ -155,9 +158,18 @@ class CenterDashboardController extends Controller
     public function settings()
     {
         $centerId = Session::get('center_id');
-        $center = Centers::findOrFail($centerId);
+        $center   = Centers::findOrFail($centerId);
 
-        return view('center_panel.settings', ['center' => $center]);
+        $amenities     = Amenities::select('id', 'name')->orderBy('name')->get();
+        $imageGalleries = CenterImageGallery::where('center_id', $centerId)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        return view('center_panel.settings', [
+            'center'         => $center,
+            'amenities'      => $amenities,
+            'imageGalleries' => $imageGalleries,
+        ]);
     }
 
     /**
@@ -199,6 +211,15 @@ class CenterDashboardController extends Controller
         $center->our_philosophy      = $request->our_philosophy;
         $center->our_mission         = $request->our_mission;
         $center->center_highlights   = $request->center_highlights;
+        $center->center_features     = $request->center_features;
+        $center->have_accomodation   = $request->have_accomodation ?? 'No';
+        $center->amenities           = is_array($request->amenities)
+            ? implode('||', $request->amenities) : null;
+        $center->accomodation_overview = $request->accomodation_overview;
+        $center->how_to_get_there    = $request->how_to_get_there;
+        $center->things_to_do_around_the_center = $request->things_to_do_around_the_center;
+        $center->airport_name        = $request->airport_name;
+        $center->pickup_drop_cost    = $request->pickup_drop_cost;
         $center->founders            = $request->founders;
         $center->year_of_foundation  = $request->year_of_foundation ?: null;
         $center->awards              = $request->awards;
@@ -208,9 +229,117 @@ class CenterDashboardController extends Controller
         $center->meta_title          = $request->meta_title;
         $center->keywords            = $request->keywords;
         $center->meta_description    = $request->meta_description;
+
+        // Banner image
+        if ($request->hasFile('banner_image') && $request->file('banner_image')->isValid()) {
+            $file   = $request->file('banner_image');
+            $folder = 'centers/' . date('Y/m/d');
+            $name   = preg_replace('/[^A-Za-z0-9]/', '', pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))
+                . time() . '.' . strtolower($file->getClientOriginalExtension());
+            $file->storeAs($folder, $name, ['disk' => 'azure']);
+            if ($center->banner_image_url) {
+                Storage::disk('azure')->delete($center->banner_image_url);
+            }
+            $center->banner_image_url   = $folder . '/' . $name;
+            $center->banner_image_title = $file->getClientOriginalName();
+        }
+
+        // Accommodation banner image
+        if ($request->hasFile('accomodation_banner_image') && $request->file('accomodation_banner_image')->isValid()) {
+            $file   = $request->file('accomodation_banner_image');
+            $folder = 'centers/' . date('Y/m/d');
+            $name   = preg_replace('/[^A-Za-z0-9]/', '', pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))
+                . time() . 'acm.' . strtolower($file->getClientOriginalExtension());
+            $file->storeAs($folder, $name, ['disk' => 'azure']);
+            if ($center->accomodation_banner_image_url) {
+                Storage::disk('azure')->delete($center->accomodation_banner_image_url);
+            }
+            $center->accomodation_banner_image_url   = $folder . '/' . $name;
+            $center->accomodation_banner_image_title = $file->getClientOriginalName();
+        }
+
         $center->save();
 
+        // Move Dropzone-uploaded gallery images from tmp to permanent
+        $galleryPaths = $request->input('image_gallery_ids', '');
+        if ($galleryPaths) {
+            foreach (explode('|@|@|', $galleryPaths) as $tmpPath) {
+                $tmpPath = trim($tmpPath);
+                if (!$tmpPath) continue;
+                $dest = str_replace('tmp/', '', $tmpPath);
+                Storage::disk('azure')->move($tmpPath, $dest);
+                CenterImageGallery::create([
+                    'center_id'   => $centerId,
+                    'image_url'   => $dest,
+                    'image_title' => basename($dest),
+                ]);
+            }
+        }
+
         return back()->with('success', 'Center profile updated successfully.');
+    }
+
+    // ── Settings: image AJAX helpers ───────────────────────────────────────
+
+    public function uploadGalleryImage(Request $request)
+    {
+        $file = $request->file('file');
+        $allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+        if (!$file || !in_array($file->getClientMimeType(), $allowed)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid file']);
+            return;
+        }
+        $ext    = strtolower($file->getClientOriginalExtension());
+        $name   = preg_replace('/[^A-Za-z0-9]/', '', pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))
+            . time() . '.' . $ext;
+        $folder = 'tmp/centers/' . date('Y/m/d');
+        $file->storeAs($folder, $name, ['disk' => 'azure']);
+        echo json_encode(['success' => true, 'filename' => $folder . '/' . $name]);
+    }
+
+    public function deleteGalleryImage(Request $request)
+    {
+        $centerId = Session::get('center_id');
+        $gallery  = CenterImageGallery::where('id', $request->id)
+            ->where('center_id', $centerId)
+            ->first();
+        if ($gallery) {
+            Storage::disk('azure')->delete($gallery->image_url);
+            $gallery->delete();
+            echo '1';
+        } else {
+            echo 'error';
+        }
+    }
+
+    public function deleteBannerImage(Request $request)
+    {
+        $centerId = Session::get('center_id');
+        $center   = Centers::where('id', $centerId)->firstOrFail();
+        if ($center->banner_image_url) {
+            Storage::disk('azure')->delete($center->banner_image_url);
+            $center->banner_image_url   = null;
+            $center->banner_image_title = null;
+            $center->save();
+            echo '1';
+        } else {
+            echo 'error';
+        }
+    }
+
+    public function deleteAccommodationImage(Request $request)
+    {
+        $centerId = Session::get('center_id');
+        $center   = Centers::where('id', $centerId)->firstOrFail();
+        if ($center->accomodation_banner_image_url) {
+            Storage::disk('azure')->delete($center->accomodation_banner_image_url);
+            $center->accomodation_banner_image_url   = null;
+            $center->accomodation_banner_image_title = null;
+            $center->save();
+            echo '1';
+        } else {
+            echo 'error';
+        }
     }
 
     // ── Experience Create / Edit Wizard ────────────────────────────────────
