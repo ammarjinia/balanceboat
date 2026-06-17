@@ -172,19 +172,45 @@ class CenterDashboardController extends Controller
         $center = Centers::findOrFail($centerId);
 
         $this->validate($request, [
-            'name' => 'required|string|max:100',
-            'email_address' => 'nullable|email',
-            'contact_number' => 'nullable|string|max:20',
-            'address_of_center' => 'nullable|string|max:255'
+            'name'            => 'required|string|max:255',
+            'email_address'   => 'nullable|email|max:255',
+            'contact_number'  => 'nullable|string|max:30',
+            'whatsapp_number' => 'nullable|string|max:30',
+            'address_of_center' => 'nullable|string|max:500',
+            'city'            => 'nullable|string|max:100',
+            'country'         => 'nullable|string|max:100',
+            'gps'             => 'nullable|string|max:100',
+            'year_of_foundation' => 'nullable|integer|min:1800|max:' . date('Y'),
+            'video_url'       => 'nullable|url|max:500',
+            'meta_title'      => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:500',
         ]);
 
-        $center->name = $request->name;
-        $center->email_address = $request->email_address;
-        $center->contact_number = $request->contact_number;
-        $center->address_of_center = $request->address_of_center;
+        $center->name                = $request->name;
+        $center->email_address       = $request->email_address;
+        $center->contact_number      = $request->contact_number;
+        $center->whatsapp_number     = $request->whatsapp_number;
+        $center->address_of_center   = $request->address_of_center;
+        $center->city                = $request->city;
+        $center->country             = $request->country;
+        $center->gps                 = $request->gps;
+        $center->about_center        = $request->about_center;
+        $center->what_sets_us_apart  = $request->what_sets_us_apart;
+        $center->our_philosophy      = $request->our_philosophy;
+        $center->our_mission         = $request->our_mission;
+        $center->center_highlights   = $request->center_highlights;
+        $center->founders            = $request->founders;
+        $center->year_of_foundation  = $request->year_of_foundation ?: null;
+        $center->awards              = $request->awards;
+        $center->tags                = $request->tags;
+        $center->balancegurus_profile_link = $request->balancegurus_profile_link;
+        $center->video_url           = $request->video_url;
+        $center->meta_title          = $request->meta_title;
+        $center->keywords            = $request->keywords;
+        $center->meta_description    = $request->meta_description;
         $center->save();
 
-        return back()->with('success', 'Center settings updated successfully.');
+        return back()->with('success', 'Center profile updated successfully.');
     }
 
     // ── Experience Create / Edit Wizard ────────────────────────────────────
