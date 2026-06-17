@@ -80,7 +80,7 @@ class CenterAvailabilityController extends Controller
             ->get()
             ->keyBy('title');
 
-        // Existing prices grouped by accomodation_id (= accomodation.id)
+        // Existing prices grouped by accomodation_id
         $existingPrices = ExperienceAccomodationPrices::where('experience_id', $experienceId)
             ->orderBy('start_date')
             ->get()
@@ -127,37 +127,55 @@ class CenterAvailabilityController extends Controller
                 }
 
                 $ea->experience_id             = $experienceId;
-                $ea->title                     = $accomId;   // accomodation.id stored in title column
-                $ea->price_per_night_per_guest = $data['base_price'] ?? 0;
-                $ea->currency                  = $data['currency'] ?? 'USD';
+                $ea->title                     = $accomId;
+                $ea->price_per_night_per_guest = $this->nullableDecimal($data['base_price'] ?? null);
+                $ea->single_occupancy_price    = $this->nullableDecimal($data['single_base_price'] ?? null);
+                $ea->double_occupancy_price    = $this->nullableDecimal($data['double_base_price'] ?? null);
+                $ea->currency                  = $data['currency'] ?? 'INR';
                 $ea->accomodation_default      = ($defaultAccomId == $accomId) ? 1 : 0;
                 $ea->save();
 
-                // Process date-range pricing rows
+                // Track submitted price IDs to detect deleted rows
+                $submittedPriceIds = [];
+
                 foreach ($data['ranges'] ?? [] as $range) {
                     if (empty($range['start_date']) || empty($range['end_date'])) continue;
 
-                    $priceId = $range['price_id'] ?? null;
+                    $priceId = !empty($range['price_id']) ? (int)$range['price_id'] : null;
                     $price   = null;
 
                     if ($priceId) {
-                        $price = ExperienceAccomodationPrices::find($priceId);
+                        $price = ExperienceAccomodationPrices::where('id', $priceId)
+                            ->where('experience_id', $experienceId)
+                            ->where('accomodation_id', $accomId)
+                            ->first();
                     }
                     if (!$price) {
-                        $price = new ExperienceAccomodationPrices();
-                        $price->experience_id   = $experienceId;
+                        $price                = new ExperienceAccomodationPrices();
+                        $price->experience_id = $experienceId;
                         $price->accomodation_id = $accomId;
                     }
 
                     $price->start_date                = $range['start_date'];
                     $price->end_date                  = $range['end_date'];
                     $price->duration                  = !empty($range['duration']) ? (int)$range['duration'] : null;
-                    $price->price_per_night_per_guest = $range['price'] ?? 0;
-                    $price->promotional_price         = !empty($range['promo_price'])    ? $range['promo_price']    : null;
+                    $price->price_per_night_per_guest = $this->nullableDecimal($range['price'] ?? null);
+                    $price->single_occupancy_price    = $this->nullableDecimal($range['single_occupancy_price'] ?? null);
+                    $price->double_occupancy_price    = $this->nullableDecimal($range['double_occupancy_price'] ?? null);
+                    $price->promotional_price         = $this->nullableDecimal($range['promo_price'] ?? null);
                     $price->promotional_discount      = !empty($range['promo_discount']) ? $range['promo_discount'] : null;
-                    $price->currency                  = $data['currency'] ?? 'USD';
+                    $price->currency                  = $data['currency'] ?? 'INR';
                     $price->save();
+
+                    $submittedPriceIds[] = $price->id;
                 }
+
+                // Delete price rows that were removed in the form
+                ExperienceAccomodationPrices::where('experience_id', $experienceId)
+                    ->where('accomodation_id', $accomId)
+                    ->when(!empty($submittedPriceIds), fn($q) => $q->whereNotIn('id', $submittedPriceIds))
+                    ->when(empty($submittedPriceIds), fn($q) => $q)
+                    ->delete();
 
             } elseif ($eaId) {
                 // Toggled off — remove this accommodation from the experience
@@ -169,7 +187,7 @@ class CenterAvailabilityController extends Controller
         }
 
         return redirect()->route('center-panel.availability.manage', $experienceId)
-            ->with('success', 'Availability saved successfully.');
+            ->with('success', 'Availability & pricing saved successfully.');
     }
 
     /**
@@ -186,10 +204,20 @@ class CenterAvailabilityController extends Controller
                 ->exists();
             if ($belongs) {
                 $price->delete();
-                echo true;
+                echo '1';
                 return;
             }
         }
         echo 'error';
+    }
+
+    /**
+     * Return null for empty/zero values, or cast to float.
+     */
+    private function nullableDecimal($value): ?float
+    {
+        if ($value === null || $value === '') return null;
+        $v = (float) $value;
+        return $v > 0 ? $v : null;
     }
 }
