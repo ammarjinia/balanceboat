@@ -20,7 +20,7 @@
         background: #fff;
         border: 1px solid rgba(47,111,87,0.18);
         border-radius: 10px;
-        padding: 8px 12px;
+        padding: 7px 10px;
         font-size: 12px;
         width: 100%;
         font-family: 'Outfit', sans-serif;
@@ -30,618 +30,717 @@
     .fi:focus {
         outline: none;
         border-color: #2F6F57;
-        box-shadow: 0 0 0 3px rgba(47,111,87,0.1);
+        box-shadow: 0 0 0 3px rgba(47,111,87,0.10);
     }
-    .fi::placeholder { color: #94a3b8; }
-    select.fi { cursor: pointer; }
 
-    .field-label {
+    /* Calendar cell states */
+    .cal-day {
+        min-height: 64px;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        border-radius: 12px;
+        user-select: none;
+    }
+    .cal-day:hover { transform: scale(1.03); }
+    .cal-day.empty { cursor: default; background: transparent !important; }
+    .cal-day.empty:hover { transform: none; }
+
+    .cal-day.unset {
+        background: #fff;
+        border: 1.5px dashed rgba(47,111,87,0.18);
+    }
+    .cal-day.unset:hover { border-color: #2F6F57; background: rgba(47,111,87,0.04); }
+
+    .cal-day.status-open    { background: rgba(34,197,94,0.12);  border: 1.5px solid rgba(34,197,94,0.30); }
+    .cal-day.status-few_left{ background: rgba(245,158,11,0.12); border: 1.5px solid rgba(245,158,11,0.35); }
+    .cal-day.status-full    { background: rgba(239,68,68,0.10);  border: 1.5px solid rgba(239,68,68,0.28); }
+    .cal-day.status-closed  { background: rgba(100,116,139,0.10); border: 1.5px solid rgba(100,116,139,0.25); }
+
+    .cal-day.selected {
+        box-shadow: 0 0 0 2.5px #2F6F57 !important;
+        transform: scale(1.04);
+    }
+    .cal-day.in-range {
+        box-shadow: 0 0 0 2px rgba(47,111,87,0.45);
+        background: rgba(47,111,87,0.08) !important;
+    }
+    .cal-day.range-start, .cal-day.range-end {
+        box-shadow: 0 0 0 2.5px #D4AF37 !important;
+    }
+
+    /* Status dot */
+    .status-dot {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .dot-open     { background: #22c55e; }
+    .dot-few_left { background: #f59e0b; }
+    .dot-full     { background: #ef4444; }
+    .dot-closed   { background: #94a3b8; }
+
+    /* Overview matrix */
+    .matrix-cell {
+        padding: 4px 6px;
+        border-radius: 6px;
         font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #64748B;
-        display: block;
-        margin-bottom: 4px;
+        text-align: center;
+        font-weight: 600;
         font-family: 'Outfit', sans-serif;
     }
-
-    /* Status badge styles */
-    .badge-open     { background: #E5F0E8; color: #2F6F57; }
-    .badge-few_left { background: #FDF5E0; color: #B8960E; }
-    .badge-full     { background: #FDE8E6; color: #C9504A; }
-    .badge-closed   { background: #F1F5F9; color: #64748B; }
-
-    /* Status select option colors */
-    .status-open     { color: #2F6F57; }
-    .status-few_left { color: #B8960E; }
-    .status-full     { color: #C9504A; }
-    .status-closed   { color: #64748B; }
-
-    /* Row hover */
-    .avail-row { transition: background 0.15s; }
-    .avail-row:hover td { background: rgba(47,111,87,0.03); }
-
-    /* Matrix cell */
-    .matrix-cell {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 60px;
-        padding: 4px 8px;
-        border-radius: 8px;
-        font-size: 10px;
-        font-weight: 700;
-    }
-
-    /* Saving animation */
-    @keyframes savePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-    .saving { animation: savePulse 0.8s infinite; }
-
-    [x-cloak] { display: none !important; }
+    .matrix-open     { background: rgba(34,197,94,0.15);  color: #15803d; }
+    .matrix-few_left { background: rgba(245,158,11,0.15); color: #b45309; }
+    .matrix-full     { background: rgba(239,68,68,0.12);  color: #dc2626; }
+    .matrix-closed   { background: rgba(100,116,139,0.12); color: #64748b; }
+    .matrix-none     { background: transparent; color: #cbd5e1; }
 </style>
 @endsection
 
 @section('content')
 
-@php
-    $totalDates     = $availabilityRows->count();
-    $openCount      = $availabilityRows->where('status', 'open')->count();
-    $fewLeftCount   = $availabilityRows->where('status', 'few_left')->count();
-    $fullCount      = $availabilityRows->where('status', 'full')->count();
-    $closedCount    = $availabilityRows->where('status', 'closed')->count();
-    $selectedAccom  = $accommodations->firstWhere('id', $selectedAccomId);
-@endphp
+<div class="bb-sans space-y-6"
+     x-data="calendarApp()"
+     x-init="init()">
 
-{{-- ── Breadcrumb + Header ─────────────────────────────────────────────── --}}
-<div class="border-b border-[#2F6F57]/10 pb-6 space-y-3 bb-sans">
-    <nav class="flex items-center gap-2 text-xs text-slate-400 flex-wrap">
-        <a href="{{ route('center-panel.availability') }}" class="hover:text-[#2F6F57] transition-colors">Availability & Pricing</a>
-        <i class="fa-solid fa-chevron-right text-[9px]"></i>
-        <a href="{{ route('center-panel.availability.manage', $experience->id) }}" class="hover:text-[#2F6F57] transition-colors">{{ $experience->name }}</a>
-        <i class="fa-solid fa-chevron-right text-[9px]"></i>
-        <span class="text-[#1E2522] font-semibold">Schedule Availability</span>
-    </nav>
-    <div class="flex flex-col md:flex-row md:items-end gap-4 justify-between">
+    {{-- Header --}}
+    <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-[#2F6F57] mb-1">Start Date Inventory</p>
-            <h1 class="bb-serif text-3xl font-medium text-[#1E2522]">Schedule Availability</h1>
-            <p class="text-[#64748B] text-sm mt-1 font-light">
-                Manage room inventory and availability status per experience start date.
-            </p>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="{{ route('center-panel.availability.manage', $experience->id) }}"
+                   class="text-[11px] text-[#2F6F57] hover:underline flex items-center gap-1">
+                    <i class="fa-solid fa-chevron-left text-[9px]"></i> Back to Pricing
+                </a>
+            </div>
+            <h1 class="bb-serif text-2xl font-semibold text-[#1E2522]">Schedule Availability</h1>
+            <p class="text-sm text-[#64748B] mt-0.5 font-light">{{ $experience->name }}</p>
         </div>
-        <a href="{{ route('center-panel.availability.manage', $experience->id) }}"
-           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#2F6F57]/20 text-[#64748B] text-xs font-semibold hover:bg-slate-50 transition-all shrink-0">
-            <i class="fa-solid fa-sliders text-[10px]"></i> Edit Pricing
-        </a>
+        <div class="flex items-center gap-2 flex-wrap">
+            {{-- Accommodation tabs --}}
+            @foreach($accommodations as $accom)
+            <a href="{{ route('center-panel.availability.schedule', [$experience->id, 'accom' => $accom->id]) }}"
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all
+                      {{ $selectedAccomId == $accom->id
+                          ? 'bg-[#2F6F57] text-white shadow-sm shadow-[#2F6F57]/25'
+                          : 'bg-white border border-[#2F6F57]/20 text-[#2F6F57] hover:bg-[#2F6F57]/6' }}">
+                <i class="fa-regular fa-bed text-[10px]"></i>
+                {{ $accom->name }}
+            </a>
+            @endforeach
+        </div>
     </div>
-</div>
 
-{{-- Flash Messages --}}
-@if(session('success'))
-    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-emerald-700 bb-sans">
+    {{-- Flash --}}
+    @if(session('success'))
+    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-emerald-700">
         <i class="fa-solid fa-circle-check text-emerald-500"></i> {{ session('success') }}
     </div>
-@endif
-@if(session('error'))
-    <div class="bg-rose-50 border border-rose-200 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-rose-700 bb-sans">
+    @endif
+    @if(session('error'))
+    <div class="bg-rose-50 border border-rose-200 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-rose-700">
         <i class="fa-solid fa-circle-exclamation text-rose-500"></i> {{ session('error') }}
     </div>
-@endif
+    @endif
 
-{{-- ── Stats Row ────────────────────────────────────────────────────────── --}}
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 bb-sans">
-    <div class="glass-forest p-4 rounded-2xl flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-[#2F6F57]/8 flex items-center justify-center shrink-0">
-            <i class="fa-regular fa-calendar-days text-[#2F6F57] text-sm"></i>
-        </div>
-        <div>
-            <p class="bb-serif text-xl font-semibold text-[#1E2522] leading-none">{{ $totalDates }}</p>
-            <p class="text-[10px] text-[#64748B] mt-0.5">Start Dates</p>
-        </div>
-    </div>
-    <div class="glass-forest p-4 rounded-2xl flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-[#2F6F57]/8 flex items-center justify-center shrink-0">
-            <i class="fa-solid fa-circle-check text-[#2F6F57] text-sm"></i>
-        </div>
-        <div>
-            <p class="bb-serif text-xl font-semibold text-[#2F6F57] leading-none">{{ $openCount }}</p>
-            <p class="text-[10px] text-[#64748B] mt-0.5">Open</p>
-        </div>
-    </div>
-    <div class="glass-forest p-4 rounded-2xl flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
-            <i class="fa-solid fa-circle-exclamation text-amber-500 text-sm"></i>
-        </div>
-        <div>
-            <p class="bb-serif text-xl font-semibold text-amber-600 leading-none">{{ $fewLeftCount }}</p>
-            <p class="text-[10px] text-[#64748B] mt-0.5">Few Left</p>
-        </div>
-    </div>
-    <div class="glass-forest p-4 rounded-2xl flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
-            <i class="fa-solid fa-circle-xmark text-rose-500 text-sm"></i>
-        </div>
-        <div>
-            <p class="bb-serif text-xl font-semibold text-rose-600 leading-none">{{ $fullCount + $closedCount }}</p>
-            <p class="text-[10px] text-[#64748B] mt-0.5">Full / Closed</p>
-        </div>
-    </div>
-</div>
+    {{-- Main Grid --}}
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
 
-{{-- ── Accommodation Tabs ───────────────────────────────────────────────── --}}
-<div class="bb-sans">
-    <p class="field-label mb-2">Select Accommodation</p>
-    <div class="flex flex-wrap gap-2">
-        @foreach($accommodations as $accom)
-        <a href="{{ route('center-panel.availability.schedule', [$experience->id, 'accom' => $accom->id]) }}"
-           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold border transition-all
-               {{ $accom->id == $selectedAccomId
-                   ? 'border-[#2F6F57] bg-[#2F6F57]/8 text-[#2F6F57]'
-                   : 'border-[#2F6F57]/15 bg-white text-[#64748B] hover:border-[#2F6F57]/30 hover:text-[#1E2522]' }}">
-            <span>{{ $accom->name }}</span>
-            @if($accom->max_guest_in_room)
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md
-                {{ $accom->id == $selectedAccomId ? 'bg-[#2F6F57]/15 text-[#2F6F57]' : 'bg-slate-100 text-slate-500' }}">
-                {{ $accom->max_guest_in_room }} cap
-            </span>
-            @endif
-        </a>
-        @endforeach
-    </div>
-</div>
+        {{-- ── Calendar column ─────────────────────────────────────────── --}}
+        <div class="xl:col-span-8 space-y-4">
 
-{{-- ── Main Panel: Availability Table ─────────────────────────────────── --}}
-<div x-data="scheduleApp()" x-init="init()" class="space-y-4 bb-sans">
+            {{-- Calendar Card --}}
+            <div class="glass-forest rounded-3xl p-5 space-y-4">
 
-    {{-- Add Start Date Form --}}
-    <div class="glass-forest rounded-3xl overflow-hidden">
-        <div class="flex items-center justify-between px-5 py-4">
-            <div>
-                <h3 class="text-sm font-bold text-[#1E2522]">
-                    {{ $selectedAccom?->name ?? 'Accommodation' }} — Start Dates
-                </h3>
-                <p class="text-[11px] text-[#64748B] font-light mt-0.5">
-                    {{ $totalDates }} date{{ $totalDates != 1 ? 's' : '' }} configured for this accommodation
-                </p>
-            </div>
-            <button @click="showAddForm = !showAddForm"
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all
-                           bg-[#2F6F57] text-white hover:bg-[#255a46] active:scale-95">
-                <i class="fa-solid" :class="showAddForm ? 'fa-minus' : 'fa-plus'" style="font-size:10px;"></i>
-                <span x-text="showAddForm ? 'Cancel' : 'Add Start Date'"></span>
-            </button>
-        </div>
-
-        {{-- Inline add form --}}
-        <div x-show="showAddForm"
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 -translate-y-2"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="border-t border-[#2F6F57]/10 px-5 pb-5 pt-4"
-             x-cloak>
-            <p class="text-[10px] font-bold uppercase tracking-wide text-[#64748B] mb-3">New Start Date</p>
-            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 items-end">
-                <div class="col-span-2 sm:col-span-1 lg:col-span-1">
-                    <span class="field-label">Start Date <span class="text-rose-500">*</span></span>
-                    <input type="date" x-model="newRow.start_date" class="fi" :min="today">
-                </div>
-                <div>
-                    <span class="field-label">Status</span>
-                    <select x-model="newRow.status" class="fi">
-                        <option value="open">Open</option>
-                        <option value="few_left">Few Left</option>
-                        <option value="full">Full</option>
-                        <option value="closed">Closed</option>
-                    </select>
-                </div>
-                <div>
-                    <span class="field-label">Total Rooms</span>
-                    <input type="number" x-model.number="newRow.total_rooms" class="fi" min="0" placeholder="0" @input="autoStatus()">
-                </div>
-                <div>
-                    <span class="field-label">Booked</span>
-                    <input type="number" x-model.number="newRow.booked_rooms" class="fi" min="0" placeholder="0" @input="autoStatus()">
-                </div>
-                <div>
-                    <span class="field-label">Remaining</span>
-                    <div class="fi bg-slate-50 text-[#64748B] cursor-default" x-text="Math.max(0, newRow.total_rooms - newRow.booked_rooms)"></div>
-                </div>
-                <div class="flex items-end">
-                    <button @click="addRow()"
-                            :disabled="!newRow.start_date || saving"
-                            class="w-full py-2 rounded-xl text-xs font-bold transition-all bg-[#2F6F57] text-white hover:bg-[#255a46] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
-                        <span x-show="!saving">Add Date</span>
-                        <span x-show="saving" class="saving">Saving…</span>
+                {{-- Month nav --}}
+                <div class="flex items-center justify-between">
+                    <button type="button" @click="prevMonth()"
+                            class="w-8 h-8 flex items-center justify-center rounded-xl bg-[#2F6F57]/8 text-[#2F6F57] hover:bg-[#2F6F57]/16 transition-all">
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                    <div class="text-center">
+                        <p class="bb-serif text-lg font-semibold text-[#1E2522]" x-text="monthLabel"></p>
+                        <p class="text-[10px] text-[#64748B] font-light" x-text="selectionSummary()"></p>
+                    </div>
+                    <button type="button" @click="nextMonth()"
+                            class="w-8 h-8 flex items-center justify-center rounded-xl bg-[#2F6F57]/8 text-[#2F6F57] hover:bg-[#2F6F57]/16 transition-all">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
                     </button>
                 </div>
+
+                {{-- Mode toggle --}}
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="mode = 'single'; clearSelection()"
+                            :class="mode === 'single'
+                                ? 'bg-[#2F6F57] text-white shadow-sm'
+                                : 'bg-[#2F6F57]/8 text-[#2F6F57] hover:bg-[#2F6F57]/14'"
+                            class="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex items-center gap-1.5">
+                        <i class="fa-regular fa-hand-pointer text-[10px]"></i> Single
+                    </button>
+                    <button type="button" @click="mode = 'range'; clearSelection()"
+                            :class="mode === 'range'
+                                ? 'bg-[#D4AF37] text-white shadow-sm'
+                                : 'bg-amber-50 text-amber-700 hover:bg-amber-100'"
+                            class="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex items-center gap-1.5">
+                        <i class="fa-regular fa-calendar-range text-[10px]"></i> Date Range
+                    </button>
+                    <button type="button" @click="clearSelection()"
+                            x-show="selectedDates.length > 0"
+                            class="ml-auto px-3 py-1.5 rounded-xl text-[11px] font-semibold bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all">
+                        <i class="fa-solid fa-xmark text-[10px]"></i> Clear
+                    </button>
+                </div>
+
+                {{-- Day headers --}}
+                <div class="grid grid-cols-7 gap-1.5">
+                    <template x-for="d in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']">
+                        <div class="text-center text-[9px] font-bold uppercase tracking-wider text-[#64748B] py-1" x-text="d"></div>
+                    </template>
+                </div>
+
+                {{-- Calendar grid --}}
+                <div class="grid grid-cols-7 gap-1.5" @mouseleave="hoverDate = null">
+                    <template x-for="cell in calendarCells" :key="cell.key">
+                        <div
+                            :class="cellClass(cell)"
+                            class="cal-day p-2 flex flex-col"
+                            @click="cell.date ? clickDay(cell.date) : null"
+                            @mousemove="cell.date && mode === 'range' ? hoverDate = cell.date : null"
+                        >
+                            <template x-if="cell.date">
+                                <div class="flex flex-col h-full">
+                                    <span class="text-[11px] font-bold leading-none"
+                                          :class="isToday(cell.date) ? 'text-[#2F6F57]' : 'text-[#1E2522]'"
+                                          x-text="cell.day"></span>
+                                    <template x-if="getData(cell.date)">
+                                        <div class="mt-auto space-y-0.5">
+                                            <div class="flex items-center gap-1">
+                                                <span class="status-dot" :class="'dot-' + getData(cell.date).status"></span>
+                                                <span class="text-[9px] font-semibold leading-none capitalize"
+                                                      :class="{
+                                                          'text-emerald-700': getData(cell.date).status === 'open',
+                                                          'text-amber-700':   getData(cell.date).status === 'few_left',
+                                                          'text-red-600':     getData(cell.date).status === 'full',
+                                                          'text-slate-500':   getData(cell.date).status === 'closed',
+                                                      }"
+                                                      x-text="statusShort(getData(cell.date).status)"></span>
+                                            </div>
+                                            <template x-if="getData(cell.date).total > 0">
+                                                <span class="text-[9px] text-[#64748B] leading-none"
+                                                      x-text="remaining(getData(cell.date)) + '/' + getData(cell.date).total"></span>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template x-if="!getData(cell.date)">
+                                        <span class="mt-auto text-[9px] text-[#64748B]/40 leading-none">—</span>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                {{-- Legend --}}
+                <div class="flex flex-wrap items-center gap-3 pt-2 border-t border-[#2F6F57]/8">
+                    <span class="text-[9px] font-bold uppercase tracking-wider text-[#64748B]">Status:</span>
+                    <span class="flex items-center gap-1 text-[10px] text-emerald-700"><span class="status-dot dot-open"></span> Open</span>
+                    <span class="flex items-center gap-1 text-[10px] text-amber-700"><span class="status-dot dot-few_left"></span> Few Left</span>
+                    <span class="flex items-center gap-1 text-[10px] text-red-600"><span class="status-dot dot-full"></span> Full</span>
+                    <span class="flex items-center gap-1 text-[10px] text-slate-500"><span class="status-dot dot-closed"></span> Closed</span>
+                    <span class="flex items-center gap-1 text-[10px] text-slate-400 ml-1">
+                        <span class="w-4 h-4 rounded border border-dashed border-slate-300 inline-block"></span> Not Set
+                    </span>
+                </div>
             </div>
-            <div x-show="addError" x-text="addError" class="mt-2 text-xs text-rose-600 font-medium" x-cloak></div>
-        </div>
-    </div>
 
-    {{-- Availability Table --}}
-    <div class="glass-forest rounded-3xl overflow-hidden">
-
-        @if($availabilityRows->isEmpty())
-        <div class="py-16 flex flex-col items-center text-center px-6">
-            <div class="w-16 h-16 rounded-3xl bg-[#2F6F57]/5 border border-[#2F6F57]/15 flex items-center justify-center mb-4">
-                <i class="fa-regular fa-calendar-plus text-2xl text-[#2F6F57]/30"></i>
-            </div>
-            <h3 class="bb-serif text-lg font-medium text-[#1E2522] mb-1">No start dates yet</h3>
-            <p class="text-xs text-[#64748B] max-w-xs font-light leading-relaxed">
-                Add start dates above to configure inventory and availability status for <strong>{{ $selectedAccom?->name }}</strong>.
-            </p>
-        </div>
-        @else
-
-        {{-- Bulk status bar --}}
-        <div class="flex items-center justify-between gap-4 px-5 py-3 border-b border-[#2F6F57]/8 bg-[#2F6F57]/2">
-            <p class="text-[11px] text-[#64748B] font-light">
-                Edit any row inline — changes save individually with the row's Save button.
-            </p>
-            <div x-show="pendingChanges > 0" class="text-[11px] text-amber-600 font-semibold" x-cloak>
-                <i class="fa-solid fa-circle-dot text-[8px] mr-1"></i>
-                <span x-text="pendingChanges + ' unsaved change' + (pendingChanges > 1 ? 's' : '')"></span>
-            </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-xs bb-sans">
-                <thead>
-                    <tr class="border-b border-[#2F6F57]/8">
-                        <th class="text-left px-5 py-3 font-bold text-[10px] uppercase tracking-wider text-[#64748B]">Start Date</th>
-                        <th class="text-left px-4 py-3 font-bold text-[10px] uppercase tracking-wider text-[#64748B]">Status</th>
-                        <th class="text-center px-4 py-3 font-bold text-[10px] uppercase tracking-wider text-[#64748B]">Total Rooms</th>
-                        <th class="text-center px-4 py-3 font-bold text-[10px] uppercase tracking-wider text-[#64748B]">Booked</th>
-                        <th class="text-center px-4 py-3 font-bold text-[10px] uppercase tracking-wider text-[#64748B]">Remaining</th>
-                        <th class="px-4 py-3"></th>
-                    </tr>
-                </thead>
-                <tbody id="availability-table-body">
-                    @foreach($availabilityRows as $row)
-                    @php $remaining = max(0, $row->total_rooms - $row->booked_rooms); @endphp
-                    <tr class="avail-row border-b border-[#2F6F57]/5 last:border-0"
-                        id="row-{{ $row->id }}"
-                        x-data="rowApp({{ $row->id }}, '{{ $row->start_date->toDateString() }}', '{{ $row->status }}', {{ $row->total_rooms }}, {{ $row->booked_rooms }})">
+        {{-- ── Quick Set Sidebar ────────────────────────────────────────── --}}
+        <div class="xl:col-span-4">
+            <div class="sticky top-6 space-y-4">
 
-                        {{-- Start Date --}}
-                        <td class="px-5 py-3">
-                            <div class="font-semibold text-[#1E2522]">
-                                {{ $row->start_date->format('D, d M Y') }}
-                            </div>
-                            <div class="text-[10px] text-[#64748B] mt-0.5">
-                                {{ $row->start_date->diffForHumans() }}
-                            </div>
-                        </td>
+                {{-- Quick Set Panel --}}
+                <div class="glass-forest rounded-3xl p-5 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Quick Set</h3>
+                        <span x-show="selectedDates.length === 0"
+                              class="text-[10px] text-[#64748B] font-light">Select dates on calendar</span>
+                        <span x-show="selectedDates.length > 0"
+                              class="inline-flex items-center gap-1 bg-[#2F6F57]/10 text-[#2F6F57] text-[10px] font-bold px-2 py-0.5 rounded-lg"
+                              x-text="selectedDates.length + ' date' + (selectedDates.length > 1 ? 's' : '') + ' selected'"></span>
+                    </div>
+
+                    {{-- No selection placeholder --}}
+                    <div x-show="selectedDates.length === 0"
+                         class="rounded-2xl border border-dashed border-[#2F6F57]/20 py-8 text-center">
+                        <i class="fa-regular fa-calendar-plus text-2xl text-[#2F6F57]/25 block mb-2"></i>
+                        <p class="text-xs text-[#64748B] font-light">Click a date to select it,</p>
+                        <p class="text-[11px] text-[#64748B] font-light">or use Range mode to bulk-select.</p>
+                    </div>
+
+                    {{-- Form (shown when dates selected) --}}
+                    <div x-show="selectedDates.length > 0" x-cloak class="space-y-3">
+
+                        {{-- Selected dates preview --}}
+                        <div x-show="selectedDates.length <= 6" class="flex flex-wrap gap-1.5">
+                            <template x-for="d in selectedDates" :key="d">
+                                <span class="inline-flex items-center gap-1 bg-[#2F6F57]/8 text-[#2F6F57] text-[10px] font-semibold px-2 py-0.5 rounded-lg">
+                                    <span x-text="formatDateLabel(d)"></span>
+                                    <button type="button" @click="deselectDate(d)"
+                                            class="text-[#2F6F57]/50 hover:text-[#2F6F57] leading-none ml-0.5">×</button>
+                                </span>
+                            </template>
+                        </div>
+                        <div x-show="selectedDates.length > 6"
+                             class="text-[11px] text-[#64748B] font-light"
+                             x-text="selectedDates[0] + ' → ' + selectedDates[selectedDates.length-1]"></div>
 
                         {{-- Status --}}
-                        <td class="px-4 py-3">
-                            <select x-model="status"
-                                    @change="markDirty()"
-                                    class="fi w-auto min-w-[110px] text-xs font-semibold"
-                                    :class="{
-                                        'text-[#2F6F57] border-[#2F6F57]/30 bg-[#E5F0E8]': status === 'open',
-                                        'text-amber-700 border-amber-200 bg-amber-50': status === 'few_left',
-                                        'text-rose-600 border-rose-200 bg-rose-50': status === 'full',
-                                        'text-slate-500 border-slate-200 bg-slate-50': status === 'closed'
-                                    }">
-                                <option value="open">Open</option>
-                                <option value="few_left">Few Left</option>
-                                <option value="full">Full</option>
-                                <option value="closed">Closed</option>
-                            </select>
-                        </td>
-
-                        {{-- Total Rooms --}}
-                        <td class="px-4 py-3">
-                            <input type="number"
-                                   x-model.number="totalRooms"
-                                   @input="recalc(); markDirty();"
-                                   min="0"
-                                   class="fi w-20 text-center"
-                                   placeholder="0">
-                        </td>
-
-                        {{-- Booked --}}
-                        <td class="px-4 py-3">
-                            <input type="number"
-                                   x-model.number="bookedRooms"
-                                   @input="recalc(); markDirty();"
-                                   :max="totalRooms"
-                                   min="0"
-                                   class="fi w-20 text-center"
-                                   placeholder="0">
-                        </td>
-
-                        {{-- Remaining --}}
-                        <td class="px-4 py-3 text-center">
-                            <span class="inline-flex items-center justify-center w-12 h-8 rounded-xl text-xs font-bold"
-                                  :class="{
-                                      'bg-[#E5F0E8] text-[#2F6F57]': remaining > 0,
-                                      'bg-rose-50 text-rose-600': remaining === 0
-                                  }"
-                                  x-text="remaining"></span>
-                        </td>
-
-                        {{-- Actions --}}
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-2 justify-end">
-                                <button @click="saveRow()"
-                                        :disabled="saving"
-                                        :class="{ 'opacity-60 cursor-not-allowed': saving }"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all
-                                               bg-[#2F6F57]/10 text-[#2F6F57] hover:bg-[#2F6F57]/20 active:scale-95">
-                                    <i class="fa-solid fa-floppy-disk text-[9px]"></i>
-                                    <span x-text="saving ? 'Saving…' : 'Save'"></span>
-                                </button>
-                                <button @click="deleteRow()"
-                                        :disabled="saving"
-                                        class="w-7 h-7 flex items-center justify-center rounded-lg text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-all">
-                                    <i class="fa-regular fa-trash-can text-[10px]"></i>
-                                </button>
+                        <div>
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-[#64748B] block mb-1.5">Status</span>
+                            <div class="grid grid-cols-2 gap-2">
+                                <template x-for="s in statuses" :key="s.value">
+                                    <button type="button"
+                                            @click="form.status = s.value"
+                                            :class="form.status === s.value ? s.activeClass : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200'"
+                                            class="py-2 px-3 rounded-xl text-[11px] font-semibold transition-all flex items-center gap-1.5 border">
+                                        <span class="status-dot" :class="'dot-' + s.value"></span>
+                                        <span x-text="s.label"></span>
+                                    </button>
+                                </template>
                             </div>
-                            <div x-show="saved" x-cloak
-                                 class="text-[10px] text-[#2F6F57] font-semibold mt-1 text-right">
-                                ✓ Saved
+                        </div>
+
+                        {{-- Inventory --}}
+                        <div class="grid grid-cols-2 gap-3 pt-1">
+                            <div>
+                                <span class="text-[9px] font-bold uppercase tracking-wider text-[#64748B] block mb-1.5">Total Rooms</span>
+                                <input type="number" class="fi" x-model.number="form.total" min="0" placeholder="0"
+                                       @input="autoStatus()">
                             </div>
+                            <div>
+                                <span class="text-[9px] font-bold uppercase tracking-wider text-[#64748B] block mb-1.5">Booked</span>
+                                <input type="number" class="fi" x-model.number="form.booked" min="0" placeholder="0"
+                                       @input="autoStatus()">
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between bg-[#2F6F57]/5 rounded-xl px-3 py-2">
+                            <span class="text-[10px] font-bold text-[#2F6F57]">Remaining</span>
+                            <span class="text-sm font-bold text-[#2F6F57]"
+                                  x-text="Math.max(0, (form.total || 0) - (form.booked || 0))"></span>
+                        </div>
+
+                        {{-- Auto-status hint --}}
+                        <div x-show="form.total > 0"
+                             class="text-[10px] text-[#64748B] font-light flex items-center gap-1">
+                            <i class="fa-solid fa-bolt text-[#D4AF37] text-[9px]"></i>
+                            Status auto-derived from inventory. Override above if needed.
+                        </div>
+
+                        {{-- Apply button --}}
+                        <button type="button"
+                                @click="applyToSelection()"
+                                :disabled="saving"
+                                class="w-full py-3 bg-[#2F6F57] text-white rounded-2xl text-sm font-bold hover:bg-[#255a46] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm shadow-[#2F6F57]/20 disabled:opacity-60">
+                            <template x-if="!saving">
+                                <span><i class="fa-solid fa-floppy-disk mr-1.5"></i> Apply to Selection</span>
+                            </template>
+                            <template x-if="saving">
+                                <span><i class="fa-solid fa-circle-notch fa-spin mr-1.5"></i> Saving…</span>
+                            </template>
+                        </button>
+
+                        {{-- Remove button --}}
+                        <button type="button"
+                                @click="removeFromSchedule()"
+                                :disabled="saving"
+                                x-show="selectedDates.some(d => getData(d))"
+                                class="w-full py-2.5 border border-rose-200 text-rose-500 rounded-2xl text-xs font-semibold hover:bg-rose-50 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60">
+                            <i class="fa-regular fa-trash-can text-[11px]"></i> Remove from Schedule
+                        </button>
+
+                        {{-- Save feedback --}}
+                        <div x-show="saveMessage"
+                             x-transition.opacity
+                             :class="saveError ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'"
+                             class="rounded-xl border px-3 py-2 text-[11px] font-semibold flex items-center gap-2">
+                            <i :class="saveError ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-circle-check'"></i>
+                            <span x-text="saveMessage"></span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Experience / Accommodation info card --}}
+                <div class="glass-forest rounded-3xl p-5 space-y-3">
+                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Managing</h3>
+                    <div class="space-y-1">
+                        <p class="text-sm font-bold text-[#1E2522] bb-serif">{{ $experience->name }}</p>
+                        @foreach($accommodations as $accom)
+                        @if($accom->id == $selectedAccomId)
+                        <p class="text-xs text-[#2F6F57] font-semibold flex items-center gap-1.5">
+                            <i class="fa-regular fa-bed text-[10px]"></i> {{ $accom->name }}
+                        </p>
+                        @endif
+                        @endforeach
+                    </div>
+                    @php $configuredCount = $availabilityRows->count(); @endphp
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-[#2F6F57]/6 rounded-2xl p-3 text-center">
+                            <p class="bb-serif text-xl font-semibold text-[#2F6F57]">{{ $configuredCount }}</p>
+                            <p class="text-[9px] text-[#2F6F57] font-medium mt-0.5">Scheduled</p>
+                        </div>
+                        <div class="bg-[#D4AF37]/10 rounded-2xl p-3 text-center">
+                            <p class="bb-serif text-xl font-semibold text-amber-700">
+                                {{ $availabilityRows->where('status', 'open')->count() }}
+                            </p>
+                            <p class="text-[9px] text-amber-700 font-medium mt-0.5">Open</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('center-panel.availability.manage', $experience->id) }}"
+                       class="w-full py-2 border border-[#2F6F57]/20 text-[#64748B] rounded-2xl text-xs font-semibold hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-tag text-[10px]"></i> Edit Pricing
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>{{-- /main grid --}}
+
+    {{-- ── Overview Matrix ─────────────────────────────────────────────────── --}}
+    @if($uniqueDates->isNotEmpty() && $accommodations->count() > 1)
+    <div class="glass-forest rounded-3xl p-5 space-y-4">
+        <div>
+            <h3 class="text-xs font-bold uppercase tracking-widest text-[#64748B]">All Accommodations Overview</h3>
+            <p class="text-[11px] text-[#64748B] font-light mt-0.5">Availability across all room types for configured start dates.</p>
+        </div>
+        <div class="overflow-x-auto -mx-1">
+            <table class="w-full text-xs border-separate border-spacing-1">
+                <thead>
+                    <tr>
+                        <th class="text-left text-[9px] font-bold uppercase tracking-wider text-[#64748B] pb-2 px-1 whitespace-nowrap">Room Type</th>
+                        @foreach($uniqueDates as $date)
+                        <th class="text-[9px] font-bold text-[#64748B] pb-2 px-1 min-w-[52px] whitespace-nowrap">
+                            {{ \Carbon\Carbon::parse($date)->format('M j') }}
+                        </th>
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($accommodations as $accom)
+                    <tr>
+                        <td class="py-1 px-1 text-[11px] font-semibold text-[#1E2522] whitespace-nowrap">{{ $accom->name }}</td>
+                        @foreach($uniqueDates as $date)
+                        @php $row = $matrix[$accom->id][$date] ?? null; @endphp
+                        <td class="py-1 px-0.5">
+                            @if($row)
+                            <span class="matrix-cell matrix-{{ $row->status }} block" title="{{ ucfirst(str_replace('_',' ',$row->status)) }}: {{ $row->total_rooms - $row->booked_rooms }}/{{ $row->total_rooms }}">
+                                {{ strtoupper(substr($row->status, 0, 1)) }}{{ $row->total_rooms > 0 ? ':'.max(0,$row->total_rooms-$row->booked_rooms) : '' }}
+                            </span>
+                            @else
+                            <span class="matrix-cell matrix-none block">—</span>
+                            @endif
                         </td>
+                        @endforeach
                     </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
-
-        {{-- Bulk Save via POST as fallback --}}
-        <div class="px-5 py-4 border-t border-[#2F6F57]/8 flex items-center justify-between gap-4">
-            <p class="text-[11px] text-[#64748B] font-light">
-                <i class="fa-solid fa-circle-info text-[#2F6F57]/40 mr-1"></i>
-                Use individual row Save buttons, or click Save All to commit all changes at once.
-            </p>
-            <form method="POST" action="{{ route('center-panel.availability.schedule.save', $experience->id) }}" id="bulk-save-form">
-                @csrf
-                <input type="hidden" name="accommodation_id" value="{{ $selectedAccomId }}">
-                @foreach($availabilityRows as $row)
-                <input type="hidden" name="rows[{{ $loop->index }}][start_date]" value="{{ $row->start_date->toDateString() }}" data-row-field="{{ $row->id }}-date">
-                <input type="hidden" name="rows[{{ $loop->index }}][status]"     id="hidden-status-{{ $row->id }}"  value="{{ $row->status }}">
-                <input type="hidden" name="rows[{{ $loop->index }}][total_rooms]" id="hidden-total-{{ $row->id }}"  value="{{ $row->total_rooms }}">
-                <input type="hidden" name="rows[{{ $loop->index }}][booked_rooms]" id="hidden-booked-{{ $row->id }}" value="{{ $row->booked_rooms }}">
-                @endforeach
-                <button type="submit"
-                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2F6F57] text-white text-xs font-bold hover:bg-[#255a46] active:scale-95 transition-all shadow-sm shadow-[#2F6F57]/20">
-                    <i class="fa-solid fa-floppy-disk text-[11px]"></i> Save All Changes
-                </button>
-            </form>
-        </div>
-
-        @endif
+        <p class="text-[10px] text-[#64748B] font-light">O=Open, F=Few Left, X=Full, C=Closed · number after colon = remaining rooms</p>
     </div>
-</div>
+    @endif
 
-{{-- ── Overview Matrix ─────────────────────────────────────────────────── --}}
-@if($uniqueDates->isNotEmpty())
-<div class="glass-forest rounded-3xl overflow-hidden bb-sans">
-    <div class="px-5 py-4 border-b border-[#2F6F57]/8">
-        <h3 class="text-sm font-bold text-[#1E2522]">Availability Overview</h3>
-        <p class="text-[11px] text-[#64748B] font-light mt-0.5">All accommodations × all configured start dates</p>
-    </div>
-    <div class="overflow-x-auto p-5">
-        <table class="w-full text-[11px]">
-            <thead>
-                <tr>
-                    <th class="text-left pb-3 pr-4 font-bold text-[10px] uppercase tracking-wider text-[#64748B] min-w-[130px]">Accommodation</th>
-                    @foreach($uniqueDates as $date)
-                    <th class="text-center pb-3 px-2 font-bold text-[10px] uppercase tracking-wider text-[#64748B] min-w-[80px]">
-                        {{ \Carbon\Carbon::parse($date)->format('d M') }}
-                        <div class="text-[9px] font-normal normal-case tracking-normal text-slate-400 mt-0.5">
-                            {{ \Carbon\Carbon::parse($date)->format('D') }}
-                        </div>
-                    </th>
-                    @endforeach
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($accommodations as $accom)
-                <tr class="border-t border-[#2F6F57]/5">
-                    <td class="py-2.5 pr-4">
-                        <span class="font-semibold text-[#1E2522]">{{ $accom->name }}</span>
-                        @if($accom->max_guest_in_room)
-                        <span class="text-[9px] text-slate-400 ml-1">{{ $accom->max_guest_in_room }} cap</span>
-                        @endif
-                    </td>
-                    @foreach($uniqueDates as $date)
-                    @php $cell = $matrix[$accom->id][$date->toDateString()] ?? null; @endphp
-                    <td class="py-2.5 px-2 text-center">
-                        @if($cell)
-                            @php
-                                $remaining = max(0, $cell->total_rooms - $cell->booked_rooms);
-                                $badgeClass = match($cell->status) {
-                                    'open'     => 'bg-[#E5F0E8] text-[#2F6F57]',
-                                    'few_left' => 'bg-[#FDF5E0] text-amber-700',
-                                    'full'     => 'bg-[#FDE8E6] text-rose-600',
-                                    'closed'   => 'bg-slate-100 text-slate-500',
-                                    default    => 'bg-slate-100 text-slate-400',
-                                };
-                                $label = match($cell->status) {
-                                    'open'     => $remaining . ' left',
-                                    'few_left' => $remaining . ' left',
-                                    'full'     => 'Full',
-                                    'closed'   => 'Closed',
-                                    default    => '—',
-                                };
-                            @endphp
-                            <span class="matrix-cell {{ $badgeClass }}">{{ $label }}</span>
-                        @else
-                            <span class="text-slate-300">—</span>
-                        @endif
-                    </td>
-                    @endforeach
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-</div>
-@endif
+</div>{{-- /x-data --}}
 
 @endsection
 
 @section('scripts')
 <script>
-const CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
-const UPDATE_URL = '{{ route("center-panel.availability.schedule.update") }}';
-const DELETE_URL = '{{ route("center-panel.availability.schedule.delete") }}';
-const EXPERIENCE_ID = {{ $experience->id }};
-const ACCOM_ID      = {{ $selectedAccomId }};
-
-/* ── Page-level Alpine component ─────────────────────────────────────── */
-function scheduleApp() {
+function calendarApp() {
     return {
-        showAddForm: false,
-        saving: false,
-        addError: '',
-        pendingChanges: 0,
-        today: new Date().toISOString().split('T')[0],
-        newRow: { start_date: '', status: 'open', total_rooms: 0, booked_rooms: 0 },
+        /* ── State ──────────────────────────────────────── */
+        experienceId:    {{ $experience->id }},
+        accommodationId: {{ $selectedAccomId }},
+        data:            @json($availabilityData),
 
-        init() {},
+        year:  new Date().getFullYear(),
+        month: new Date().getMonth(),   // 0-based
 
-        autoStatus() {
-            const r = this.newRow;
-            const remaining = Math.max(0, r.total_rooms - r.booked_rooms);
-            if (r.total_rooms > 0) {
-                if (remaining === 0) r.status = 'full';
-                else if (remaining / r.total_rooms <= 0.20) r.status = 'few_left';
-                else r.status = 'open';
-            }
-        },
+        mode:          'single', // 'single' | 'range'
+        selectedDates: [],
+        rangeStart:    null,
+        hoverDate:     null,
 
-        async addRow() {
-            if (!this.newRow.start_date) { this.addError = 'Please select a start date.'; return; }
-            this.addError = '';
-            this.saving = true;
-            try {
-                const res = await fetch(UPDATE_URL, {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': CSRF, 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({
-                        experience_id:    EXPERIENCE_ID,
-                        accommodation_id: ACCOM_ID,
-                        start_date:       this.newRow.start_date,
-                        status:           this.newRow.status,
-                        total_rooms:      this.newRow.total_rooms,
-                        booked_rooms:     this.newRow.booked_rooms,
-                    })
-                });
-                if (res.ok) {
-                    // Reload to show the new row with proper date formatting
-                    window.location.reload();
-                } else {
-                    const json = await res.json();
-                    this.addError = json.error ?? 'Failed to add start date.';
-                }
-            } catch {
-                this.addError = 'Network error. Please try again.';
-            } finally {
-                this.saving = false;
-            }
-        }
-    };
-}
-
-/* ── Per-row Alpine component ─────────────────────────────────────────── */
-function rowApp(id, startDate, initialStatus, initialTotal, initialBooked) {
-    return {
-        id, startDate,
-        status:      initialStatus,
-        totalRooms:  initialTotal,
-        bookedRooms: initialBooked,
-        remaining:   Math.max(0, initialTotal - initialBooked),
+        form: { status: 'open', total: 0, booked: 0 },
         saving:      false,
-        saved:       false,
-        dirty:       false,
+        saveMessage: '',
+        saveError:   false,
 
-        init() {},
+        statuses: [
+            { value: 'open',     label: 'Open',     activeClass: 'bg-emerald-500 text-white border-emerald-500' },
+            { value: 'few_left', label: 'Few Left', activeClass: 'bg-amber-500 text-white border-amber-500' },
+            { value: 'full',     label: 'Full',     activeClass: 'bg-red-500 text-white border-red-500' },
+            { value: 'closed',   label: 'Closed',   activeClass: 'bg-slate-500 text-white border-slate-500' },
+        ],
 
-        recalc() {
-            this.remaining = Math.max(0, this.totalRooms - this.bookedRooms);
-        },
-
-        markDirty() {
-            if (!this.dirty) {
-                this.dirty = true;
-                // Sync to hidden bulk-save inputs
-                const statusEl  = document.getElementById('hidden-status-'  + this.id);
-                const totalEl   = document.getElementById('hidden-total-'   + this.id);
-                const bookedEl  = document.getElementById('hidden-booked-'  + this.id);
-                if (statusEl)  statusEl.value  = this.status;
-                if (totalEl)   totalEl.value   = this.totalRooms;
-                if (bookedEl)  bookedEl.value  = this.bookedRooms;
+        /* ── Init ──────────────────────────────────────── */
+        init() {
+            // Normalise data keys (object from PHP JSON)
+            const raw = this.data;
+            this.data = {};
+            if (raw && typeof raw === 'object') {
+                Object.assign(this.data, raw);
             }
         },
 
-        async saveRow() {
-            this.saving = true;
-            this.saved  = false;
-            // Sync hidden inputs
-            const statusEl  = document.getElementById('hidden-status-'  + this.id);
-            const totalEl   = document.getElementById('hidden-total-'   + this.id);
-            const bookedEl  = document.getElementById('hidden-booked-'  + this.id);
-            if (statusEl)  statusEl.value  = this.status;
-            if (totalEl)   totalEl.value   = this.totalRooms;
-            if (bookedEl)  bookedEl.value  = this.bookedRooms;
+        /* ── Computed: calendar cells ────────────────── */
+        get calendarCells() {
+            const cells = [];
+            const firstDay = new Date(this.year, this.month, 1).getDay(); // 0=Sun
+            const daysInMonth = new Date(this.year, this.month + 1, 0).getDate();
 
-            try {
-                const res = await fetch(UPDATE_URL, {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': CSRF, 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({
-                        experience_id:    EXPERIENCE_ID,
-                        accommodation_id: ACCOM_ID,
-                        start_date:       this.startDate,
-                        status:           this.status,
-                        total_rooms:      this.totalRooms,
-                        booked_rooms:     this.bookedRooms,
-                    })
-                });
-                if (res.ok) {
-                    this.dirty = false;
-                    this.saved = true;
-                    setTimeout(() => { this.saved = false; }, 3000);
+            for (let i = 0; i < firstDay; i++) {
+                cells.push({ key: 'e' + i, date: null, day: null });
+            }
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = this.dateStr(this.year, this.month + 1, d);
+                cells.push({ key: dateStr, date: dateStr, day: d });
+            }
+            return cells;
+        },
+
+        get monthLabel() {
+            return new Date(this.year, this.month, 1)
+                .toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        },
+
+        /* ── Helpers ─────────────────────────────────── */
+        dateStr(y, m, d) {
+            return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        },
+        getData(dateStr) {
+            return this.data[dateStr] ?? null;
+        },
+        remaining(row) {
+            return Math.max(0, (row.total || 0) - (row.booked || 0));
+        },
+        isToday(dateStr) {
+            return dateStr === new Date().toISOString().slice(0, 10);
+        },
+        statusShort(s) {
+            return { open: 'Open', few_left: 'Few', full: 'Full', closed: 'Closed' }[s] ?? s;
+        },
+        formatDateLabel(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        },
+        selectionSummary() {
+            if (this.selectedDates.length === 0) return 'Click a date to begin';
+            if (this.selectedDates.length === 1) return '1 date selected';
+            return this.selectedDates.length + ' dates selected';
+        },
+
+        /* ── Range helpers ───────────────────────────── */
+        datesInRange(a, b) {
+            const start = a < b ? a : b;
+            const end   = a < b ? b : a;
+            const result = [];
+            const cur = new Date(start + 'T00:00:00');
+            const fin = new Date(end   + 'T00:00:00');
+            while (cur <= fin) {
+                result.push(cur.toISOString().slice(0,10));
+                cur.setDate(cur.getDate() + 1);
+            }
+            return result;
+        },
+        get hoverRange() {
+            if (this.mode !== 'range' || !this.rangeStart || !this.hoverDate) return [];
+            return this.datesInRange(this.rangeStart, this.hoverDate);
+        },
+
+        /* ── Cell CSS ────────────────────────────────── */
+        cellClass(cell) {
+            if (!cell.date) return 'cal-day empty';
+
+            const d    = cell.date;
+            const row  = this.getData(d);
+            const base = 'cal-day ' + (row ? 'status-' + row.status : 'unset');
+
+            const isSelected  = this.selectedDates.includes(d);
+            const isRangeHov  = this.hoverRange.includes(d);
+            const isRangeStart= this.rangeStart === d;
+            const isRangeEnd  = this.hoverDate  === d && this.mode === 'range' && this.rangeStart;
+
+            const classes = [base];
+            if (isSelected && !isRangeStart) classes.push('selected');
+            if (isRangeStart) classes.push('range-start');
+            if (isRangeEnd)   classes.push('range-end');
+            if (isRangeHov && !isRangeStart) classes.push('in-range');
+
+            return classes.join(' ');
+        },
+
+        /* ── Click logic ─────────────────────────────── */
+        clickDay(dateStr) {
+            if (this.mode === 'single') {
+                const idx = this.selectedDates.indexOf(dateStr);
+                if (idx === -1) {
+                    this.selectedDates.push(dateStr);
+                } else {
+                    this.selectedDates.splice(idx, 1);
                 }
-            } catch (e) {
-                console.error(e);
-            } finally {
-                this.saving = false;
+                this.selectedDates.sort();
+                this.prefillForm();
+            } else {
+                // Range mode
+                if (!this.rangeStart) {
+                    this.rangeStart  = dateStr;
+                    this.selectedDates = [];
+                } else {
+                    const range = this.datesInRange(this.rangeStart, dateStr);
+                    this.selectedDates = range;
+                    this.rangeStart = null;
+                    this.hoverDate  = null;
+                    this.prefillForm();
+                }
+            }
+        },
+        deselectDate(dateStr) {
+            this.selectedDates = this.selectedDates.filter(d => d !== dateStr);
+            if (this.selectedDates.length > 0) this.prefillForm();
+        },
+        clearSelection() {
+            this.selectedDates = [];
+            this.rangeStart    = null;
+            this.hoverDate     = null;
+        },
+
+        /* ── Prefill form from first selected date ───── */
+        prefillForm() {
+            const first = this.selectedDates[0];
+            if (!first) return;
+            const row = this.getData(first);
+            if (row) {
+                this.form.status = row.status;
+                this.form.total  = row.total;
+                this.form.booked = row.booked;
             }
         },
 
-        async deleteRow() {
-            if (!confirm('Remove this start date? This cannot be undone.')) return;
-            this.saving = true;
-            try {
-                const res = await fetch(DELETE_URL, {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': CSRF, 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({ id: this.id })
-                });
-                if (res.ok) {
-                    const el = document.getElementById('row-' + this.id);
-                    if (el) {
-                        el.style.transition = 'opacity 0.3s';
-                        el.style.opacity    = '0';
-                        setTimeout(() => el.remove(), 300);
-                    }
-                }
-            } catch (e) {
-                console.error(e);
-            } finally {
-                this.saving = false;
+        /* ── Auto-derive status from inventory ───────── */
+        autoStatus() {
+            const total     = this.form.total || 0;
+            const booked    = this.form.booked || 0;
+            const remaining = Math.max(0, total - booked);
+            if (total <= 0) { this.form.status = 'open'; return; }
+            if (remaining === 0) { this.form.status = 'full'; return; }
+            if (remaining / total <= 0.20) { this.form.status = 'few_left'; return; }
+            this.form.status = 'open';
+        },
+
+        /* ── Month navigation ───────────────────────── */
+        prevMonth() {
+            if (this.month === 0) { this.month = 11; this.year--; }
+            else this.month--;
+        },
+        nextMonth() {
+            if (this.month === 11) { this.month = 0; this.year++; }
+            else this.month++;
+        },
+
+        /* ── AJAX: Apply to selection ─────────────────── */
+        async applyToSelection() {
+            if (!this.selectedDates.length || this.saving) return;
+            this.saving      = true;
+            this.saveMessage = '';
+            this.saveError   = false;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+            let ok = 0, fail = 0;
+
+            for (const dateStr of this.selectedDates) {
+                try {
+                    const res = await fetch('{{ route("center-panel.availability.schedule.update") }}', {
+                        method:  'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Content-Type': 'application/json',
+                            'Accept':       'application/json',
+                        },
+                        body: JSON.stringify({
+                            experience_id:    this.experienceId,
+                            accommodation_id: this.accommodationId,
+                            start_date:       dateStr,
+                            status:           this.form.status,
+                            total_rooms:      this.form.total  || 0,
+                            booked_rooms:     this.form.booked || 0,
+                        }),
+                    });
+                    if (res.ok) {
+                        const json = await res.json();
+                        this.data[dateStr] = {
+                            id:     json.id,
+                            status: json.status,
+                            total:  json.total,
+                            booked: json.booked,
+                        };
+                        ok++;
+                    } else { fail++; }
+                } catch (e) { fail++; }
             }
-        }
+
+            this.saving = false;
+            if (fail === 0) {
+                this.saveMessage = ok + ' date' + (ok > 1 ? 's' : '') + ' saved successfully.';
+            } else {
+                this.saveError   = true;
+                this.saveMessage = ok + ' saved, ' + fail + ' failed. Please retry.';
+            }
+            setTimeout(() => { this.saveMessage = ''; this.saveError = false; }, 4000);
+        },
+
+        /* ── AJAX: Remove from schedule ──────────────── */
+        async removeFromSchedule() {
+            if (!this.selectedDates.length || this.saving) return;
+            if (!confirm('Remove schedule data for ' + this.selectedDates.length + ' date(s)?')) return;
+
+            this.saving      = true;
+            this.saveMessage = '';
+            this.saveError   = false;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+            let ok = 0, fail = 0;
+
+            for (const dateStr of this.selectedDates) {
+                const row = this.getData(dateStr);
+                if (!row) continue;
+                try {
+                    const res = await fetch('{{ route("center-panel.availability.schedule.delete") }}', {
+                        method:  'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Content-Type': 'application/json',
+                            'Accept':       'application/json',
+                        },
+                        body: JSON.stringify({ id: row.id }),
+                    });
+                    if (res.ok) {
+                        delete this.data[dateStr];
+                        ok++;
+                    } else { fail++; }
+                } catch (e) { fail++; }
+            }
+
+            this.saving = false;
+            if (fail === 0) {
+                this.saveMessage = ok + ' date' + (ok > 1 ? 's' : '') + ' removed.';
+                this.selectedDates = this.selectedDates.filter(d => !this.getData(d) && this.data[d]);
+            } else {
+                this.saveError   = true;
+                this.saveMessage = ok + ' removed, ' + fail + ' failed.';
+            }
+            setTimeout(() => { this.saveMessage = ''; this.saveError = false; }, 4000);
+        },
     };
 }
 </script>

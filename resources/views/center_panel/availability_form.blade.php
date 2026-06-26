@@ -124,21 +124,27 @@
             {{-- ── Left Column: Accordion Cards ────────────────── --}}
             <div class="xl:col-span-8 space-y-4">
 
-                {{-- Occupancy legend --}}
-                <div class="glass-forest rounded-2xl px-5 py-4 flex flex-wrap items-center gap-4 bb-sans">
-                    <p class="text-xs font-bold text-[#1E2522] uppercase tracking-wide shrink-0">Pricing Structure:</p>
-                    <div class="flex flex-wrap gap-3">
+                {{-- Pricing structure legend --}}
+                <div class="glass-forest rounded-2xl px-5 py-4 bb-sans space-y-3">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <p class="text-xs font-bold text-[#1E2522] uppercase tracking-wide shrink-0">Pricing Dimensions:</p>
                         <span class="occupancy-badge bg-[#2F6F57]/10 text-[#2F6F57]">
-                            <i class="fa-solid fa-user text-[8px]"></i> Default / Per Guest
+                            <i class="fa-solid fa-moon text-[8px]"></i> Duration (nights)
                         </span>
                         <span class="occupancy-badge bg-amber-50 text-amber-700">
-                            <i class="fa-solid fa-person text-[8px]"></i> Single Room — solo occupant
+                            <i class="fa-solid fa-person text-[8px]"></i> Single Room
                         </span>
                         <span class="occupancy-badge bg-blue-50 text-blue-700">
-                            <i class="fa-solid fa-user-group text-[8px]"></i> Double — per person when 2 share
+                            <i class="fa-solid fa-user-group text-[8px]"></i> Double Room
+                        </span>
+                        <span class="occupancy-badge bg-rose-50 text-rose-600">
+                            <i class="fa-regular fa-calendar text-[8px]"></i> Season / Promo
                         </span>
                     </div>
-                    <p class="text-[11px] text-[#64748B] font-light w-full mt-0.5">Leave Single/Double blank to use the Default rate for all occupancies.</p>
+                    <p class="text-[11px] text-[#64748B] font-light">
+                        <strong class="text-[#1E2522]">Three layers:</strong>
+                        ① Set a per-night base rate below. ② Add <em>duration tiers</em> (total package price per 7/14/21-night stay). ③ Override any price for a specific date range or promotion. The most specific rule wins.
+                    </p>
                 </div>
 
                 {{-- Accommodation Accordion Cards --}}
@@ -256,7 +262,7 @@
                                 <div class="sm:col-span-3">
                                     <span class="price-label">
                                         <i class="fa-solid fa-person text-[8px] mr-0.5 text-amber-600"></i>
-                                        Single Room
+                                        Single Room <span class="normal-case font-normal tracking-normal">/night</span>
                                     </span>
                                     <input type="number" class="fi"
                                            name="accommodations[{{ $accom->id }}][single_base_price]"
@@ -268,7 +274,7 @@
                                 <div class="sm:col-span-3">
                                     <span class="price-label">
                                         <i class="fa-solid fa-user-group text-[8px] mr-0.5 text-blue-600"></i>
-                                        Double (each)
+                                        Double Room <span class="normal-case font-normal tracking-normal">/night</span>
                                     </span>
                                     <input type="number" class="fi"
                                            name="accommodations[{{ $accom->id }}][double_base_price]"
@@ -302,13 +308,68 @@
                             </div>
                         </div>
 
+                        {{-- ── Duration-Based Package Pricing ─────────── --}}
+                        @php $durPrices = $existingDurationPrices[$accom->id] ?? collect(); @endphp
+                        <div class="space-y-2.5">
+                            <div>
+                                <h4 class="text-xs font-bold text-[#1E2522] uppercase tracking-wide">Duration-Based Package Pricing</h4>
+                                <p class="text-[11px] text-[#64748B] font-light mt-0.5">
+                                    Total room price for the complete stay. Overrides the per-night base rate when a duration matches.
+                                </p>
+                            </div>
+                            @if($experienceDurations->isEmpty())
+                            <div class="rounded-2xl border border-dashed border-amber-200 bg-amber-50/60 py-4 px-4 text-center">
+                                <i class="fa-regular fa-clock text-amber-400 text-lg mb-1 block"></i>
+                                <p class="text-xs text-amber-700 font-semibold">No duration options defined</p>
+                                <p class="text-[11px] text-amber-600 font-light mt-0.5">Add duration options to this experience first (e.g. 7 nights, 14 nights).</p>
+                            </div>
+                            @else
+                            <div class="rounded-2xl border border-[#2F6F57]/12 overflow-hidden">
+                                <div class="grid grid-cols-3 bg-[#2F6F57]/5 px-4 py-2 border-b border-[#2F6F57]/10 gap-3">
+                                    <div class="text-[9px] font-bold uppercase tracking-wider text-[#64748B]">Duration</div>
+                                    <div class="text-[9px] font-bold uppercase tracking-wider text-amber-700">
+                                        <i class="fa-solid fa-person text-[8px] mr-0.5"></i> Single Room (total)
+                                    </div>
+                                    <div class="text-[9px] font-bold uppercase tracking-wider text-blue-700">
+                                        <i class="fa-solid fa-user-group text-[8px] mr-0.5"></i> Double Room (total)
+                                    </div>
+                                </div>
+                                @foreach($experienceDurations as $dur)
+                                @php $dp = $durPrices[$dur->duration] ?? null; @endphp
+                                <div class="grid grid-cols-3 gap-3 px-4 py-2.5 border-b border-[#2F6F57]/6 last:border-0 bg-white items-center">
+                                    <div>
+                                        <span class="text-xs font-bold text-[#1E2522]">{{ $dur->duration }} nights</span>
+                                        @if($dur->price) <span class="text-[10px] text-[#64748B] block font-light">base ₹{{ number_format($dur->price,0) }}</span> @endif
+                                    </div>
+                                    <div>
+                                        <input type="number" class="fi"
+                                               name="accommodations[{{ $accom->id }}][durations][{{ $dur->duration }}][single_price]"
+                                               value="{{ old("accommodations.{$accom->id}.durations.{$dur->duration}.single_price", $dp?->single_price ?? '') }}"
+                                               min="0" step="0.01" placeholder="e.g. 25000">
+                                    </div>
+                                    <div>
+                                        <input type="number" class="fi"
+                                               name="accommodations[{{ $accom->id }}][durations][{{ $dur->duration }}][double_price]"
+                                               value="{{ old("accommodations.{$accom->id}.durations.{$dur->duration}.double_price", $dp?->double_price ?? '') }}"
+                                               min="0" step="0.01" placeholder="e.g. 40000">
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                            <p class="text-[10px] text-[#64748B] font-light">
+                                <i class="fa-solid fa-circle-info text-[#2F6F57]/50 mr-0.5"></i>
+                                Enter the <strong>total room price for the full stay</strong> (e.g. ₹25,000 for a 7-night single room booking). Leave blank to fall back to the per-night base rate × nights.
+                            </p>
+                            @endif
+                        </div>
+
                         {{-- ── Seasonal Pricing Cards ──────────────────── --}}
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <h4 class="text-xs font-bold text-[#1E2522] uppercase tracking-wide">Seasonal Date-Range Overrides</h4>
+                                    <h4 class="text-xs font-bold text-[#1E2522] uppercase tracking-wide">Seasonal / Promotional Overrides</h4>
                                     <p class="text-[11px] text-[#64748B] font-light mt-0.5">
-                                        Override base rates for specific periods. Leave a price blank to inherit the base rate.
+                                        Override any price for a specific date range. Optionally filter by duration. Promo price overrides everything.
                                     </p>
                                 </div>
                                 <button type="button"
@@ -351,14 +412,19 @@
                                                    value="{{ $price->end_date }}">
                                         </div>
 
-                                        <div class="w-24">
-                                            <span class="price-label" title="Price applies only to bookings of this many nights (leave blank for all durations)">
-                                                Nights Filter <i class="fa-solid fa-circle-question text-[8px]"></i>
+                                        <div class="w-32">
+                                            <span class="price-label" title="Restrict this override to a specific retreat duration">
+                                                Duration <i class="fa-solid fa-circle-question text-[8px]"></i>
                                             </span>
-                                            <input type="number" class="fi"
-                                                   name="accommodations[{{ $accom->id }}][ranges][{{ $price->id }}][duration]"
-                                                   value="{{ $price->duration }}"
-                                                   min="1" placeholder="Any">
+                                            <select class="fi"
+                                                    name="accommodations[{{ $accom->id }}][ranges][{{ $price->id }}][duration]">
+                                                <option value="">Any Duration</option>
+                                                @foreach($experienceDurations as $dur)
+                                                <option value="{{ $dur->duration }}" {{ $price->duration == $dur->duration ? 'selected' : '' }}>
+                                                    {{ $dur->duration }} nights
+                                                </option>
+                                                @endforeach
+                                            </select>
                                         </div>
 
                                         <div class="shrink-0 pb-0.5">
@@ -440,11 +506,15 @@
                                             <input type="date" class="fi"
                                                    name="accommodations[{{ $accom->id }}][ranges][__IDX__][end_date]">
                                         </div>
-                                        <div class="w-24">
-                                            <span class="price-label" title="Leave blank to apply to all retreat durations">Nights Filter</span>
-                                            <input type="number" class="fi"
-                                                   name="accommodations[{{ $accom->id }}][ranges][__IDX__][duration]"
-                                                   min="1" placeholder="Any">
+                                        <div class="w-32">
+                                            <span class="price-label" title="Restrict this override to a specific retreat duration">Duration</span>
+                                            <select class="fi"
+                                                    name="accommodations[{{ $accom->id }}][ranges][__IDX__][duration]">
+                                                <option value="">Any Duration</option>
+                                                @foreach($experienceDurations as $dur)
+                                                <option value="{{ $dur->duration }}">{{ $dur->duration }} nights</option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                         <div class="shrink-0 pb-0.5">
                                             <button type="button"
@@ -582,22 +652,26 @@
                         <p class="text-xs font-bold text-[#2F6F57] flex items-center gap-1.5">
                             <i class="fa-solid fa-circle-info"></i> How Pricing Works
                         </p>
-                        <ul class="text-[11px] text-[#2F6F57]/80 space-y-2 leading-relaxed">
+                        <ul class="text-[11px] text-[#2F6F57]/80 space-y-2.5 leading-relaxed">
                             <li class="flex items-start gap-2">
-                                <span class="occupancy-badge bg-[#2F6F57]/10 text-[#2F6F57] shrink-0 mt-0.5">Default</span>
-                                <span>Fallback rate per guest. Used when no occupancy-specific price is set.</span>
+                                <span class="occupancy-badge bg-[#2F6F57]/10 text-[#2F6F57] shrink-0 mt-0.5">① Base</span>
+                                <span>Per-night rate. Fallback when nothing more specific is set.</span>
                             </li>
                             <li class="flex items-start gap-2">
+                                <span class="occupancy-badge bg-purple-50 text-purple-700 shrink-0 mt-0.5">② Duration</span>
+                                <span><strong>Total package price</strong> for a full stay (e.g. 7-night cottage ₹25,000). Overrides base × nights when duration matches.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="occupancy-badge bg-rose-50 text-rose-600 shrink-0 mt-0.5">③ Season</span>
+                                <span>Date-range override — can target a specific duration or all. Promo price overrides everything.</span>
+                            </li>
+                            <li class="flex items-start gap-2 pt-1 border-t border-[#2F6F57]/10">
                                 <span class="occupancy-badge bg-amber-50 text-amber-700 shrink-0 mt-0.5">Single</span>
-                                <span>Charged when one guest occupies a room alone (single supplement).</span>
+                                <span>Solo room occupancy total price.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <span class="occupancy-badge bg-blue-50 text-blue-700 shrink-0 mt-0.5">Double</span>
-                                <span>Per-person rate when 2 guests share. Each guest pays this amount.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fa-solid fa-calendar-days text-[#2F6F57]/50 text-xs shrink-0 mt-0.5"></i>
-                                <span><strong>Nights Filter</strong> — set a number to apply a range only when the booking duration matches that many nights.</span>
+                                <span>Total room price for 2-person occupancy.</span>
                             </li>
                         </ul>
                     </div>
