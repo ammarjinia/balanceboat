@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['experience_id', 'accommodation_id', 'duration_days'], 'exp_acc_dur_unique');
-            $table->index(['experience_id', 'accommodation_id']);
+            $table->index(['experience_id', 'accommodation_id'], 'exp_acc_dur_exp_acc_index');
         });
     }
 
