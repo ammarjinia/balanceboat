@@ -549,11 +549,31 @@
                         </p>
                         <button type="submit"
                                 class="w-full py-3 bg-[#2F6F57] text-white rounded-2xl text-sm font-bold hover:bg-[#255a46] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm shadow-[#2F6F57]/20">
-                            <i class="fa-solid fa-floppy-disk"></i> Save Availability
+                            <i class="fa-solid fa-floppy-disk"></i> Save Pricing
                         </button>
                         <a href="{{ route('center-panel.availability') }}"
                            class="w-full py-2.5 border border-[#2F6F57]/20 text-[#64748B] rounded-2xl text-xs font-semibold hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
                             <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Experiences
+                        </a>
+                    </div>
+
+                    {{-- Schedule Availability card --}}
+                    <div class="rounded-3xl border border-[#2F6F57]/20 bg-[#2F6F57]/4 p-4 space-y-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-xl bg-[#2F6F57]/10 flex items-center justify-center shrink-0">
+                                <i class="fa-regular fa-calendar-days text-[#2F6F57] text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-[#2F6F57]">Schedule Availability</p>
+                                <p class="text-[10px] text-[#2F6F57]/70 font-light">Manage per start date</p>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-[#2F6F57]/80 leading-relaxed font-light">
+                            After saving pricing, configure room inventory and Open/Few Left/Full/Closed status for each experience start date.
+                        </p>
+                        <a href="{{ route('center-panel.availability.schedule', $experience->id) }}"
+                           class="w-full py-2.5 bg-[#2F6F57] text-white rounded-2xl text-xs font-bold hover:bg-[#255a46] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm shadow-[#2F6F57]/20">
+                            <i class="fa-solid fa-calendar-check text-[11px]"></i> Manage Schedule
                         </a>
                     </div>
 

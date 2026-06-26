@@ -42,10 +42,11 @@
 
         {{-- Stats Row --}}
         @php
-            $totalConfigured = $accomCounts->filter(fn($c) => $c > 0)->count();
-            $totalPrices     = $priceCounts->sum();
+            $totalConfigured  = $accomCounts->filter(fn($c) => $c > 0)->count();
+            $totalPrices      = $priceCounts->sum();
+            $totalScheduled   = $scheduleCounts->sum();
         @endphp
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="glass rounded-3xl p-5 shadow-sm flex items-center gap-4">
                 <div class="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center shrink-0">
                     <i class="fa-regular fa-spa text-purple-500 text-base"></i>
@@ -70,7 +71,16 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-slate-900 leading-none">{{ $totalPrices }}</p>
-                    <p class="text-[11px] text-slate-500 mt-0.5">Price Ranges Defined</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Price Ranges</p>
+                </div>
+            </div>
+            <div class="glass rounded-3xl p-5 shadow-sm flex items-center gap-4">
+                <div class="w-10 h-10 rounded-2xl bg-teal-50 flex items-center justify-center shrink-0">
+                    <i class="fa-regular fa-calendar-days text-teal-500 text-base"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-slate-900 leading-none">{{ $totalScheduled }}</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Scheduled Dates</p>
                 </div>
             </div>
         </div>
@@ -124,7 +134,8 @@
                     </div>
 
                     {{-- Counts --}}
-                    <div class="flex items-center gap-2">
+                    @php $schedDates = $scheduleCounts[$experience->id] ?? 0; @endphp
+                    <div class="flex items-center gap-2 flex-wrap">
                         <span class="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 text-[11px] font-semibold px-2.5 py-1 rounded-xl">
                             <i class="fa-regular fa-bed text-[10px]"></i>
                             {{ $rooms }} {{ Str::plural('room type', $rooms) }}
@@ -133,15 +144,28 @@
                             <i class="fa-regular fa-tag text-[10px]"></i>
                             {{ $ranges }} {{ Str::plural('price range', $ranges) }}
                         </span>
+                        @if($schedDates > 0)
+                        <span class="inline-flex items-center gap-1.5 bg-teal-50 text-teal-700 text-[11px] font-semibold px-2.5 py-1 rounded-xl">
+                            <i class="fa-regular fa-calendar-days text-[10px]"></i>
+                            {{ $schedDates }} {{ Str::plural('start date', $schedDates) }}
+                        </span>
+                        @endif
                     </div>
 
-                    {{-- CTA --}}
-                    <div class="pt-2 border-t border-slate-100 mt-auto">
+                    {{-- CTAs --}}
+                    <div class="pt-2 border-t border-slate-100 mt-auto space-y-2">
                         <a href="{{ route('center-panel.availability.manage', $experience->id) }}"
                            class="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-semibold hover:bg-purple-700 active:scale-95 transition-all shadow-sm shadow-purple-200">
-                            <i class="fa-regular fa-calendar-days text-[11px]"></i>
+                            <i class="fa-regular fa-tag text-[11px]"></i>
                             {{ $isSetup ? 'Edit Pricing' : 'Set Up Pricing' }}
                         </a>
+                        @if($isSetup)
+                        <a href="{{ route('center-panel.availability.schedule', $experience->id) }}"
+                           class="w-full inline-flex items-center justify-center gap-2 py-2 rounded-xl border border-teal-200 text-teal-700 bg-teal-50 text-xs font-semibold hover:bg-teal-100 active:scale-95 transition-all">
+                            <i class="fa-regular fa-calendar-days text-[11px]"></i>
+                            {{ $schedDates > 0 ? 'Manage Schedule (' . $schedDates . ')' : 'Set Up Schedule' }}
+                        </a>
+                        @endif
                     </div>
                 </div>
 

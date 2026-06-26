@@ -8,9 +8,9 @@ use Session;
 use App\Centers;
 use App\Experiences;
 use App\Accomodation;
-use App\CenterAccomodations;
 use App\ExperienceAccomodations;
 use App\ExperienceAccomodationPrices;
+use App\ExperienceAccommodationAvailability;
 
 class CenterAvailabilityController extends Controller
 {
@@ -23,6 +23,8 @@ class CenterAvailabilityController extends Controller
     {
         $this->middleware('center.auth');
     }
+
+    // ── Pricing & Accommodation Configuration ─────────────────────────────────
 
     /**
      * List center's experiences to choose from.
@@ -48,16 +50,23 @@ class CenterAvailabilityController extends Controller
             ->groupBy('experience_id')
             ->pluck('total', 'experience_id');
 
+        // Count configured start dates per experience
+        $scheduleCounts = ExperienceAccommodationAvailability::whereIn('experience_id', $ids)
+            ->selectRaw('experience_id, COUNT(DISTINCT start_date) as total')
+            ->groupBy('experience_id')
+            ->pluck('total', 'experience_id');
+
         return view('center_panel.availability', [
-            'center'       => $center,
-            'experiences'  => $experiences,
-            'accomCounts'  => $accomCounts,
-            'priceCounts'  => $priceCounts,
+            'center'         => $center,
+            'experiences'    => $experiences,
+            'accomCounts'    => $accomCounts,
+            'priceCounts'    => $priceCounts,
+            'scheduleCounts' => $scheduleCounts,
         ]);
     }
 
     /**
-     * Show the availability management form for one experience.
+     * Show the pricing/accommodation form for one experience.
      */
     public function manage($experienceId)
     {
@@ -68,19 +77,16 @@ class CenterAvailabilityController extends Controller
             ->where('center_id', $centerId)
             ->firstOrFail();
 
-        // All accommodations linked to this center
         $centerAccommodations = Accomodation::select('accomodation.*')
             ->join('center_accomodations', 'center_accomodations.accomodation_id', '=', 'accomodation.id')
             ->where('center_accomodations.center_id', $centerId)
             ->orderBy('accomodation.name')
             ->get();
 
-        // Existing ExperienceAccomodations keyed by accomodation.id (stored in the `title` column)
         $existingEA = ExperienceAccomodations::where('experience_id', $experienceId)
             ->get()
             ->keyBy('title');
 
-        // Existing prices grouped by accomodation_id
         $existingPrices = ExperienceAccomodationPrices::where('experience_id', $experienceId)
             ->orderBy('start_date')
             ->get()
@@ -97,7 +103,7 @@ class CenterAvailabilityController extends Controller
     }
 
     /**
-     * Save availability settings for an experience.
+     * Save pricing settings for an experience.
      */
     public function save(Request $request, $experienceId)
     {
@@ -115,7 +121,6 @@ class CenterAvailabilityController extends Controller
             $eaId     = $data['ea_id'] ?? null;
 
             if ($included) {
-                // Find existing or create new ExperienceAccomodations record
                 $ea = null;
                 if ($eaId) {
                     $ea = ExperienceAccomodations::find($eaId);
@@ -135,7 +140,6 @@ class CenterAvailabilityController extends Controller
                 $ea->accomodation_default      = ($defaultAccomId == $accomId) ? 1 : 0;
                 $ea->save();
 
-                // Track submitted price IDs to detect deleted rows
                 $submittedPriceIds = [];
 
                 foreach ($data['ranges'] ?? [] as $range) {
@@ -151,8 +155,8 @@ class CenterAvailabilityController extends Controller
                             ->first();
                     }
                     if (!$price) {
-                        $price                = new ExperienceAccomodationPrices();
-                        $price->experience_id = $experienceId;
+                        $price                  = new ExperienceAccomodationPrices();
+                        $price->experience_id   = $experienceId;
                         $price->accomodation_id = $accomId;
                     }
 
@@ -170,7 +174,6 @@ class CenterAvailabilityController extends Controller
                     $submittedPriceIds[] = $price->id;
                 }
 
-                // Delete price rows that were removed in the form
                 ExperienceAccomodationPrices::where('experience_id', $experienceId)
                     ->where('accomodation_id', $accomId)
                     ->when(!empty($submittedPriceIds), fn($q) => $q->whereNotIn('id', $submittedPriceIds))
@@ -178,7 +181,6 @@ class CenterAvailabilityController extends Controller
                     ->delete();
 
             } elseif ($eaId) {
-                // Toggled off — remove this accommodation from the experience
                 ExperienceAccomodationPrices::where('experience_id', $experienceId)
                     ->where('accomodation_id', $accomId)
                     ->delete();
@@ -211,9 +213,192 @@ class CenterAvailabilityController extends Controller
         echo 'error';
     }
 
+    // ── Schedule / Start-Date Availability ───────────────────────────────────
+
     /**
-     * Return null for empty/zero values, or cast to float.
+     * Show the start-date availability manager for an experience.
      */
+    public function manageSchedule($experienceId)
+    {
+        $centerId = Session::get('center_id');
+
+        $experience = Experiences::where('id', $experienceId)
+            ->where('center_id', $centerId)
+            ->firstOrFail();
+
+        // Accommodations already linked & priced for this experience
+        $linkedAccoms = ExperienceAccomodations::where('experience_id', $experienceId)
+            ->get();
+
+        if ($linkedAccoms->isEmpty()) {
+            return redirect()
+                ->route('center-panel.availability.manage', $experienceId)
+                ->with('error', 'Please configure accommodation pricing first before managing schedule availability.');
+        }
+
+        $accomIds = $linkedAccoms->pluck('title')->map(fn($v) => (int) $v)->toArray();
+
+        $accommodations = Accomodation::whereIn('id', $accomIds)
+            ->orderBy('name')
+            ->get();
+
+        // Which accommodation tab is selected?
+        $selectedAccomId = (int) request('accom', $accommodations->first()?->id ?? 0);
+
+        // All availability rows for selected accommodation in this experience
+        $availabilityRows = ExperienceAccommodationAvailability::where('experience_id', $experienceId)
+            ->where('accommodation_id', $selectedAccomId)
+            ->orderBy('start_date')
+            ->get();
+
+        // Overview matrix: all accommodations × all unique start dates (upcoming)
+        $allRows = ExperienceAccommodationAvailability::where('experience_id', $experienceId)
+            ->whereIn('accommodation_id', $accomIds)
+            ->orderBy('start_date')
+            ->get();
+
+        $uniqueDates = $allRows->pluck('start_date')->unique()->sortBy(fn($d) => $d)->values();
+
+        // Build matrix: accommodation_id → date_string → row
+        $matrix = [];
+        foreach ($allRows as $row) {
+            $matrix[$row->accommodation_id][$row->start_date->toDateString()] = $row;
+        }
+
+        return view('center_panel.schedule_availability', [
+            'experience'       => $experience,
+            'accommodations'   => $accommodations,
+            'selectedAccomId'  => $selectedAccomId,
+            'availabilityRows' => $availabilityRows,
+            'uniqueDates'      => $uniqueDates,
+            'matrix'           => $matrix,
+            'statusList'       => ExperienceAccommodationAvailability::statusList(),
+        ]);
+    }
+
+    /**
+     * Bulk-save all rows for one accommodation via form POST.
+     */
+    public function saveSchedule(Request $request, $experienceId)
+    {
+        $centerId = Session::get('center_id');
+
+        $experience = Experiences::where('id', $experienceId)
+            ->where('center_id', $centerId)
+            ->firstOrFail();
+
+        $accomId = (int) $request->input('accommodation_id');
+        $rows    = $request->input('rows', []);
+
+        foreach ($rows as $row) {
+            if (empty($row['start_date'])) continue;
+
+            $total  = max(0, (int) ($row['total_rooms']  ?? 0));
+            $booked = max(0, min($total, (int) ($row['booked_rooms'] ?? 0)));
+            $status = in_array($row['status'] ?? '', ['open','few_left','full','closed'])
+                ? $row['status']
+                : ExperienceAccommodationAvailability::deriveStatus($total, $booked);
+
+            ExperienceAccommodationAvailability::updateOrCreate(
+                [
+                    'experience_id'    => $experienceId,
+                    'accommodation_id' => $accomId,
+                    'start_date'       => $row['start_date'],
+                ],
+                [
+                    'status'       => $status,
+                    'total_rooms'  => $total,
+                    'booked_rooms' => $booked,
+                ]
+            );
+        }
+
+        return redirect()
+            ->route('center-panel.availability.schedule', [$experienceId, 'accom' => $accomId])
+            ->with('success', 'Schedule availability saved successfully.');
+    }
+
+    /**
+     * AJAX: add or update a single start-date row.
+     */
+    public function updateStartDate(Request $request)
+    {
+        $centerId = Session::get('center_id');
+
+        $experienceId = (int) $request->input('experience_id');
+        $accomId      = (int) $request->input('accommodation_id');
+        $startDate    = $request->input('start_date');
+        $total        = max(0, (int) $request->input('total_rooms', 0));
+        $booked       = max(0, min($total, (int) $request->input('booked_rooms', 0)));
+        $status       = $request->input('status', '');
+
+        if (!$experienceId || !$accomId || !$startDate) {
+            return response()->json(['error' => 'Missing required fields'], 422);
+        }
+
+        $belongs = Experiences::where('id', $experienceId)
+            ->where('center_id', $centerId)
+            ->exists();
+
+        if (!$belongs) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        if (!in_array($status, ['open', 'few_left', 'full', 'closed'])) {
+            $status = ExperienceAccommodationAvailability::deriveStatus($total, $booked);
+        }
+
+        $row = ExperienceAccommodationAvailability::updateOrCreate(
+            [
+                'experience_id'    => $experienceId,
+                'accommodation_id' => $accomId,
+                'start_date'       => $startDate,
+            ],
+            [
+                'status'       => $status,
+                'total_rooms'  => $total,
+                'booked_rooms' => $booked,
+            ]
+        );
+
+        return response()->json([
+            'id'        => $row->id,
+            'status'    => $row->status,
+            'label'     => ExperienceAccommodationAvailability::statusLabel($row->status),
+            'total'     => $row->total_rooms,
+            'booked'    => $row->booked_rooms,
+            'remaining' => $row->remaining,
+        ]);
+    }
+
+    /**
+     * AJAX: delete a start-date availability row.
+     */
+    public function deleteStartDate(Request $request)
+    {
+        $centerId = Session::get('center_id');
+
+        $id = (int) $request->input('id');
+        $row = ExperienceAccommodationAvailability::find($id);
+
+        if (!$row) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
+        $belongs = Experiences::where('id', $row->experience_id)
+            ->where('center_id', $centerId)
+            ->exists();
+
+        if (!$belongs) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $row->delete();
+        return response()->json(['success' => true]);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
     private function nullableDecimal($value): ?float
     {
         if ($value === null || $value === '') return null;
