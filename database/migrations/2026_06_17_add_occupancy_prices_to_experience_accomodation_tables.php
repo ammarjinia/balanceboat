@@ -35,4 +35,4 @@ return new class extends Migration
             $table->dropColumn(['single_occupancy_price', 'double_occupancy_price']);
         });
     }
-}
+};

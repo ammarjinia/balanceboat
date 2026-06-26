@@ -34,4 +34,4 @@ return new class extends Migration
             $table->dropColumn(['retreat_type', 'destination', 'budget', 'timeline', 'whatsapp']);
         });
     }
-}
+};
