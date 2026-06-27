@@ -100,8 +100,7 @@ class CenterAvailabilityController extends Controller
         return view('center_panel.availability_form', compact(
             'center', 'experience', 'centerAccommodations',
             'existingEA', 'existingPrices',
-            'experienceDurations', 'existingDurationPrices',
-            'currencies'
+            'experienceDurations', 'existingDurationPrices'
         ) + ['currencies' => self::CURRENCIES]);
     }
 
