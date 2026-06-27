@@ -15,6 +15,7 @@ use App\Amenities;
 use App\CenterImageGallery;
 use App\ExperienceCategory;
 use App\ExperienceImageGallery;
+use App\ExperienceDurationPrices;
 use Illuminate\Support\Str;
 
 class CenterDashboardController extends Controller
@@ -359,11 +360,12 @@ class CenterDashboardController extends Controller
         $center   = Centers::findOrFail($centerId);
 
         return view('center_panel.experience_form', array_merge($this->experienceFormData(), [
-            'center'     => $center,
-            'userName'   => Session::get('center_user_name'),
-            'experience' => null,
-            'pageTitle'  => 'Create New Retreat Program',
-            'formAction' => route('center-panel.experience.store'),
+            'center'                   => $center,
+            'userName'                 => Session::get('center_user_name'),
+            'experience'               => null,
+            'experienceDurationPrices' => collect(),
+            'pageTitle'                => 'Create New Retreat Program',
+            'formAction'               => route('center-panel.experience.store'),
         ]));
     }
 
@@ -379,6 +381,7 @@ class CenterDashboardController extends Controller
         $this->fillExperienceFromRequest($exp, $request, $centerId, $slug);
         $exp->save();
 
+        $this->syncDurationPrices($exp->id, $request);
         $this->syncCategories($exp->id, $request->input('experience_category_id', []));
         $this->syncGalleryImages($exp->id, $request->file('image_galleries', []));
 
@@ -396,12 +399,16 @@ class CenterDashboardController extends Controller
         $experience->selectedCategories = ExperienceCategory::where('experience_id', $id)
             ->pluck('category_id')->toArray();
 
+        $experienceDurationPrices = ExperienceDurationPrices::where('experience_id', $id)
+            ->orderBy('duration')->get();
+
         return view('center_panel.experience_form', array_merge($this->experienceFormData(), [
-            'center'     => $center,
-            'userName'   => Session::get('center_user_name'),
-            'experience' => $experience,
-            'pageTitle'  => 'Edit Retreat Program',
-            'formAction' => route('center-panel.experience.update', $id),
+            'center'                   => $center,
+            'userName'                 => Session::get('center_user_name'),
+            'experience'               => $experience,
+            'experienceDurationPrices' => $experienceDurationPrices,
+            'pageTitle'                => 'Edit Retreat Program',
+            'formAction'               => route('center-panel.experience.update', $id),
         ]));
     }
 
@@ -416,6 +423,7 @@ class CenterDashboardController extends Controller
         $this->fillExperienceFromRequest($exp, $request, $centerId, $slug);
         $exp->save();
 
+        $this->syncDurationPrices($id, $request);
         $this->syncCategories($id, $request->input('experience_category_id', []));
         $this->syncGalleryImages($id, $request->file('image_galleries', []));
 
@@ -438,7 +446,9 @@ class CenterDashboardController extends Controller
         $exp->how_to_get_here     = $request->input('how_to_get_here');
         $exp->booking_info        = $request->input('booking_info');
         $exp->batch_size          = $request->input('batch_size');
-        $exp->duration            = $request->input('duration');
+        // Set duration to the minimum submitted duration (from the packages list)
+        $durations = array_filter(array_map('intval', $request->input('durations', [])));
+        $exp->duration = !empty($durations) ? min($durations) : ($request->input('duration') ?: 7);
         $exp->avg_price           = $request->input('avg_price');
         $exp->currency            = $request->input('currency', 'INR');
         $exp->is_bookable         = $request->input('is_bookable', 1);
@@ -485,6 +495,29 @@ class CenterDashboardController extends Controller
             $file->storeAs($folderName, $filename, ['disk' => 'azure']);
             $exp->banner_image_url   = $folderName . "/" . $filename;
             $exp->banner_image_title = $file->getClientOriginalName();
+        }
+    }
+
+    private function syncDurationPrices(int $experienceId, Request $request): void
+    {
+        $durations      = $request->input('durations', []);
+        $prices         = $request->input('duration_price', []);
+        $promoPrices    = $request->input('promo_price', []);
+        $currencies     = $request->input('duration_currency', []);
+
+        ExperienceDurationPrices::where('experience_id', $experienceId)->delete();
+
+        foreach ($durations as $key => $nights) {
+            $nights = (int) $nights;
+            if ($nights <= 0) continue;
+
+            $row = new ExperienceDurationPrices();
+            $row->experience_id = $experienceId;
+            $row->duration      = $nights;
+            $row->price         = isset($prices[$key]) && $prices[$key] !== '' ? (float) $prices[$key] : null;
+            $row->promo_price   = isset($promoPrices[$key]) && $promoPrices[$key] !== '' ? (float) $promoPrices[$key] : null;
+            $row->currency      = $currencies[$key] ?? 'INR';
+            $row->save();
         }
     }
 

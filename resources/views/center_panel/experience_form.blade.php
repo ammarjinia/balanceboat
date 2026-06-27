@@ -369,9 +369,9 @@
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900">Pricing & Duration</h3>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                        <label class="wiz-label">Base Price (per person)</label>
+                        <label class="wiz-label">Base / Display Price (per person)</label>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-mono">
                                 {{ $experience?->currency === 'USD' ? '$' : ($experience?->currency === 'EUR' ? '€' : '₹') }}
@@ -380,10 +380,11 @@
                                    value="{{ old('avg_price', $experience?->avg_price) }}"
                                    class="wiz-input pl-7 font-mono" placeholder="0.00">
                         </div>
+                        <p class="text-[10px] text-slate-400 mt-1">Shown on listing card as "starting from" price.</p>
                     </div>
 
                     <div>
-                        <label class="wiz-label">Currency</label>
+                        <label class="wiz-label">Default Currency</label>
                         <select name="currency" class="wiz-input">
                             @foreach($currencies as $code => $label)
                                 <option value="{{ $code }}" {{ old('currency', $experience?->currency ?? 'INR') === $code ? 'selected' : '' }}>
@@ -392,13 +393,80 @@
                             @endforeach
                         </select>
                     </div>
+                </div>
 
-                    <div>
-                        <label class="wiz-label">Duration (nights)</label>
-                        <input type="number" name="duration" min="1" max="365"
-                               value="{{ old('duration', $experience?->duration ?? 7) }}"
-                               class="wiz-input font-mono" placeholder="7">
+                {{-- Duration Packages --}}
+                @php
+                    $existingDurations = $experienceDurationPrices->map(fn($d) => [
+                        'nights'      => $d->duration,
+                        'price'       => $d->price ?? '',
+                        'promo_price' => $d->promo_price ?? '',
+                        'currency'    => $d->currency ?? 'INR',
+                    ])->values()->toArray();
+                    if (empty($existingDurations)) {
+                        $existingDurations = [['nights' => 7, 'price' => '', 'promo_price' => '', 'currency' => old('currency', $experience?->currency ?? 'INR')]];
+                    }
+                @endphp
+                <div x-data="durationPkgs(@json($existingDurations))" class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="wiz-label mb-0">Duration Packages</label>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Add one row per retreat length (e.g. 7 nights, 14 nights). These appear in booking and availability pricing.</p>
+                        </div>
+                        <button type="button" @click="add()"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold hover:bg-amber-100 transition-all shrink-0">
+                            <i class="fa-solid fa-plus text-[10px]"></i> Add
+                        </button>
                     </div>
+
+                    <div class="space-y-2">
+                        <template x-for="(row, idx) in rows" :key="idx">
+                            <div class="flex flex-wrap items-end gap-2 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                                <div class="w-24 shrink-0">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Nights</span>
+                                    <input type="number" :name="'durations[' + idx + ']'"
+                                           x-model.number="row.nights"
+                                           min="1" max="365" placeholder="7"
+                                           class="wiz-input font-mono text-sm py-2">
+                                </div>
+                                <div class="flex-1 min-w-[100px]">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Price (per person)</span>
+                                    <input type="number" :name="'duration_price[' + idx + ']'"
+                                           x-model="row.price"
+                                           min="0" step="0.01" placeholder="e.g. 25000"
+                                           class="wiz-input font-mono text-sm py-2">
+                                </div>
+                                <div class="flex-1 min-w-[100px]">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Promo Price <span class="normal-case font-normal">(optional)</span></span>
+                                    <input type="number" :name="'promo_price[' + idx + ']'"
+                                           x-model="row.promo_price"
+                                           min="0" step="0.01" placeholder="Optional"
+                                           class="wiz-input font-mono text-sm py-2">
+                                </div>
+                                <div class="w-28 shrink-0">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Currency</span>
+                                    <select :name="'duration_currency[' + idx + ']'"
+                                            x-model="row.currency"
+                                            class="wiz-input text-sm py-2">
+                                        @foreach($currencies as $code => $label)
+                                        <option value="{{ $code }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="shrink-0 pb-0.5">
+                                    <button type="button" @click="remove(idx)"
+                                            x-show="rows.length > 1"
+                                            class="h-[38px] w-8 flex items-center justify-center rounded-xl bg-rose-50 text-rose-400 hover:bg-rose-100 hover:text-rose-600 transition-all border border-rose-100">
+                                        <i class="fa-regular fa-trash-can text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <p class="text-[10px] text-slate-400">
+                        <i class="fa-solid fa-circle-info mr-0.5"></i>
+                        The smallest duration is used as the retreat's primary duration on listing pages.
+                    </p>
                 </div>
 
                 <div class="p-4 bg-purple-50/60 border border-purple-100 rounded-2xl space-y-3">
@@ -960,6 +1028,21 @@ document.addEventListener('alpine:init', () => {
         }
     }));
 });
+
+// ══════════════════════════════════════════════════════════════
+// DURATION PACKAGES — Dynamic multi-row duration manager
+// ══════════════════════════════════════════════════════════════
+function durationPkgs(initial) {
+    return {
+        rows: initial && initial.length ? initial : [{ nights: 7, price: '', promo_price: '', currency: 'INR' }],
+        add() {
+            this.rows.push({ nights: '', price: '', promo_price: '', currency: this.rows[this.rows.length - 1]?.currency ?? 'INR' });
+        },
+        remove(idx) {
+            if (this.rows.length > 1) this.rows.splice(idx, 1);
+        },
+    };
+}
 
 // ══════════════════════════════════════════════════════════════
 // SCHEDULE BUILDER — Interactive timeline for daily schedule
