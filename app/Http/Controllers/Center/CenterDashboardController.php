@@ -108,8 +108,15 @@ class CenterDashboardController extends Controller
         $center = Centers::findOrFail($centerId);
         $experiences = Experiences::where('center_id', $centerId)->orderBy("id", "DESC")->paginate(15);
 
+        // Load duration packages for all experiences on this page, grouped by experience_id
+        $expIds = $experiences->pluck('id')->toArray();
+        $durationPackages = ExperienceDurationPrices::whereIn('experience_id', $expIds)
+            ->orderBy('duration')
+            ->get()
+            ->groupBy('experience_id');
+
         $totalExperiences = Experiences::where('center_id', $centerId)->count();
-        $totalBookings = 0;//Bookings::where('center_id', $centerId)->count();
+        $totalBookings = 0;
         $activeDistributionListings = intval(ceil($totalExperiences * 0.6));
         $upcomingCyclePipelines = max(0, min(12, intval(floor($totalExperiences / 2))));
         $pipelineOccupancyVelocity = $totalBookings > 0
@@ -120,14 +127,15 @@ class CenterDashboardController extends Controller
             ->value('name') ?? 'Retreat Program';
 
         return view('center_panel.experiences', [
-            'center' => $center,
-            'userName' => Session::get('center_user_name'),
-            'experiences' => $experiences,
-            'totalExperiences' => $totalExperiences,
+            'center'                     => $center,
+            'userName'                   => Session::get('center_user_name'),
+            'experiences'                => $experiences,
+            'durationPackages'           => $durationPackages,
+            'totalExperiences'           => $totalExperiences,
             'activeDistributionListings' => $activeDistributionListings,
-            'upcomingCyclePipelines' => $upcomingCyclePipelines,
-            'pipelineOccupancyVelocity' => $pipelineOccupancyVelocity,
-            'topConvertingProgramName' => $topConvertingProgramName,
+            'upcomingCyclePipelines'     => $upcomingCyclePipelines,
+            'pipelineOccupancyVelocity'  => $pipelineOccupancyVelocity,
+            'topConvertingProgramName'   => $topConvertingProgramName,
         ]);
     }
 

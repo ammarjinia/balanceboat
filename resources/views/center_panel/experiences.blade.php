@@ -74,8 +74,9 @@
                             <div class="flex flex-col lg:flex-row items-start gap-5">
                                 <div class="h-28 w-full lg:w-40 bg-slate-100 rounded-3xl overflow-hidden shrink-0 border relative">
                                     <img src="https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=500&q=80" alt="Retreat" class="w-full h-full object-cover">
+                                    @php $pkgsBadge = $durationPackages[$exp->id] ?? collect(); @endphp
                                     <span class="absolute bottom-3 right-3 bg-black/70 text-white text-[9px] font-mono px-2 py-1 rounded-xl">
-                                        {{ $exp->duration ?? '7D' }} Module
+                                        {{ $pkgsBadge->isNotEmpty() ? $pkgsBadge->pluck('duration')->implode('/') . 'N' : ($exp->duration ? preg_replace('/[^0-9\/,\-]/','',$exp->duration).'N' : '?N') }}
                                     </span>
                                 </div>
                                 <div class="space-y-3 min-w-0 pr-16">
@@ -100,7 +101,22 @@
                                     </div>
                                     <div>
                                         <span class="block text-[9px] font-medium text-slate-400 uppercase">Duration</span>
-                                        <span class="font-mono text-slate-900 font-bold">{{ $exp->duration ?? '—' }} <span class="text-[9px] text-slate-400 font-normal">nights</span></span>
+                                        @php
+                                            $pkgs = $durationPackages[$exp->id] ?? collect();
+                                        @endphp
+                                        @if($pkgs->isNotEmpty())
+                                            <span class="font-mono text-slate-900 font-bold">
+                                                {{ $pkgs->pluck('duration')->implode(' · ') }}
+                                                <span class="text-[9px] text-slate-400 font-normal">nights</span>
+                                            </span>
+                                        @elseif($exp->duration)
+                                            <span class="font-mono text-slate-900 font-bold">
+                                                {{ preg_replace('/[^0-9,\. ·\-]/','', $exp->duration) ?: $exp->duration }}
+                                                <span class="text-[9px] text-slate-400 font-normal">nights</span>
+                                            </span>
+                                        @else
+                                            <span class="text-slate-400">—</span>
+                                        @endif
                                     </div>
                                     <div>
                                         <span class="block text-[9px] font-medium text-slate-400 uppercase">Status</span>
