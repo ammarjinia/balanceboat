@@ -407,7 +407,7 @@
                         $existingDurations = [['nights' => 7, 'price' => '', 'promo_price' => '', 'currency' => old('currency', $experience?->currency ?? 'INR')]];
                     }
                 @endphp
-                <div x-data="durationPkgs(@json($existingDurations))" class="space-y-3">
+                <div x-data='durationPkgs(@json($existingDurations))' class="space-y-3">
                     <div class="flex items-center justify-between">
                         <div>
                             <label class="wiz-label mb-0">Duration Packages</label>
