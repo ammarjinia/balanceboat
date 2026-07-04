@@ -81,7 +81,7 @@
             <p class="text-[10px] font-bold uppercase tracking-widest text-[#2F6F57] mb-1">Experience Pricing Configuration</p>
             <h1 class="bb-serif text-3xl font-medium text-[#1E2522]">{{ $experience->name }}</h1>
             <p class="text-[#64748B] text-sm mt-1 font-light">
-                Toggle accommodations on/off, set base rates per occupancy type, then add date-range seasonal overrides.
+                Toggle accommodations on/off, then set seasonal single/double occupancy pricing for date ranges.
             </p>
         </div>
     </div>
@@ -142,8 +142,8 @@
                         </span>
                     </div>
                     <p class="text-[11px] text-[#64748B] font-light">
-                        <strong class="text-[#1E2522]">Three layers:</strong>
-                        ① Set a per-night base rate below. ② Add <em>duration tiers</em> (total package price per 7/14/21-night stay). ③ Override any price for a specific date range or promotion. The most specific rule wins.
+                        <strong class="text-[#1E2522]">Two layers:</strong>
+                        ① Add <em>duration tiers</em> (total package price per 7/14/21-night stay). ② Set seasonal single/double occupancy pricing for a date range, with optional promo pricing. The most specific rule wins.
                     </p>
                 </div>
 
@@ -152,7 +152,6 @@
                 @php
                     $ea         = $existingEA[$accom->id] ?? null;
                     $isIncluded = !is_null($ea);
-                    $isDefault  = $ea && $ea->accomodation_default == 1;
                     $prices     = $existingPrices[$accom->id] ?? collect();
                 @endphp
 
@@ -192,11 +191,6 @@
                                     <i class="fa-solid fa-user text-[8px]"></i> {{ $accom->max_guest_in_room }} max
                                 </span>
                                 @endif
-                                @if($isDefault)
-                                <span class="occupancy-badge bg-[#D4AF37]/15 text-amber-700">
-                                    <i class="fa-solid fa-star text-[8px]"></i> Default
-                                </span>
-                                @endif
                                 @if($prices->count())
                                 <span class="occupancy-badge bg-[#2F6F57]/10 text-[#2F6F57]">
                                     {{ $prices->count() }} seasonal {{ $prices->count() == 1 ? 'range' : 'ranges' }}
@@ -205,10 +199,8 @@
                             </div>
                             @if($ea)
                             <p class="text-[11px] text-[#64748B] font-light mt-0.5">
-                                Base {{ $ea->currency }}
-                                {{ $ea->price_per_night_per_guest ? number_format($ea->price_per_night_per_guest, 0) : '—' }}/night
-                                @if($ea->single_occupancy_price) · Single {{ number_format($ea->single_occupancy_price, 0) }} @endif
-                                @if($ea->double_occupancy_price) · Double {{ number_format($ea->double_occupancy_price, 0) }}/ea @endif
+                                Currency: {{ $ea->currency }}
+                                @if($prices->isEmpty()) · No seasonal pricing set yet @endif
                             </p>
                             @else
                             <p class="text-[11px] text-[#64748B] font-light mt-0.5" x-show="!included">Toggle on to configure pricing</p>
@@ -237,75 +229,16 @@
                         <input type="hidden" name="accommodations[{{ $accom->id }}][ea_id]" value="{{ $ea->id }}">
                         @endif
 
-                        {{-- ── Base Rates ─────────────────────────────── --}}
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <h4 class="text-xs font-bold text-[#1E2522] uppercase tracking-wide">Base Rates</h4>
-                                <span class="text-[10px] text-[#64748B] font-light">Used when no date range overrides apply</span>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-
-                                {{-- Default per guest --}}
-                                <div class="sm:col-span-3">
-                                    <span class="price-label">
-                                        <i class="fa-solid fa-user text-[8px] mr-0.5 text-[#2F6F57]"></i>
-                                        Default / Guest
-                                    </span>
-                                    <input type="number" class="fi"
-                                           name="accommodations[{{ $accom->id }}][base_price]"
-                                           value="{{ old('accommodations.'.$accom->id.'.base_price', $ea->price_per_night_per_guest ?? '') }}"
-                                           min="0" step="0.01" placeholder="0.00">
-                                </div>
-
-                                {{-- Single occupancy --}}
-                                <div class="sm:col-span-3">
-                                    <span class="price-label">
-                                        <i class="fa-solid fa-person text-[8px] mr-0.5 text-amber-600"></i>
-                                        Single Room <span class="normal-case font-normal tracking-normal">/night</span>
-                                    </span>
-                                    <input type="number" class="fi"
-                                           name="accommodations[{{ $accom->id }}][single_base_price]"
-                                           value="{{ old('accommodations.'.$accom->id.'.single_base_price', $ea->single_occupancy_price ?? '') }}"
-                                           min="0" step="0.01" placeholder="Optional">
-                                </div>
-
-                                {{-- Double occupancy --}}
-                                <div class="sm:col-span-3">
-                                    <span class="price-label">
-                                        <i class="fa-solid fa-user-group text-[8px] mr-0.5 text-blue-600"></i>
-                                        Double Room <span class="normal-case font-normal tracking-normal">/night</span>
-                                    </span>
-                                    <input type="number" class="fi"
-                                           name="accommodations[{{ $accom->id }}][double_base_price]"
-                                           value="{{ old('accommodations.'.$accom->id.'.double_base_price', $ea->double_occupancy_price ?? '') }}"
-                                           min="0" step="0.01" placeholder="Optional">
-                                </div>
-
-                                {{-- Currency --}}
-                                <div class="sm:col-span-2">
-                                    <span class="price-label">Currency</span>
-                                    <select class="fi" name="accommodations[{{ $accom->id }}][currency]">
-                                        @foreach($currencies as $code => $label)
-                                            <option value="{{ $code }}" {{ ($ea->currency ?? 'INR') === $code ? 'selected' : '' }}>
-                                                {{ $label }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                {{-- Default radio --}}
-                                <div class="sm:col-span-1 flex items-end pb-1">
-                                    <label class="flex flex-col items-center gap-1 cursor-pointer group">
-                                        <span class="text-[9px] font-bold uppercase tracking-wider text-[#64748B] group-hover:text-amber-600 transition-colors text-center">Default Room</span>
-                                        <input type="radio"
-                                               name="default_accommodation"
-                                               value="{{ $accom->id }}"
-                                               {{ $isDefault ? 'checked' : '' }}
-                                               class="w-4 h-4 accent-amber-500">
-                                    </label>
-                                </div>
-                            </div>
+                        {{-- ── Currency ─────────────────────────────────── --}}
+                        <div class="flex items-center gap-3">
+                            <span class="price-label mb-0">Currency</span>
+                            <select class="fi max-w-[160px]" name="accommodations[{{ $accom->id }}][currency]">
+                                @foreach($currencies as $code => $label)
+                                    <option value="{{ $code }}" {{ ($ea->currency ?? 'INR') === $code ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         {{-- ── Duration-Based Package Pricing ─────────── --}}
@@ -314,7 +247,7 @@
                             <div>
                                 <h4 class="text-xs font-bold text-[#1E2522] uppercase tracking-wide">Duration-Based Package Pricing</h4>
                                 <p class="text-[11px] text-[#64748B] font-light mt-0.5">
-                                    Total room price for the complete stay. Overrides the per-night base rate when a duration matches.
+                                    Total room price for the complete stay. Overrides seasonal per-night pricing when a duration matches.
                                 </p>
                             </div>
                             @if($experienceDurations->isEmpty())
@@ -358,7 +291,7 @@
                             </div>
                             <p class="text-[10px] text-[#64748B] font-light">
                                 <i class="fa-solid fa-circle-info text-[#2F6F57]/50 mr-0.5"></i>
-                                Enter the <strong>total room price for the full stay</strong> (e.g. ₹25,000 for a 7-night single room booking). Leave blank to fall back to the per-night base rate × nights.
+                                Enter the <strong>total room price for the full stay</strong> (e.g. ₹25,000 for a 7-night single room booking). Leave blank to fall back to seasonal per-night pricing × nights.
                             </p>
                             @endif
                         </div>
@@ -367,9 +300,9 @@
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <h4 class="text-xs font-bold text-[#1E2522] uppercase tracking-wide">Seasonal / Promotional Overrides</h4>
+                                    <h4 class="text-xs font-bold text-[#1E2522] uppercase tracking-wide">Seasonal / Promotional Pricing</h4>
                                     <p class="text-[11px] text-[#64748B] font-light mt-0.5">
-                                        Override any price for a specific date range. Optionally filter by duration. Promo price overrides everything.
+                                        Set single & double occupancy pricing for a specific date range. Optionally filter by duration. Promo prices override the single/double pricing above for that occupancy type.
                                     </p>
                                 </div>
                                 <button type="button"
@@ -438,17 +371,7 @@
                                     </div>
 
                                     {{-- Row 2: Occupancy Prices --}}
-                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-[#2F6F57]/8">
-                                        <div>
-                                            <span class="price-label">
-                                                <i class="fa-solid fa-user text-[8px] mr-0.5 text-[#2F6F57]"></i>
-                                                Default / Guest
-                                            </span>
-                                            <input type="number" class="fi"
-                                                   name="accommodations[{{ $accom->id }}][ranges][{{ $price->id }}][price]"
-                                                   value="{{ $price->price_per_night_per_guest }}"
-                                                   min="0" step="0.01" placeholder="Inherit base">
-                                        </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#2F6F57]/8">
                                         <div>
                                             <span class="price-label">
                                                 <i class="fa-solid fa-person text-[8px] mr-0.5 text-amber-600"></i>
@@ -457,7 +380,7 @@
                                             <input type="number" class="fi"
                                                    name="accommodations[{{ $accom->id }}][ranges][{{ $price->id }}][single_occupancy_price]"
                                                    value="{{ $price->single_occupancy_price }}"
-                                                   min="0" step="0.01" placeholder="Inherit base">
+                                                   min="0" step="0.01" placeholder="0.00">
                                         </div>
                                         <div>
                                             <span class="price-label">
@@ -467,17 +390,24 @@
                                             <input type="number" class="fi"
                                                    name="accommodations[{{ $accom->id }}][ranges][{{ $price->id }}][double_occupancy_price]"
                                                    value="{{ $price->double_occupancy_price }}"
-                                                   min="0" step="0.01" placeholder="Inherit base">
+                                                   min="0" step="0.01" placeholder="0.00">
                                         </div>
                                     </div>
 
                                     {{-- Row 3: Promo --}}
-                                    <div class="grid grid-cols-2 gap-3 pt-2 border-t border-[#2F6F57]/8">
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-[#2F6F57]/8">
                                         <div>
-                                            <span class="price-label">Promo Price <span class="normal-case font-normal tracking-normal">(overrides all above)</span></span>
+                                            <span class="price-label">Single Promo Price</span>
                                             <input type="number" class="fi"
-                                                   name="accommodations[{{ $accom->id }}][ranges][{{ $price->id }}][promo_price]"
-                                                   value="{{ $price->promotional_price }}"
+                                                   name="accommodations[{{ $accom->id }}][ranges][{{ $price->id }}][single_promo_price]"
+                                                   value="{{ $price->single_promo_price }}"
+                                                   min="0" step="0.01" placeholder="Optional">
+                                        </div>
+                                        <div>
+                                            <span class="price-label">Double Promo Price</span>
+                                            <input type="number" class="fi"
+                                                   name="accommodations[{{ $accom->id }}][ranges][{{ $price->id }}][double_promo_price]"
+                                                   value="{{ $price->double_promo_price }}"
                                                    min="0" step="0.01" placeholder="Optional">
                                         </div>
                                         <div>
@@ -524,31 +454,31 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-[#2F6F57]/8">
-                                        <div>
-                                            <span class="price-label"><i class="fa-solid fa-user text-[8px] mr-0.5 text-[#2F6F57]"></i> Default / Guest</span>
-                                            <input type="number" class="fi"
-                                                   name="accommodations[{{ $accom->id }}][ranges][__IDX__][price]"
-                                                   min="0" step="0.01" placeholder="Inherit base">
-                                        </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#2F6F57]/8">
                                         <div>
                                             <span class="price-label"><i class="fa-solid fa-person text-[8px] mr-0.5 text-amber-600"></i> Single Room</span>
                                             <input type="number" class="fi"
                                                    name="accommodations[{{ $accom->id }}][ranges][__IDX__][single_occupancy_price]"
-                                                   min="0" step="0.01" placeholder="Inherit base">
+                                                   min="0" step="0.01" placeholder="0.00">
                                         </div>
                                         <div>
                                             <span class="price-label"><i class="fa-solid fa-user-group text-[8px] mr-0.5 text-blue-600"></i> Double (each)</span>
                                             <input type="number" class="fi"
                                                    name="accommodations[{{ $accom->id }}][ranges][__IDX__][double_occupancy_price]"
-                                                   min="0" step="0.01" placeholder="Inherit base">
+                                                   min="0" step="0.01" placeholder="0.00">
                                         </div>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-3 pt-2 border-t border-[#2F6F57]/8">
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-[#2F6F57]/8">
                                         <div>
-                                            <span class="price-label">Promo Price <span class="normal-case font-normal tracking-normal">(overrides all above)</span></span>
+                                            <span class="price-label">Single Promo Price</span>
                                             <input type="number" class="fi"
-                                                   name="accommodations[{{ $accom->id }}][ranges][__IDX__][promo_price]"
+                                                   name="accommodations[{{ $accom->id }}][ranges][__IDX__][single_promo_price]"
+                                                   min="0" step="0.01" placeholder="Optional">
+                                        </div>
+                                        <div>
+                                            <span class="price-label">Double Promo Price</span>
+                                            <input type="number" class="fi"
+                                                   name="accommodations[{{ $accom->id }}][ranges][__IDX__][double_promo_price]"
                                                    min="0" step="0.01" placeholder="Optional">
                                         </div>
                                         <div>
@@ -654,24 +584,20 @@
                         </p>
                         <ul class="text-[11px] text-[#2F6F57]/80 space-y-2.5 leading-relaxed">
                             <li class="flex items-start gap-2">
-                                <span class="occupancy-badge bg-[#2F6F57]/10 text-[#2F6F57] shrink-0 mt-0.5">① Base</span>
-                                <span>Per-night rate. Fallback when nothing more specific is set.</span>
+                                <span class="occupancy-badge bg-purple-50 text-purple-700 shrink-0 mt-0.5">① Duration</span>
+                                <span><strong>Total package price</strong> for a full stay (e.g. 7-night cottage ₹25,000). Overrides seasonal per-night pricing × nights when duration matches.</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <span class="occupancy-badge bg-purple-50 text-purple-700 shrink-0 mt-0.5">② Duration</span>
-                                <span><strong>Total package price</strong> for a full stay (e.g. 7-night cottage ₹25,000). Overrides base × nights when duration matches.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <span class="occupancy-badge bg-rose-50 text-rose-600 shrink-0 mt-0.5">③ Season</span>
-                                <span>Date-range override — can target a specific duration or all. Promo price overrides everything.</span>
+                                <span class="occupancy-badge bg-rose-50 text-rose-600 shrink-0 mt-0.5">② Season</span>
+                                <span>Date-range single/double occupancy pricing — can target a specific duration or all. Promo prices override single/double pricing for that occupancy type.</span>
                             </li>
                             <li class="flex items-start gap-2 pt-1 border-t border-[#2F6F57]/10">
                                 <span class="occupancy-badge bg-amber-50 text-amber-700 shrink-0 mt-0.5">Single</span>
-                                <span>Solo room occupancy total price.</span>
+                                <span>Solo room occupancy price.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <span class="occupancy-badge bg-blue-50 text-blue-700 shrink-0 mt-0.5">Double</span>
-                                <span>Total room price for 2-person occupancy.</span>
+                                <span>Room price for 2-person occupancy (per person).</span>
                             </li>
                         </ul>
                     </div>

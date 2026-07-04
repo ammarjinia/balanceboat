@@ -105,7 +105,7 @@ class CenterAvailabilityController extends Controller
     }
 
     /**
-     * Save pricing (base rates + duration tiers + seasonal overrides).
+     * Save pricing (duration tiers + seasonal overrides only — no base rates).
      */
     public function save(Request $request, $experienceId)
     {
@@ -115,27 +115,22 @@ class CenterAvailabilityController extends Controller
             ->where('center_id', $centerId)
             ->firstOrFail();
 
-        $defaultAccomId = $request->input('default_accommodation');
-        $submitted      = $request->input('accommodations', []);
+        $submitted = $request->input('accommodations', []);
 
         foreach ($submitted as $accomId => $data) {
             $included = !empty($data['included']);
             $eaId     = $data['ea_id'] ?? null;
 
             if ($included) {
-                // ── Upsert ExperienceAccomodations base record ──
+                // ── Upsert ExperienceAccomodations link record (no base pricing — seasonal only) ──
                 $ea = ($eaId ? ExperienceAccomodations::find($eaId) : null)
                     ?? ExperienceAccomodations::where('experience_id', $experienceId)
                          ->where('title', $accomId)->first()
                     ?? new ExperienceAccomodations();
 
-                $ea->experience_id             = $experienceId;
-                $ea->title                     = $accomId;
-                $ea->price_per_night_per_guest = $this->nullableDecimal($data['base_price'] ?? null);
-                $ea->single_occupancy_price    = $this->nullableDecimal($data['single_base_price'] ?? null);
-                $ea->double_occupancy_price    = $this->nullableDecimal($data['double_base_price'] ?? null);
-                $ea->currency                  = $data['currency'] ?? 'INR';
-                $ea->accomodation_default      = ($defaultAccomId == $accomId) ? 1 : 0;
+                $ea->experience_id = $experienceId;
+                $ea->title         = $accomId;
+                $ea->currency      = $data['currency'] ?? 'INR';
                 $ea->save();
 
                 // ── Duration-based prices ──
@@ -189,10 +184,10 @@ class CenterAvailabilityController extends Controller
                     $price->start_date                = $range['start_date'];
                     $price->end_date                  = $range['end_date'];
                     $price->duration                  = !empty($range['duration']) ? (int)$range['duration'] : null;
-                    $price->price_per_night_per_guest = $this->nullableDecimal($range['price'] ?? null);
                     $price->single_occupancy_price    = $this->nullableDecimal($range['single_occupancy_price'] ?? null);
                     $price->double_occupancy_price    = $this->nullableDecimal($range['double_occupancy_price'] ?? null);
-                    $price->promotional_price         = $this->nullableDecimal($range['promo_price'] ?? null);
+                    $price->single_promo_price        = $this->nullableDecimal($range['single_promo_price'] ?? null);
+                    $price->double_promo_price        = $this->nullableDecimal($range['double_promo_price'] ?? null);
                     $price->promotional_discount      = !empty($range['promo_discount']) ? $range['promo_discount'] : null;
                     $price->currency                  = $data['currency'] ?? 'INR';
                     $price->save();

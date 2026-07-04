@@ -337,36 +337,9 @@ class Experiences extends Model {
                                                  CONCAT('Starts on Every ',DATE_FORMAT(CONCAT('2017-09-1',er.day_of_week),'%W'))  
                                                     ) 
                                     END)
-                                END) AS available_month,
-                                ea.price_per_night_per_guest AS default_price,
-                                eap.start_date,
-                                eap.end_date,
-                                eap.price_per_night_per_guest,
-                                (CASE
-                                    WHEN
-                                        (MONTH(eap.start_date) <= MONTH(NOW())
-                                            AND MONTH(eap.end_date) >= MONTH(NOW())
-                                            AND EXTRACT(DAY FROM NOW()) >= EXTRACT(DAY FROM eap.start_date)
-                                            AND EXTRACT(DAY FROM NOW()) <= EXTRACT(DAY FROM eap.end_date)
-                                            AND eap.price_per_night_per_guest IS NOT NULL)
-                                    THEN
-                                        eap.price_per_night_per_guest
-                                    ELSE ea.price_per_night_per_guest
-                                END) AS room_price,
-                                ea.currency AS accomodation_currency
+                                END) AS available_month
                             FROM
                                 experiences e
-                                    LEFT JOIN
-                                experience_accomodations ea ON e.id = ea.experience_id
-                                    AND ea.accomodation_default = 1
-                                    LEFT JOIN
-                                experience_accomodation_prices eap ON ea.title = eap.accomodation_id
-                                    AND eap.experience_id=ea.experience_id 
-                                    AND eap.price_per_night_per_guest IS NOT NULL
-                                    AND (MONTH(eap.start_date) <= MONTH(NOW())
-                                    AND MONTH(eap.end_date) >= MONTH(NOW())
-                                    AND EXTRACT(DAY FROM NOW()) >= EXTRACT(DAY FROM eap.start_date)
-                                    AND EXTRACT(DAY FROM NOW()) <= EXTRACT(DAY FROM eap.end_date))
                                     LEFT JOIN
                                 experience_category ON experience_category.experience_id = e.id
                                     LEFT JOIN
@@ -374,8 +347,8 @@ class Experiences extends Model {
                                     LEFT JOIN
                                 experience_recurring_manually erm ON erm.experience_id = e.id
                             WHERE
-                                 $cnd 
-                            GROUP BY ea.experience_id , accomodation_id 
+                                 $cnd
+                            GROUP BY e.id
                             ORDER BY $orderby $order
                             LIMIT $offset, $limit");
         return $resExp;
