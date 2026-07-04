@@ -511,9 +511,18 @@ foreach ($experience_destination as $edest) {
                                         Experience Summary
                                     </h2>
                                 </div>
-                                <div class="bg-list-icon">
-                                {!! @$experience->experience_summary !!}
-                                </div>
+                                @php
+                                    $summaryText = trim(strip_tags($experience->experience_summary));
+                                    $summaryPoints = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $summaryText))));
+                                    if (count($summaryPoints) <= 1) {
+                                        $summaryPoints = array_values(array_filter(array_map('trim', preg_split('/(?<=[.!?])\s+/', $summaryText, -1, PREG_SPLIT_NO_EMPTY))));
+                                    }
+                                @endphp
+                                <ul class="bg-list-icon">
+                                    @foreach($summaryPoints as $point)
+                                        <li>{{ $point }}</li>
+                                    @endforeach
+                                </ul>
                             </div>
                             @endif
     

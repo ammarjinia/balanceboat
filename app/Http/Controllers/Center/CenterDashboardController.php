@@ -435,8 +435,29 @@ class CenterDashboardController extends Controller
         $this->syncCategories($id, $request->input('experience_category_id', []));
         $this->syncGalleryImages($id, $request->file('image_galleries', []));
 
-        return redirect()->route('center-panel.experiences')
+        return redirect()->route('center-panel.accommodations')
             ->with('success', 'Retreat program updated successfully.');
+    }
+
+    public function experienceDestroy(Request $request)
+    {
+        $centerId = Session::get('center_id');
+        $id       = $request->id;
+
+        $exp = Experiences::where('id', $id)->where('center_id', $centerId)->first();
+
+        if (!$exp) {
+            return redirect()->route('center-panel.experiences')
+                ->with('error', 'Retreat program not found.');
+        }
+
+        ExperienceDurationPrices::where('experience_id', $id)->delete();
+        ExperienceCategory::where('experience_id', $id)->delete();
+        ExperienceImageGallery::where('experience_id', $id)->delete();
+        $exp->delete();
+
+        return redirect()->route('center-panel.experiences')
+            ->with('success', 'Retreat program "' . $exp->name . '" deleted successfully.');
     }
 
     private function fillExperienceFromRequest(Experiences $exp, Request $request, $centerId, string $slug): void

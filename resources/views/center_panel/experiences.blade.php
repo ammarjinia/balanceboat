@@ -16,6 +16,18 @@
         </a>
     </div>
 
+    {{-- Flash Messages --}}
+    @if (session('success'))
+        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-emerald-700">
+            <i class="fa-solid fa-circle-check text-emerald-500"></i> {{ session('success') }}
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="bg-rose-50 border border-rose-200 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-rose-700">
+            <i class="fa-solid fa-circle-exclamation text-rose-500"></i> {{ session('error') }}
+        </div>
+    @endif
+
     {{-- KPI Stats Grid --}}
     <section class="space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
@@ -143,6 +155,11 @@
                                         <i class="fa-regular fa-pen-to-square text-xs"></i>
                                         <span>Edit</span>
                                     </a>
+                                    <button type="button" onclick="showDeleteRetreatModal('{{ $exp->id }}', '{{ addslashes($exp->name ?? 'Retreat Program') }}')"
+                                       class="inline-flex items-center space-x-1.5 py-2 px-3.5 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-rose-600 rounded-2xl text-[11px] font-semibold transition-all shadow-sm">
+                                        <i class="fa-regular fa-trash-can text-xs"></i>
+                                        <span>Delete</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -948,5 +965,48 @@
                 </div>
             `);
         }
+
+        function showDeleteRetreatModal(id, name) {
+            document.getElementById('delete-retreat-modal-name').textContent = name;
+            document.getElementById('delete-retreat-form-id').value = id;
+            document.getElementById('delete-retreat-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideDeleteRetreatModal() {
+            document.getElementById('delete-retreat-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('delete-retreat-modal').addEventListener('click', function (e) {
+            if (e.target === this) hideDeleteRetreatModal();
+        });
     </script>
+
+    {{-- Delete Retreat Modal --}}
+    <div id="delete-retreat-modal" class="hidden fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-rose-100 space-y-4">
+            <div class="w-12 h-12 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center text-xl mx-auto">⚠️</div>
+            <div class="text-center space-y-1">
+                <h3 class="text-xl font-serif font-medium text-slate-900">Delete Retreat Program?</h3>
+                <p class="text-xs text-slate-500 font-light">You are about to permanently remove</p>
+                <p class="text-sm font-semibold text-slate-900" id="delete-retreat-modal-name"></p>
+                <p class="text-[11px] text-slate-500 font-light">This will remove the program, its pricing, and gallery data. This action cannot be undone.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3 pt-1">
+                <button type="button" onclick="hideDeleteRetreatModal()"
+                        class="py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-500 hover:bg-slate-50 transition-all">
+                    Cancel
+                </button>
+                <form id="delete-retreat-form" action="{{ route('center-panel.experience.destroy') }}" method="POST">
+                    @csrf
+                    <input type="hidden" id="delete-retreat-form-id" name="id" value="">
+                    <button type="submit"
+                            class="w-full py-2.5 rounded-xl bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 transition-all shadow-sm">
+                        Delete Permanently
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection

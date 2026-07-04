@@ -389,6 +389,7 @@ Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\C
         Route::post('/experiences/store', 'CenterDashboardController@experienceStore')->name('center-panel.experience.store');
         Route::get('/experiences/{id}/edit', 'CenterDashboardController@experienceEdit')->name('center-panel.experience.edit');
         Route::post('/experiences/{id}/update', 'CenterDashboardController@experienceUpdate')->name('center-panel.experience.update');
+        Route::post('/experiences/destroy', 'CenterDashboardController@experienceDestroy')->name('center-panel.experience.destroy');
         
         // Availability Management
         Route::get('/availability', 'CenterAvailabilityController@index')->name('center-panel.availability');
