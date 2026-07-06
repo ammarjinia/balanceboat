@@ -458,8 +458,6 @@ class CenterDashboardController extends Controller
         // Set duration to the minimum submitted duration (from the packages list)
         $durations = array_filter(array_map('intval', $request->input('durations', [])));
         $exp->duration = !empty($durations) ? min($durations) : ($request->input('duration') ?: 7);
-        $exp->avg_price           = $request->input('avg_price');
-        $exp->currency            = $request->input('currency', 'INR');
         $exp->is_bookable         = $request->input('is_bookable', 1);
         $exp->is_draft            = $request->input('is_draft', 1);
         $exp->language_spoken     = is_array($request->input('language_spoken'))
@@ -509,23 +507,17 @@ class CenterDashboardController extends Controller
 
     private function syncDurationPrices(int $experienceId, Request $request): void
     {
-        $durations      = $request->input('durations', []);
-        $prices         = $request->input('duration_price', []);
-        $promoPrices    = $request->input('promo_price', []);
-        $currencies     = $request->input('duration_currency', []);
+        $durations = $request->input('durations', []);
 
         ExperienceDurationPrices::where('experience_id', $experienceId)->delete();
 
-        foreach ($durations as $key => $nights) {
+        foreach ($durations as $nights) {
             $nights = (int) $nights;
             if ($nights <= 0) continue;
 
             $row = new ExperienceDurationPrices();
             $row->experience_id = $experienceId;
             $row->duration      = $nights;
-            $row->price         = isset($prices[$key]) && $prices[$key] !== '' ? (float) $prices[$key] : null;
-            $row->promo_price   = isset($promoPrices[$key]) && $promoPrices[$key] !== '' ? (float) $promoPrices[$key] : null;
-            $row->currency      = $currencies[$key] ?? 'INR';
             $row->save();
         }
     }
