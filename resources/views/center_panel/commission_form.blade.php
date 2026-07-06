@@ -82,12 +82,12 @@
             {{-- LEFT CONTROL PANEL --}}
             <div class="lg:col-span-5 flex flex-col justify-between space-y-10">
                 <div class="space-y-5">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/80 border border-neutral-200/60 rounded-full shadow-sm">
+                    <?php /*<div class="inline-flex items-center gap-2 px-3 py-1 bg-white/80 border border-neutral-200/60 rounded-full shadow-sm">
                         <span class="h-2 w-2 rounded-full bg-violet-400 animate-pulse"></span>
                         <span class="text-[9px] font-mono tracking-[0.2em] uppercase text-neutral-500 font-bold flex items-center gap-1">
                             🔑 BalanceBoat Center OS // Module V2
                         </span>
-                    </div>
+                    </div>*/?>
                     <h2 class="text-4xl lg:text-5xl font-serif font-light italic leading-[1.15] text-neutral-900">
                         Calibrate Your <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-pink-500 to-orange-400 font-normal">Abundance Framework</span>
                     </h2>

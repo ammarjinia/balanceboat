@@ -140,26 +140,6 @@ class CenterDashboardController extends Controller
     }
 
     /**
-     * Get center bookings
-     * 
-     * @return \Illuminate\View\View
-     */
-    public function bookings()
-    {
-        $centerId = Session::get('center_id');
-        $center = Centers::findOrFail($centerId);
-        $bookings = Bookings::where('center_id', $centerId)
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
-
-        return view('center_panel.bookings', [
-            'center' => $center,
-            'userName' => Session::get('center_user_name'),
-            'bookings' => $bookings,
-        ]);
-    }
-
-    /**
      * Get center profile/settings
      * 
      * @return \Illuminate\View\View

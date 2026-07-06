@@ -418,8 +418,10 @@ Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\C
         Route::post('/accommodations/delete-banner-image', 'CenterAccommodationController@deleteBannerImage')->name('center-panel.accommodation.delete_banner_image');
 
         // Bookings Management
-        Route::get('/bookings', 'CenterDashboardController@bookings')->name('center-panel.bookings');
-        
+        Route::get('/bookings', 'CenterBookingsController@index')->name('center-panel.bookings');
+        Route::post('/bookings/store', 'CenterBookingsController@store')->name('center-panel.bookings.store');
+        Route::post('/bookings/{id}/stage', 'CenterBookingsController@updateStage')->name('center-panel.bookings.update_stage');
+
         // Settings Management
         Route::get('/settings', 'CenterDashboardController@settings')->name('center-panel.settings');
         Route::post('/settings/update', 'CenterDashboardController@updateSettings')->name('center-panel.settings.update');
