@@ -401,6 +401,11 @@ Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\C
         Route::get('/availability/{experienceId}/schedule', 'CenterAvailabilityController@manageSchedule')->name('center-panel.availability.schedule');
         Route::post('/availability/{experienceId}/schedule/save', 'CenterAvailabilityController@saveSchedule')->name('center-panel.availability.schedule.save');
 
+        // Commission Engine
+        Route::get('/commission', 'CenterCommissionController@index')->name('center-panel.commission');
+        Route::get('/commission/{experienceId}/manage', 'CenterCommissionController@manage')->name('center-panel.commission.manage');
+        Route::post('/commission/{experienceId}/save', 'CenterCommissionController@save')->name('center-panel.commission.save');
+
         // Accommodation Management
         Route::get('/accommodations', 'CenterAccommodationController@index')->name('center-panel.accommodations');
         Route::get('/accommodations/create', 'CenterAccommodationController@create')->name('center-panel.accommodation.create');

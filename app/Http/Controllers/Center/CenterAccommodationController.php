@@ -78,7 +78,7 @@ class CenterAccommodationController extends Controller
 
         $this->moveGalleryImages($request->image_gallery_ids ?? '', $accommodation->id);
 
-        return redirect()->route('center-panel.accommodations')
+        return redirect()->route('center-panel.availability')
             ->with('success', 'Accommodation "' . $accommodation->name . '" created successfully.');
     }
 
@@ -135,7 +135,7 @@ class CenterAccommodationController extends Controller
 
         $this->moveGalleryImages($request->image_gallery_ids ?? '', $id);
 
-        return redirect()->route('center-panel.accommodations')
+        return redirect()->route('center-panel.availability')
             ->with('success', 'Accommodation "' . $accommodation->name . '" updated successfully.');
     }
 
