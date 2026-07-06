@@ -63,7 +63,7 @@
             $steps = [
                 ['icon' => 'fa-solid fa-id-card',      'label' => 'Identity'],
                 ['icon' => 'fa-solid fa-tags',          'label' => 'Type & Destination'],
-                ['icon' => 'fa-solid fa-coins',         'label' => 'Pricing'],
+                ['icon' => 'fa-regular fa-moon',        'label' => 'Duration'],
                 ['icon' => 'fa-regular fa-calendar',    'label' => 'Schedule & Content'],
                 ['icon' => 'fa-regular fa-image',       'label' => 'Media'],
                 ['icon' => 'fa-solid fa-shield-check',  'label' => 'Policies & Publish'],
@@ -357,16 +357,16 @@
         </div>
 
         {{-- ══════════════════════════════════════════════════════
-             STEP 3 — Pricing & Duration
+             STEP 3 — Duration
         ══════════════════════════════════════════════════════ --}}
         <div x-show="currentStep === 3" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-5">
 
             <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-5">
                 <div class="flex items-center space-x-2 border-b border-slate-100 pb-3">
                     <div class="h-7 w-7 bg-amber-100 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-coins text-amber-600 text-[10px]"></i>
+                        <i class="fa-regular fa-moon text-amber-600 text-[10px]"></i>
                     </div>
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900">Pricing & Duration</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900">Duration</h3>
                 </div>
 
                 {{-- Duration Packages --}}
