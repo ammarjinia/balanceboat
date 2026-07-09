@@ -444,7 +444,7 @@
                                 <span class="text-sm font-semibold text-[#1A2421] group-hover:text-[#2F6F57] transition-colors">No - day visits only</span>
                             </label>
                         </div>
-                        <p class="text-[11px] text-[#64748B] mt-2 font-light">Determines whether accommodation details and room pricing appear on your profile.</p>
+                        <p class="text-[11px] text-[#64748B] mt-2 font-light">Shown as a badge on your public profile. Manage room types, photos, and pricing under the Accommodations and Availability & Pricing menus.</p>
                     </div>
                 </div>
 
@@ -456,8 +456,8 @@
                      class="glass-panel rounded-3xl p-6 space-y-6">
 
                     <div class="border-b border-[#2F6F57]/10 pb-3">
-                        <h3 class="bb-serif text-xl font-medium text-[#1A2421]">Media & Accommodation</h3>
-                        <p class="text-xs text-[#64748B] font-light mt-0.5">Upload photos and configure accommodation details.</p>
+                        <h3 class="bb-serif text-xl font-medium text-[#1A2421]">Media</h3>
+                        <p class="text-xs text-[#64748B] font-light mt-0.5">Upload photos and a promo video for your center profile.</p>
                     </div>
 
                     {{-- Banner Image --}}
@@ -525,66 +525,6 @@
                         </div>
                     </div>
 
-                    {{-- Accommodation Media (shown only when hasAccom = Yes) --}}
-                    <div x-show="hasAccom === 'Yes'" x-cloak
-                         class="border-t border-[#2F6F57]/10 pt-5 space-y-5">
-
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-bed text-[#2F6F57]/60 text-sm"></i>
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-[#2F6F57]/70">Accommodation Details</p>
-                        </div>
-
-                        <div>
-                            <label class="fl">Accommodation Overview</label>
-                            <textarea name="accomodation_overview" id="accomodation_overview" class="settings-tiny-4"
-                                      placeholder="Describe the rooms, suites, or retreat lodges available at your center..."
-                            >{{ old('accomodation_overview', $center->accomodation_overview) }}</textarea>
-                        </div>
-
-                        {{-- Accommodation Banner Image --}}
-                        <div>
-                            <label class="fl">Accommodation Banner Image</label>
-                            @if($center->accomodation_banner_image_url)
-                            <div class="relative rounded-2xl overflow-hidden mb-3" id="accom-banner-wrap" style="height:130px">
-                                <img src="{{ Storage::disk('azure')->url($center->accomodation_banner_image_url) }}"
-                                     alt="Accommodation Banner"
-                                     class="w-full h-full object-cover">
-                                <button type="button"
-                                        onclick="deleteAccomBannerImage()"
-                                        class="absolute top-2 right-2 bg-rose-600 text-white text-xs px-2.5 py-1.5 rounded-lg font-semibold hover:bg-rose-700 transition-colors flex items-center gap-1.5">
-                                    <i class="fa-solid fa-trash"></i> Remove
-                                </button>
-                            </div>
-                            @endif
-                            <input type="file" name="accomodation_banner_image" accept="image/*" class="fi" style="padding:6px">
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="fl">Nearest Airport / Hub</label>
-                                <input type="text" name="airport_name" class="fi"
-                                       value="{{ old('airport_name', $center->airport_name) }}"
-                                       placeholder="e.g. Goa International Airport">
-                            </div>
-                            <div>
-                                <label class="fl">Airport Pickup / Drop Cost</label>
-                                <input type="text" name="pickup_drop_cost" class="fi"
-                                       value="{{ old('pickup_drop_cost', $center->pickup_drop_cost) }}"
-                                       placeholder="e.g. INR 1,500 one-way">
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Placeholder when no accommodation --}}
-                    <div x-show="hasAccom !== 'Yes'" x-cloak
-                         class="border-t border-[#2F6F57]/10 pt-5">
-                        <div class="flex items-center gap-3 bg-[#2F6F57]/4 rounded-2xl border border-[#2F6F57]/10 p-4">
-                            <i class="fa-solid fa-circle-info text-[#2F6F57]/50 text-lg shrink-0"></i>
-                            <p class="text-xs text-[#64748B]">
-                                Accommodation details are hidden because you selected "No" in Step 3. Switch to "Yes" there to unlock room and travel fields.
-                            </p>
-                        </div>
-                    </div>
                 </div>
 
                 {{-- ══════════════ STEP 5: Discovery & Travel ══════════════ --}}
@@ -974,17 +914,6 @@ function deleteBannerImage() {
         body:    JSON.stringify({})
     }).then(r => r.text()).then(t => {
         if (t === '1') document.getElementById('banner-preview-wrap')?.remove();
-    });
-}
-
-function deleteAccomBannerImage() {
-    if (!confirm('Remove the accommodation banner image?')) return;
-    fetch('{{ route("center-panel.settings.delete_accommodation_image") }}', {
-        method:  'POST',
-        headers: { 'X-CSRF-TOKEN': _csrf, 'Content-Type': 'application/json' },
-        body:    JSON.stringify({})
-    }).then(r => r.text()).then(t => {
-        if (t === '1') document.getElementById('accom-banner-wrap')?.remove();
     });
 }
 

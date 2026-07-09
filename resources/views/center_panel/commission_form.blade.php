@@ -80,7 +80,7 @@
             <input type="hidden" id="commission-value-input" name="commission" value="{{ $currentCommission }}">
 
             {{-- LEFT CONTROL PANEL --}}
-            <div class="lg:col-span-5 flex flex-col justify-between space-y-10">
+            <div class="lg:col-span-5 flex flex-col justify-start space-y-8">
                 <div class="space-y-5">
                     <?php /*<div class="inline-flex items-center gap-2 px-3 py-1 bg-white/80 border border-neutral-200/60 rounded-full shadow-sm">
                         <span class="h-2 w-2 rounded-full bg-violet-400 animate-pulse"></span>

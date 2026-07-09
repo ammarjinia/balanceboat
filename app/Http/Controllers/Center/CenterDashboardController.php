@@ -16,7 +16,10 @@ use App\CenterImageGallery;
 use App\ExperienceCategory;
 use App\ExperienceImageGallery;
 use App\ExperienceDurationPrices;
+use App\Inquiry;
 use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
+use DB;
 
 class CenterDashboardController extends Controller
 {
@@ -39,43 +42,179 @@ class CenterDashboardController extends Controller
     public function index()
     {
         $centerId = Session::get('center_id');
-        $centerUserId = Session::get('center_user_id');
 
         // Fetch center details
         $center = Centers::findOrFail($centerId);
 
-        // Fetch statistics
-        $totalExperiences = 0;//Experiences::where('center_id', $centerId)->count();
-        $totalBookings = 0;//Bookings::where('center_id', $centerId)->count();
+        $experiences = Experiences::where('center_id', $centerId)
+            ->select('id', 'name', 'thumbnail_image_url', 'avg_price', 'currency', 'is_draft', 'is_bookable')
+            ->get();
+        $expIds = $experiences->pluck('id')->toArray();
 
-        $recentBookings = [];/*Bookings::where('center_id', $centerId)
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();*/
+        $totalExperiences  = $experiences->count();
+        $activeExperiences = $experiences->where('is_draft', 0)->count();
 
-        $activeDistributionListings = intval(ceil($totalExperiences * 0.6));
-        $upcomingCyclePipelines = max(0, min(12, intval(floor($totalExperiences / 2))));
-        $pipelineOccupancyVelocity = $totalBookings > 0
-            ? round(min(100, 55 + ($totalBookings / max(1, $totalExperiences + 1)) * 30), 1)
-            : 0;
-        $topConvertingProgramName = Experiences::where('center_id', $centerId)
+        $now       = Carbon::now();
+        $lastMonth = Carbon::now()->subMonthNoOverflow();
+
+        $bookingsQuery = Bookings::whereIn('experience_id', $expIds);
+        $totalBookings = (clone $bookingsQuery)->count();
+
+        $inquiriesQuery = Inquiry::whereIn('experience_id', $expIds);
+        $totalInquiries = (clone $inquiriesQuery)->count();
+
+        $monthlyBookings = (clone $bookingsQuery)->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->get();
+        $monthlyRevenue  = $monthlyBookings->sum('pay_amount');
+        $monthlyBookingsCount = $monthlyBookings->count();
+        $monthlyInquiriesCount = (clone $inquiriesQuery)->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->count();
+
+        $lastMonthBookingsCount = (clone $bookingsQuery)->whereMonth('created_at', $lastMonth->month)->whereYear('created_at', $lastMonth->year)->count();
+        $lastMonthInquiriesCount = (clone $inquiriesQuery)->whereMonth('created_at', $lastMonth->month)->whereYear('created_at', $lastMonth->year)->count();
+        $lastMonthRevenue = (clone $bookingsQuery)->whereMonth('created_at', $lastMonth->month)->whereYear('created_at', $lastMonth->year)->sum('pay_amount');
+
+        $bookingsDelta  = $this->percentDelta($monthlyBookingsCount, $lastMonthBookingsCount);
+        $inquiriesDelta = $this->percentDelta($monthlyInquiriesCount, $lastMonthInquiriesCount);
+        $revenueDelta   = $this->percentDelta($monthlyRevenue, $lastMonthRevenue);
+
+        // Booking pipeline funnel by stage
+        $stageOrder  = ['inquiry', 'qualified', 'proposal_sent', 'confirmed', 'checked_in', 'completed', 'cancelled', 'refunded'];
+        $stageLabels = [
+            'inquiry' => 'Inquiry', 'qualified' => 'Qualified', 'proposal_sent' => 'Proposal Sent',
+            'confirmed' => 'Confirmed', 'checked_in' => 'Checked In', 'completed' => 'Completed',
+            'cancelled' => 'Cancelled', 'refunded' => 'Refunded',
+        ];
+        $stageCounts = (clone $bookingsQuery)->select('stage', DB::raw('count(*) as cnt'))
+            ->groupBy('stage')->pluck('cnt', 'stage');
+        $pipelineFunnel = [];
+        foreach ($stageOrder as $stage) {
+            $count = (int) ($stageCounts[$stage] ?? 0);
+            if ($count > 0) {
+                $pipelineFunnel[] = ['stage' => $stage, 'label' => $stageLabels[$stage], 'count' => $count];
+            }
+        }
+        $maxStageCount = collect($pipelineFunnel)->max('count') ?: 1;
+
+        // Per-retreat performance (bookings + inquiries)
+        $bookingCountsByExp  = (clone $bookingsQuery)->select('experience_id', DB::raw('count(*) as cnt'))->groupBy('experience_id')->pluck('cnt', 'experience_id');
+        $inquiryCountsByExp  = (clone $inquiriesQuery)->select('experience_id', DB::raw('count(*) as cnt'))->groupBy('experience_id')->pluck('cnt', 'experience_id');
+
+        $retreatPerformance = $experiences->map(function ($exp) use ($bookingCountsByExp, $inquiryCountsByExp) {
+            $bookings  = (int) ($bookingCountsByExp[$exp->id] ?? 0);
+            $inquiries = (int) ($inquiryCountsByExp[$exp->id] ?? 0);
+            $exp->bookings_count  = $bookings;
+            $exp->inquiries_count = $inquiries;
+            $exp->activity_score  = $bookings + $inquiries;
+            return $exp;
+        })->sortByDesc('activity_score')->values();
+
+        $topPerformer = $retreatPerformance->first();
+
+        // Recent inquiries
+        $recentInquiries = Inquiry::whereIn('experience_id', $expIds)
+            ->with('experience')
             ->orderBy('created_at', 'desc')
-            ->value('name') ?? 'Retreat Program';
+            ->limit(6)
+            ->get();
+
+        // Profile completeness engine
+        [$completenessScore, $missingFields] = $this->profileCompleteness($center, $centerId);
+
+        $currencySymbols = ['INR' => '₹', 'USD' => '$', 'EUR' => '€', 'GBP' => '£', 'AED' => 'AED ', 'SGD' => 'SGD '];
+        $primaryCurrency = $experiences->pluck('currency')->filter()->countBy()->sortDesc()->keys()->first() ?? 'INR';
+        $currencySymbol  = $currencySymbols[$primaryCurrency] ?? ($primaryCurrency . ' ');
 
         $data = [
-            'center' => $center,
-            'totalExperiences' => $totalExperiences,
-            'totalBookings' => $totalBookings,
-            'recentBookings' => $recentBookings,
-            'userName' => Session::get('center_user_name'),
-            'userEmail' => Session::get('center_user_email'),
-            'activeDistributionListings' => $activeDistributionListings,
-            'upcomingCyclePipelines' => $upcomingCyclePipelines,
-            'pipelineOccupancyVelocity' => $pipelineOccupancyVelocity,
-            'topConvertingProgramName' => $topConvertingProgramName,
+            'center'                 => $center,
+            'userName'               => Session::get('center_user_name'),
+            'userEmail'              => Session::get('center_user_email'),
+            'totalExperiences'       => $totalExperiences,
+            'activeExperiences'      => $activeExperiences,
+            'totalBookings'          => $totalBookings,
+            'totalInquiries'         => $totalInquiries,
+            'monthlyRevenue'         => $monthlyRevenue,
+            'monthlyBookingsCount'   => $monthlyBookingsCount,
+            'monthlyInquiriesCount'  => $monthlyInquiriesCount,
+            'bookingsDelta'          => $bookingsDelta,
+            'inquiriesDelta'         => $inquiriesDelta,
+            'revenueDelta'           => $revenueDelta,
+            'pipelineFunnel'         => $pipelineFunnel,
+            'maxStageCount'          => $maxStageCount,
+            'retreatPerformance'     => $retreatPerformance->take(5),
+            'topPerformer'           => $topPerformer,
+            'recentInquiries'        => $recentInquiries,
+            'completenessScore'      => $completenessScore,
+            'missingFields'          => $missingFields,
+            'currencySymbol'         => $currencySymbol,
         ];
 
         return view('center_panel.dashboard', $data);
+    }
+
+    /**
+     * Percentage change helper, safe against division by zero.
+     *
+     * @return array{value: float, positive: bool}
+     */
+    private function percentDelta($current, $previous): array
+    {
+        $current  = (float) $current;
+        $previous = (float) $previous;
+
+        if ($previous == 0.0) {
+            return ['value' => $current > 0 ? 100.0 : 0.0, 'positive' => $current >= 0];
+        }
+
+        $change = (($current - $previous) / abs($previous)) * 100;
+
+        return ['value' => round(abs($change), 1), 'positive' => $change >= 0];
+    }
+
+    /**
+     * Compute the center profile completeness score and list missing fields.
+     *
+     * @return array{0: int, 1: array<int, string>}
+     */
+    private function profileCompleteness(Centers $center, $centerId): array
+    {
+        $fields = [
+            'about_center'       => 'About the Center description',
+            'what_sets_us_apart' => 'What Sets You Apart section',
+            'our_philosophy'     => 'Our Philosophy statement',
+            'banner_image_url'   => 'High-resolution banner image',
+            'video_url'          => 'Video walkthrough URL',
+            'address_of_center'  => 'Center address',
+            'city'               => 'City',
+            'country'            => 'Country',
+            'contact_number'     => 'Contact phone number',
+            'whatsapp_number'    => 'WhatsApp number',
+            'founders'           => 'Founders information',
+            'year_of_foundation' => 'Year of foundation',
+            'amenities'          => 'Amenities selection',
+            'center_highlights'  => 'Center highlights',
+        ];
+
+        $filled  = 0;
+        $missing = [];
+
+        foreach ($fields as $key => $label) {
+            if (!empty($center->{$key})) {
+                $filled++;
+            } else {
+                $missing[] = $label;
+            }
+        }
+
+        $totalFields = count($fields) + 1; // +1 for gallery images below
+
+        if (CenterImageGallery::where('center_id', $centerId)->exists()) {
+            $filled++;
+        } else {
+            $missing[] = 'Gallery images';
+        }
+
+        $score = (int) round(($filled / $totalFields) * 100);
+
+        return [$score, $missing];
     }
 
     /**
@@ -204,11 +343,8 @@ class CenterDashboardController extends Controller
         $center->have_accomodation   = $request->have_accomodation ?? 'No';
         $center->amenities           = is_array($request->amenities)
             ? implode('||', $request->amenities) : null;
-        $center->accomodation_overview = $request->accomodation_overview;
         $center->how_to_get_there    = $request->how_to_get_there;
         $center->things_to_do_around_the_center = $request->things_to_do_around_the_center;
-        $center->airport_name        = $request->airport_name;
-        $center->pickup_drop_cost    = $request->pickup_drop_cost;
         $center->founders            = $request->founders;
         $center->year_of_foundation  = $request->year_of_foundation ?: null;
         $center->awards              = $request->awards;
@@ -231,20 +367,6 @@ class CenterDashboardController extends Controller
             }
             $center->banner_image_url   = $folder . '/' . $name;
             $center->banner_image_title = $file->getClientOriginalName();
-        }
-
-        // Accommodation banner image
-        if ($request->hasFile('accomodation_banner_image') && $request->file('accomodation_banner_image')->isValid()) {
-            $file   = $request->file('accomodation_banner_image');
-            $folder = 'centers/' . date('Y/m/d');
-            $name   = preg_replace('/[^A-Za-z0-9]/', '', pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))
-                . time() . 'acm.' . strtolower($file->getClientOriginalExtension());
-            $file->storeAs($folder, $name, ['disk' => 'azure']);
-            if ($center->accomodation_banner_image_url) {
-                Storage::disk('azure')->delete($center->accomodation_banner_image_url);
-            }
-            $center->accomodation_banner_image_url   = $folder . '/' . $name;
-            $center->accomodation_banner_image_title = $file->getClientOriginalName();
         }
 
         $center->save();
@@ -309,21 +431,6 @@ class CenterDashboardController extends Controller
             Storage::disk('azure')->delete($center->banner_image_url);
             $center->banner_image_url   = null;
             $center->banner_image_title = null;
-            $center->save();
-            echo '1';
-        } else {
-            echo 'error';
-        }
-    }
-
-    public function deleteAccommodationImage(Request $request)
-    {
-        $centerId = Session::get('center_id');
-        $center   = Centers::where('id', $centerId)->firstOrFail();
-        if ($center->accomodation_banner_image_url) {
-            Storage::disk('azure')->delete($center->accomodation_banner_image_url);
-            $center->accomodation_banner_image_url   = null;
-            $center->accomodation_banner_image_title = null;
             $center->save();
             echo '1';
         } else {
