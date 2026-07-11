@@ -60,8 +60,8 @@
                                 <div class="row" id="banner_image_url_container">
                                     <div class="col-md-3 m-t-10">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url($eadvert->banner_image_url) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($eadvert->banner_image_url) }}" alt="{{ $eadvert->banner_image_title }}">
+                                            <a href="{{ Storage::disk('s3')->url($eadvert->banner_image_url) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($eadvert->banner_image_url) }}" alt="{{ $eadvert->banner_image_title }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="img_delete" href="{{ url('bbadmin/advert/delete_image') }}" data-id="{{ $eadvert->id }}" data-field="banner_image_url" class="btn btn-danger">Remove</a>

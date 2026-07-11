@@ -9,12 +9,12 @@
     @section('keywords', @$category->keywords)
 <?php } ?>
 <?php if (!empty(@$category->banner_image_url)) { ?> 
-    @section('image', Storage::disk('azure')->url(@$category->banner_image_url))
+    @section('image', Storage::disk('s3')->url(@$category->banner_image_url))
 <?php } ?>
 <!-- Meta Info End -->
 
 @section('banner')
-<section id="hero" style="<?php if (!empty(@$category->banner_image_url)) { ?> background-image: url('{{ Storage::disk('azure')->url(@$category->banner_image_url) }}'); <?php } ?>">
+<section id="hero" style="<?php if (!empty(@$category->banner_image_url)) { ?> background-image: url('{{ Storage::disk('s3')->url(@$category->banner_image_url) }}'); <?php } ?>">
     <div class="intro_title">
         <h3 class="animated fadeInDown">{{ @$category->name }}</h3>
         <p class="animated fadeInDown"></p>
@@ -80,7 +80,7 @@
                     <div class="img_container">
                         <a href="{{ url()->current()."?destination=".$val_catesDestinations_top->slug }}">
                             @if($val_catesDestinations_top->image_url)
-                            <img src="{{ Storage::disk('azure')->url($val_catesDestinations_top->image_url) }}" class="img-responsive" alt="{{ $val_catesDestinations_top->image_title }}" />
+                            <img src="{{ Storage::disk('s3')->url($val_catesDestinations_top->image_url) }}" class="img-responsive" alt="{{ $val_catesDestinations_top->image_title }}" />
                             @endif
                         </a>
                     </div>

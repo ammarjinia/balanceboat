@@ -173,7 +173,7 @@ class CenterAccommodationController extends Controller
             $base     = preg_replace("~\." . $ext . "$~i", '', strtolower($file->getClientOriginalName()));
             $filename = $base . time() . '.' . $ext;
             $folder   = 'tmp/accomodations/' . date('Y/m/d');
-            $file->storeAs($folder, $filename, ['disk' => 'azure']);
+            $file->storeAs($folder, $filename, ['disk' => 's3']);
             echo json_encode(['success' => true, 'filename' => $folder . '/' . $filename]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Invalid file type']);
@@ -186,7 +186,7 @@ class CenterAccommodationController extends Controller
         $gallery  = AccomodationImageGallery::find($request->id);
 
         if ($gallery && $this->belongsToCenter($gallery->accomodation_id, $centerId)) {
-            Storage::disk('azure')->delete($gallery->image_url);
+            Storage::disk('s3')->delete($gallery->image_url);
             $gallery->delete();
             echo true;
         } else {
@@ -201,7 +201,7 @@ class CenterAccommodationController extends Controller
         $accommodation = Accomodation::find($id);
 
         if ($accommodation && $this->belongsToCenter($id, $centerId) && $accommodation->banner_image_url) {
-            Storage::disk('azure')->delete($accommodation->banner_image_url);
+            Storage::disk('s3')->delete($accommodation->banner_image_url);
             $accommodation->banner_image_url   = null;
             $accommodation->banner_image_title = null;
             $accommodation->save();
@@ -225,7 +225,7 @@ class CenterAccommodationController extends Controller
         $base     = preg_replace("~\." . $ext . "$~i", '', strtolower($file->getClientOriginalName()));
         $filename = $base . time() . '.' . $ext;
         $folder   = 'accomodations/' . date('Y/m/d');
-        $file->storeAs($folder, $filename, ['disk' => 'azure']);
+        $file->storeAs($folder, $filename, ['disk' => 's3']);
         return $folder . '/' . $filename;
     }
 
@@ -236,7 +236,7 @@ class CenterAccommodationController extends Controller
         foreach (explode('|@|@|', $imageGalleryIds) as $tmpPath) {
             if (empty($tmpPath)) continue;
             $dest = str_replace('tmp/', '', $tmpPath);
-            Storage::disk('azure')->move($tmpPath, $dest);
+            Storage::disk('s3')->move($tmpPath, $dest);
             $gallery                = new AccomodationImageGallery();
             $gallery->accomodation_id = $accommodationId;
             $gallery->image_title   = basename($dest);

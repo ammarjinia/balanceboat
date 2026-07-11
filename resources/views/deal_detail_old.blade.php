@@ -8,7 +8,7 @@
     @section('keywords', @$destination->keywords)
 <?php } ?>
 <?php if (!empty(@$destination->banner_image_url)) { ?> 
-    @section('image', Storage::disk('azure')->url(@$destination->banner_image_url))
+    @section('image', Storage::disk('s3')->url(@$destination->banner_image_url))
 <?php } ?>
 
 @section('head')
@@ -23,7 +23,7 @@ if (!empty(request()->getQueryString())) {
 }
 ?>
 @section('banner')
-<section id="hero" style="<?php if (!empty(@$destination->banner_image_url)) { ?> background-image: url('{{ Storage::disk('azure')->url(@$destination->banner_image_url) }}') !important; <?php } ?> background-blend-mode:overlay;">
+<section id="hero" style="<?php if (!empty(@$destination->banner_image_url)) { ?> background-image: url('{{ Storage::disk('s3')->url(@$destination->banner_image_url) }}') !important; <?php } ?> background-blend-mode:overlay;">
     <div class="intro_title">
         <h3 class="animated fadeInDown">{!! $deal->name !!}</h3>
         <p class="animated fadeInDown">{!! $deal->description !!}</p>

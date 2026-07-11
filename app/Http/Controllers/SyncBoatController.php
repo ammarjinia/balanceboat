@@ -42,7 +42,7 @@ class SyncBoatController extends Controller {
                             if (substr($image, 0, 1) !== '.') {
                                 echo '<p>'.$src.'</p>';
                         
-                                $resMove = Storage::disk('azure')->put($dest, file_get_contents($src));
+                                $resMove = Storage::disk('s3')->put($dest, file_get_contents($src));
                                 // Check the result
                                 if (@$resMove) {
                                     // The file was moved successfully than

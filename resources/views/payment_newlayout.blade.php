@@ -193,7 +193,7 @@
                                                         <div class="slideshow-container">
                                                             @foreach(@$imagegalleries as $gallery)
                                                             <div class="mySlides fade">
-                                                                <img src="{{ Storage::disk('azure')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" />
+                                                                <img src="{{ Storage::disk('s3')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" />
                                                             </div>
                                                             @endforeach
                                                             <a class="prev">&#10094;</a>
@@ -202,7 +202,7 @@
                                                             <div class="thumnnails">
                                                             @foreach(@$imagegalleries as $gallery)
                                                                 <span class="dot">
-                                                                    <img src="{{ Storage::disk('azure')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" />
+                                                                    <img src="{{ Storage::disk('s3')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" />
                                                                 </span>
                                                             @endforeach
                                                             </div>

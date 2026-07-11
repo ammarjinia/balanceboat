@@ -105,7 +105,7 @@ class BlogController extends Controller {
                         $image_galleries_array = explode("|@|@|", @$image_galleries);
                         foreach ($image_galleries_array as $galimage) {
                             $dest = str_replace("tmp/", "", $galimage);
-                            Storage::disk('azure')->move($galimage, $dest);
+                            Storage::disk('s3')->move($galimage, $dest);
                             $objBlogImageGallery = new \App\BlogImageGallery();
                             $objBlogImageGallery->blog_id = $blog_id;
                             $objBlogImageGallery->image_title = basename($dest);
@@ -155,7 +155,7 @@ class BlogController extends Controller {
                     $image_galleries_array = explode("|@|@|", @$image_galleries);
                     foreach ($image_galleries_array as $galimage) {
                         $dest = str_replace("tmp/", "", $galimage);
-                        Storage::disk('azure')->move($galimage, $dest);
+                        Storage::disk('s3')->move($galimage, $dest);
                         $objBlogImageGallery = new \App\BlogImageGallery();
                         $objBlogImageGallery->blog_id = $blog_id;
                         $objBlogImageGallery->image_title = basename($dest);
@@ -208,13 +208,13 @@ class BlogController extends Controller {
             $objBlog = Blog::find($id);
             if (!empty($objBlog)) {
                 if ($objBlog->topbar_adv_image) {
-                    Storage::disk('azure')->delete($objBlog->topbar_adv_image);
+                    Storage::disk('s3')->delete($objBlog->topbar_adv_image);
                 }
                 if ($objBlog->sidebar_adv_image) {
-                    Storage::disk('azure')->delete($objBlog->sidebar_adv_image);
+                    Storage::disk('s3')->delete($objBlog->sidebar_adv_image);
                 }
                 if ($objBlog->banner_image_title) {
-                    Storage::disk('azure')->delete($objBlog->banner_image_title);
+                    Storage::disk('s3')->delete($objBlog->banner_image_title);
                 }
                 $objBlog->delete();
             } else {
@@ -243,8 +243,8 @@ class BlogController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'blogs' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             return $saveFileName = $folderName . "/" . $renamefile;
         }
@@ -256,7 +256,7 @@ class BlogController extends Controller {
             $field = $request['field'];
             $objBlog = Blog::find($id);
             if (!empty($objBlog)) {
-                Storage::disk('azure')->delete($objBlog->$field);
+                Storage::disk('s3')->delete($objBlog->$field);
                 if ($field == "banner_image_url") {
                     $objBlog->banner_image_title = null;
                     $objBlog->banner_image_url = null;
@@ -290,8 +290,8 @@ class BlogController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'tmp/blogs' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             $saveFileName = $folderName . "/" . $renamefile;
             echo (json_encode(array('success' => true, 'filename' => $saveFileName)));
@@ -310,7 +310,7 @@ class BlogController extends Controller {
             $id = $request['id'];
             $objBlogImageGallery = \App\BlogImageGallery::find($id);
             if (!empty($objBlogImageGallery)) {
-                Storage::disk('azure')->delete($objBlogImageGallery->image_url);
+                Storage::disk('s3')->delete($objBlogImageGallery->image_url);
                 $objBlogImageGallery->delete();
                 echo true;
             } else {

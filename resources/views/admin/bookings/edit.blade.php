@@ -98,7 +98,7 @@
                         <div class="row">
                             <div class="col-lg-2 col-md-2">
                                 <div class="img_list">
-                                    <img src="{{ Storage::disk('azure')->url(@$center->banner_image_url) }}" alt="{{ @$center->banner_image_title }}" class="img-thumbnail"> 
+                                    <img src="{{ Storage::disk('s3')->url(@$center->banner_image_url) }}" alt="{{ @$center->banner_image_title }}" class="img-thumbnail"> 
                                 </div>
                             </div>
                             <div class="clearfix visible-xs-block"></div>
@@ -130,7 +130,7 @@
                         <div class="row">
                             <div class="col-lg-2 col-md-2">
                                 <div class="img_list">
-                                    <img src="{{ Storage::disk('azure')->url(@$experience->banner_image_url) }}" alt="{{ @$experience->banner_image_title }}" class="img-thumbnail"> 
+                                    <img src="{{ Storage::disk('s3')->url(@$experience->banner_image_url) }}" alt="{{ @$experience->banner_image_title }}" class="img-thumbnail"> 
                                 </div>
                             </div>
                             <div class="clearfix visible-xs-block"></div>
@@ -174,7 +174,7 @@
                             <div class="col-lg-2 col-md-2">
                                 <div class="img_list">
                                     @if(@$accommodation->banner_image_url)
-                                    <img src="{{ Storage::disk('azure')->url(@$accommodation->banner_image_url) }}" alt="{{ @$accommodation->banner_image_title }}" class="img-responsive"> 
+                                    <img src="{{ Storage::disk('s3')->url(@$accommodation->banner_image_url) }}" alt="{{ @$accommodation->banner_image_title }}" class="img-responsive"> 
                                     @endif
                                 </div>
                             </div>

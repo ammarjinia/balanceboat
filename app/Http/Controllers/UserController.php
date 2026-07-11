@@ -71,8 +71,8 @@ class UserController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'users' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             return $saveFileName = $folderName . "/" . $renamefile;
         }
@@ -83,7 +83,7 @@ class UserController extends Controller {
             $id = $request['id'];
             $objUser = \App\User::find($id);
             if (!empty($objUser)) {
-                Storage::disk('azure')->delete($objUser->profile_image_url);
+                Storage::disk('s3')->delete($objUser->profile_image_url);
                 $objUser->profile_image_url = null;
                 $objUser->save();
                 echo true;

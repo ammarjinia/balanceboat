@@ -79,8 +79,8 @@
                                 <div class="row" id="banner_image_url_container">
                                     <div class="col-md-3 m-t-10">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url($eblog->banner_image_url) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($eblog->banner_image_url) }}" alt="{{ $eblog->banner_image_title }}">
+                                            <a href="{{ Storage::disk('s3')->url($eblog->banner_image_url) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($eblog->banner_image_url) }}" alt="{{ $eblog->banner_image_title }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="img_delete" href="{{ url('bbadmin/blog/delete_image') }}" data-id="{{ $eblog->id }}" data-field='banner_image_url' class="btn btn-danger">Remove</a>
@@ -107,8 +107,8 @@
                                     @foreach(@$imagegalleries as $gallery)
                                     <div class="col-md-3 m-t-10" id="img-{{ $gallery->id }}">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url($gallery->image_url) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($gallery->image_url) }}" alt="{{ $gallery->image_title }}">
+                                            <a href="{{ Storage::disk('s3')->url($gallery->image_url) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($gallery->image_url) }}" alt="{{ $gallery->image_title }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="gallery_img_delete" href="{{ url('bbadmin/blog/delete_gallery_image') }}" data-id="{{ $gallery->id }}" class="btn btn-danger">Remove</a>
@@ -153,8 +153,8 @@
                                 <div class="row" id="sidebar_adv_image_container">
                                     <div class="col-md-3 m-t-10">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url($eblog->sidebar_adv_image) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($eblog->sidebar_adv_image) }}" alt="{{ $eblog->sidebar_adv_image }}">
+                                            <a href="{{ Storage::disk('s3')->url($eblog->sidebar_adv_image) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($eblog->sidebar_adv_image) }}" alt="{{ $eblog->sidebar_adv_image }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="img_delete" href="{{ url('bbadmin/blog/delete_image') }}" data-id="{{ $eblog->id }}" data-field='sidebar_adv_image' class="btn btn-danger">Remove</a>
@@ -173,8 +173,8 @@
                                 <div class="row" id="topbar_adv_image_container">
                                     <div class="col-md-3 m-t-10">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url($eblog->topbar_adv_image) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($eblog->topbar_adv_image) }}" alt="{{ $eblog->topbar_adv_image }}">
+                                            <a href="{{ Storage::disk('s3')->url($eblog->topbar_adv_image) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($eblog->topbar_adv_image) }}" alt="{{ $eblog->topbar_adv_image }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="img_delete" href="{{ url('bbadmin/blog/delete_image') }}" data-id="{{ $eblog->id }}" data-field='topbar_adv_image' class="btn btn-danger">Remove</a>

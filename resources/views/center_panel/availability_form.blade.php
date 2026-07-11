@@ -507,7 +507,7 @@
                         <h3 class="text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Experience</h3>
                         <div class="flex items-start gap-3">
                             @if($experience->thumbnail_image_url)
-                            <img src="{{ Storage::disk('azure')->url($experience->thumbnail_image_url) }}"
+                            <img src="{{ Storage::disk('s3')->url($experience->thumbnail_image_url) }}"
                                  alt="{{ $experience->name }}"
                                  class="w-14 h-14 rounded-2xl object-cover shrink-0">
                             @else

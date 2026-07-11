@@ -10,7 +10,7 @@
     @section('keywords', strip_tags(@$experience->keywords))
 <?php } ?>
 <?php if (!empty(@$experience->banner_image_url)) { ?> 
-    @section('image', Storage::disk('azure')->url(@$experience->banner_image_url))
+    @section('image', Storage::disk('s3')->url(@$experience->banner_image_url))
 <?php } ?>
 <!-- Meta Info End -->
 
@@ -155,7 +155,7 @@
                     @foreach(@$accomodationimagegalleries as $accomodationimagegallery)
                     @if ($accomodationimagegallery->accomodation_id == $experience_accomodation->id)
                     <div class="item">
-                        <a href="{{ Storage::disk('azure')->url(@$accomodationimagegallery->image_url) }}"><img src="{{ Storage::disk('azure')->url(@$accomodationimagegallery->image_url) }}" alt="Image"></a>
+                        <a href="{{ Storage::disk('s3')->url(@$accomodationimagegallery->image_url) }}"><img src="{{ Storage::disk('s3')->url(@$accomodationimagegallery->image_url) }}" alt="Image"></a>
                     </div>
                     @endif
                     @endforeach

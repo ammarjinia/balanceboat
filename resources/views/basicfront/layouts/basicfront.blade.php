@@ -156,7 +156,7 @@
                             <div class="img_container">
                                 <a href="#">
                                     @if($val_cates_top->image_url)
-                                    <img src="{{ Storage::disk('azure')->url($val_cates_top->image_url) }}" class="img-responsive" alt="{{ $val_cates_top->image_title }}">
+                                    <img src="{{ Storage::disk('s3')->url($val_cates_top->image_url) }}" class="img-responsive" alt="{{ $val_cates_top->image_title }}">
                                     @endif
                                     <div class="short_info"> {{ $val_cates_top->name }} </div>
                                 </a>
@@ -194,7 +194,7 @@
                                     <div class="col-lg-4 col-md-4 col-sm-4">
                                         <div class="img_list">
                                             <a href="javascript:void(0);">
-                                                <img src="{{ Storage::disk('azure')->url($val_experiences->banner_image_url) }}" alt="{{ $val_experiences->banner_image_title }}"> 
+                                                <img src="{{ Storage::disk('s3')->url($val_experiences->banner_image_url) }}" alt="{{ $val_experiences->banner_image_title }}"> 
                                             </a>
                                         </div>
                                     </div>
@@ -252,7 +252,7 @@
                                 <div class="img_container">
                                     <a href="#">
                                         @if($val_catesDestinations_top->image_url)
-                                        <img src="{{ Storage::disk('azure')->url($val_cates_top->image_url) }}" class="img-responsive" alt="{{ $val_catesDestinations_top->image_title }}">
+                                        <img src="{{ Storage::disk('s3')->url($val_cates_top->image_url) }}" class="img-responsive" alt="{{ $val_catesDestinations_top->image_title }}">
                                         @endif
                                     </a>
                                 </div>

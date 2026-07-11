@@ -10,7 +10,7 @@
     @section('keywords', strip_tags(@$center->keywords))
 <?php } ?>
 <?php if (!empty(@$center->banner_image_url)) { ?> 
-    @section('image', Storage::disk('azure')->url(rawurlencode(@$center->banner_image_url)))
+    @section('image', Storage::disk('s3')->url(rawurlencode(@$center->banner_image_url)))
 <?php } ?>
 <!-- Meta Info End -->
 
@@ -134,7 +134,7 @@
 </style>
 @endsection    
 @section('banner')
-<section class="parallax-window" data-parallax="scroll" data-image-src="{{ Storage::disk('azure')->url(rawurlencode(@$center->banner_image_url)) }}" data-natural-width="1280" data-natural-height="780">
+<section class="parallax-window" data-parallax="scroll" data-image-src="{{ Storage::disk('s3')->url(rawurlencode(@$center->banner_image_url)) }}" data-natural-width="1280" data-natural-height="780">
     <div class="parallax-content-2">
         <div class="container">
             <div class="row">
@@ -148,8 +148,8 @@
                     <div class="carousel magnific-gallery">
                         @foreach(@$imagegalleries as $gallery)
                         <div class="item hidden">
-                            <a href="{{ Storage::disk('azure')->url(rawurlencode($gallery->image_url)) }}">
-                                <img src="{{ Storage::disk('azure')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" />
+                            <a href="{{ Storage::disk('s3')->url(rawurlencode($gallery->image_url)) }}">
+                                <img src="{{ Storage::disk('s3')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" />
                             </a>
                         </div>
                         @endforeach           
@@ -241,8 +241,8 @@
         <div class="carousel magnific-gallery">
             @if(@$accomodationimagegalleries)
                 @foreach(@$accomodationimagegalleries as $accomodationimagegallery)
-                    <div class="item"> <a href="{{ Storage::disk('azure')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}">
-                        <img src="{{ Storage::disk('azure')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" alt="Image"></a>
+                    <div class="item"> <a href="{{ Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}">
+                        <img src="{{ Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" alt="Image"></a>
                     </div>
                 @endforeach
             @endif 
@@ -320,24 +320,24 @@
                             <div class="sp-slides">
                                 @if(@$center->accomodation_banner_image_url)
                                 <div class="sp-slide">
-                                    <img alt="Image" class="sp-image" alt="" data-src="{{ Storage::disk('azure')->url(rawurlencode(@$center->accomodation_banner_image_url)) }}" />
+                                    <img alt="Image" class="sp-image" alt="" data-src="{{ Storage::disk('s3')->url(rawurlencode(@$center->accomodation_banner_image_url)) }}" />
                                 </div>
                                 @endif
                                 @if(sizeof(@$accomodationimagegalleries)>0)
                                 @foreach(@$accomodationimagegalleries as $accomodationimagegallery)
                                 <div class="sp-slide">
-                                    <img alt="Image" class="sp-image" alt="" data-src="{{ Storage::disk('azure')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" />
+                                    <img alt="Image" class="sp-image" alt="" data-src="{{ Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" />
                                 </div>
                                 @endforeach
                                 @endif                                                                    
                             </div>
                             <div class="sp-thumbnails">
                                 @if(@$center->accomodation_banner_image_url)
-                                <img alt="Image" class="sp-thumbnail" alt="" src="{{ Storage::disk('azure')->url(rawurlencode(@$center->accomodation_banner_image_url)) }}" />                                    
+                                <img alt="Image" class="sp-thumbnail" alt="" src="{{ Storage::disk('s3')->url(rawurlencode(@$center->accomodation_banner_image_url)) }}" />                                    
                                 @endif
                                 @if(sizeof(@$accomodationimagegalleries)>0)
                                 @foreach(@$accomodationimagegalleries as $accomodationimagegallery)
-                                <img alt="Image" class="sp-thumbnail" alt="" data-src="{{ Storage::disk('azure')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" />
+                                <img alt="Image" class="sp-thumbnail" alt="" data-src="{{ Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" />
                                 @endforeach
                                 @endif
                             </div>
@@ -458,7 +458,7 @@
                                             if (in_array($certificate->id, explode("||", $center->certificate_id))) {
                                                 ?>
                                                 <div class="col-md-4">
-                                                    <img src="{{ Storage::disk('azure')->url(rawurlencode(@$certificate->image_url)) }}" alt="{{ $certificate->name }}" title="{{ $certificate->name }}" class="img-responsive" />
+                                                    <img src="{{ Storage::disk('s3')->url(rawurlencode(@$certificate->image_url)) }}" alt="{{ $certificate->name }}" title="{{ $certificate->name }}" class="img-responsive" />
                                                 </div>
                                                 <?php
                                             }
@@ -482,7 +482,7 @@
                                             <?php
                                             $src = url("/public/basicfront/img/teacher_thumb.jpg");
                                             if (@$teacher->profile_image_url) {
-                                                $src = Storage::disk('azure')->url(rawurlencode($teacher->profile_image_url));
+                                                $src = Storage::disk('s3')->url(rawurlencode($teacher->profile_image_url));
                                             }
                                             ?>
                                             <img src="{{ $src }}" alt="" title="{{ $teacher->name }}" class="img-responsive img-circle"  style="width: 80px; height: 80px;" />

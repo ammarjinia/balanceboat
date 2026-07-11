@@ -60,7 +60,7 @@
                         </div>
                         <div class="col-md-2 col-sm-2">
                             <a href="{{ url("/experience/".$experience->slug) }}">
-                                <img src="{{ Storage::disk('azure')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" class="img-responsive"> 
+                                <img src="{{ Storage::disk('s3')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" class="img-responsive"> 
                             </a>
                         </div>
                         <div class="col-md-4 col-sm-4">
@@ -187,8 +187,8 @@
                             <div class="row" id="user_img_container">
                                 <div class="col-md-3 m-t-10">
                                     <div class="card">
-                                        <a href="{{ Storage::disk('azure')->url(Auth::user()->profile_image_url) }}" target="_blank">
-                                            <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url(Auth::user()->profile_image_url) }}" alt="{{ Auth::user()->profile_image_title }}">
+                                        <a href="{{ Storage::disk('s3')->url(Auth::user()->profile_image_url) }}" target="_blank">
+                                            <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url(Auth::user()->profile_image_url) }}" alt="{{ Auth::user()->profile_image_title }}">
                                         </a>
                                         <div class="card-body">
                                             <a id="img_delete" href="{{ url('user/delete_image') }}" data-id="{{ Auth::user()->id }}" class="btn btn-danger">Remove</a>

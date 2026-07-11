@@ -8,7 +8,7 @@
     @section('keywords', strip_tags(@$center->keywords))
 <?php } ?>
 <?php if (!empty(@$center->banner_image_url)) { ?> 
-    @section('image', Storage::disk('azure')->url(rawurlencode(@$center->banner_image_url)))
+    @section('image', Storage::disk('s3')->url(rawurlencode(@$center->banner_image_url)))
 <?php } ?>
 <!-- Meta Info End -->
 
@@ -93,7 +93,7 @@
                     <?php $i = 0;?>
                     @if(@$center->banner_image_url)  
                     <div class="bg-listing-gallery-items one">
-                        <img data-src="{{ Storage::disk('azure')->url(rawurlencode(@$center->banner_image_url)) }}" alt="" class="lazy" />
+                        <img data-src="{{ Storage::disk('s3')->url(rawurlencode(@$center->banner_image_url)) }}" alt="" class="lazy" />
                     </div>
                     @else
                         <?php $i = -1;?>
@@ -112,7 +112,7 @@
                             @if($gallery->bg_exp_id && $gallery->image_url)
                             <img data-src="{{ Storage::disk('azure_bg')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" class="lazy" />
                             @elseif ($gallery->image_url)
-                            <img data-src="{{ Storage::disk('azure')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" class="lazy" />
+                            <img data-src="{{ Storage::disk('s3')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" class="lazy" />
                             @endif
                         </div>
                     <?php } ?>
@@ -202,14 +202,14 @@
                                                             <div class="slideshow-container">
                                                                 <div class="mySlides fade">
                                                                     @if(@$experience->thumbnail_image_url || @$experience->banner_image_url)
-                                                                    <img data-src="{{ ($experience->thumbnail_image_url) ? Storage::disk('azure')->url(rawurlencode($experience->thumbnail_image_url)) : Storage::disk('azure')->url(rawurlencode($experience->banner_image_url)) }}" class="lazy" />
+                                                                    <img data-src="{{ ($experience->thumbnail_image_url) ? Storage::disk('s3')->url(rawurlencode($experience->thumbnail_image_url)) : Storage::disk('s3')->url(rawurlencode($experience->banner_image_url)) }}" class="lazy" />
                                                                     @endif
                                                                 </div>
                                                                 @if(@$expimagegalleries)
                                                                 @foreach(@$expimagegalleries as $expimagegallerie)
                                                                 <div class="mySlides fade">
                                                                     @if(@$expimagegallerie->image_url)
-                                                                    <img data-src="{{ Storage::disk('azure')->url(rawurlencode(@$expimagegallerie->image_url)) }}" class="lazy" />
+                                                                    <img data-src="{{ Storage::disk('s3')->url(rawurlencode(@$expimagegallerie->image_url)) }}" class="lazy" />
                                                                     @endif
                                                                 </div>
                                                                 @endforeach
@@ -219,14 +219,14 @@
                                                                 <div class="thumnnails">
                                                                     @if(@$experience->thumbnail_image_url || @$experience->banner_image_url)
                                                                     <span class="dot">
-                                                                        <img data-src="{{ ($experience->thumbnail_image_url) ? Storage::disk('azure')->url(rawurlencode($experience->thumbnail_image_url)) : Storage::disk('azure')->url(rawurlencode($experience->banner_image_url)) }}" class="lazy" />
+                                                                        <img data-src="{{ ($experience->thumbnail_image_url) ? Storage::disk('s3')->url(rawurlencode($experience->thumbnail_image_url)) : Storage::disk('s3')->url(rawurlencode($experience->banner_image_url)) }}" class="lazy" />
                                                                     </span>
                                                                     @endif
                                                                     @if(@$expimagegalleries)
                                                                     @foreach(@$expimagegalleries as $expimagegallerie)
                                                                     @if(@$expimagegallerie->image_url)
                                                                     <span class="dot">
-                                                                        <img data-src="{{ Storage::disk('azure')->url(rawurlencode(@$expimagegallerie->image_url)) }}" class="lazy" />
+                                                                        <img data-src="{{ Storage::disk('s3')->url(rawurlencode(@$expimagegallerie->image_url)) }}" class="lazy" />
                                                                     </span>
                                                                     @endif
                                                                     @endforeach
@@ -397,14 +397,14 @@
                                         <div class="slideshow-container mw-100">
                                             @if(@$center->accomodation_banner_image_url)
                                             <div class="mySlides fade">
-                                                <img data-src="{{ Storage::disk('azure')->url(rawurlencode(@$center->accomodation_banner_image_url)) }}" class="lazy" />
+                                                <img data-src="{{ Storage::disk('s3')->url(rawurlencode(@$center->accomodation_banner_image_url)) }}" class="lazy" />
                                             </div>
                                             @endif
                                             @if(sizeof(@$accomodationimagegalleries)>0)
                                             @foreach(@$accomodationimagegalleries as $accomodationimagegallery)
                                             @if(@$accomodationimagegallery->image_url)
                                             <div class="mySlides fade">
-                                                <img data-src="{{ Storage::disk('azure')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" class="lazy" />
+                                                <img data-src="{{ Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" class="lazy" />
                                             </div>
                                             @endif
                                             @endforeach
@@ -414,14 +414,14 @@
                                             <div class="thumnnails">
                                                 @if(@$center->accomodation_banner_image_url)
                                                 <span class="dot">
-                                                    <img data-src="{{ Storage::disk('azure')->url(rawurlencode(@$center->accomodation_banner_image_url)) }}" class="lazy" />
+                                                    <img data-src="{{ Storage::disk('s3')->url(rawurlencode(@$center->accomodation_banner_image_url)) }}" class="lazy" />
                                                 </span>
                                                 @endif
                                                 @if(sizeof(@$accomodationimagegalleries)>0)
                                                 @foreach(@$accomodationimagegalleries as $accomodationimagegallery)
                                                 @if(@$accomodationimagegallery->image_url)
                                                 <span class="dot">
-                                                    <img data-src="{{ Storage::disk('azure')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" class="lazy" />
+                                                    <img data-src="{{ Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" class="lazy" />
                                                 </span>
                                                 @endif
                                                 @endforeach
@@ -451,7 +451,7 @@
                                             <a data-popup="popup-centre-<?php echo $i; ?>" class="show-bg-modal bg-form-el-wrap">
                                                 <div class="bg-form-el bg-popular-places-container p-3">
                                                     <div class="bg-popular-places">
-                                                        <img width="100%" height="390" data-src="{{ Storage::disk('azure')->url(rawurlencode(@$accomodation[0]['banner_image_url'])) }}" class="lazy" />
+                                                        <img width="100%" height="390" data-src="{{ Storage::disk('s3')->url(rawurlencode(@$accomodation[0]['banner_image_url'])) }}" class="lazy" />
                                                         <h3 class="pt-2">{{ @$accomodation[0]['name'] }}</h3>
                                                         <div class="c-brand fs-14 d-inline-flex align-items-center">
                                                             <span class="icon-read me-1"></span>
@@ -538,7 +538,7 @@
           <div class="bg-gallery-popup">
             @if(@$center->banner_image_url)  
             <div class="bg-gallery-items">
-              <img data-src="{{ Storage::disk('azure')->url(rawurlencode(@$center->banner_image_url)) }}" alt="" class="lazy" />
+              <img data-src="{{ Storage::disk('s3')->url(rawurlencode(@$center->banner_image_url)) }}" alt="" class="lazy" />
             </div>
             @endif
             @foreach(@$imagegalleries as $gallery)
@@ -546,7 +546,7 @@
                 @if($gallery->bg_exp_id && $gallery->image_url)
                 <img data-src="{{ Storage::disk('azure_bg')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" class="lazy" />
                 @elseif($gallery->image_url)
-                <img data-src="{{ Storage::disk('azure')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" class="lazy" />
+                <img data-src="{{ Storage::disk('s3')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" class="lazy" />
                 @endif
             </div>
             @endforeach
@@ -592,7 +592,7 @@
                 @if(@$accomodation[0]['banner_image_url'])
                     <div class="row">
                       <div class="col">
-                        <img class="br-12 lazy" data-src="{{ Storage::disk('azure')->url(rawurlencode(@$accomodation[0]['banner_image_url'])) }}" height="150" width="250" alt="centre-details" />
+                        <img class="br-12 lazy" data-src="{{ Storage::disk('s3')->url(rawurlencode(@$accomodation[0]['banner_image_url'])) }}" height="150" width="250" alt="centre-details" />
                       </div>
                     </div>
                 @endif    

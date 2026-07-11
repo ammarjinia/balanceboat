@@ -361,9 +361,9 @@ class CenterDashboardController extends Controller
             $folder = 'centers/' . date('Y/m/d');
             $name   = preg_replace('/[^A-Za-z0-9]/', '', pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))
                 . time() . '.' . strtolower($file->getClientOriginalExtension());
-            $file->storeAs($folder, $name, ['disk' => 'azure']);
+            $file->storeAs($folder, $name, ['disk' => 's3']);
             if ($center->banner_image_url) {
-                Storage::disk('azure')->delete($center->banner_image_url);
+                Storage::disk('s3')->delete($center->banner_image_url);
             }
             $center->banner_image_url   = $folder . '/' . $name;
             $center->banner_image_title = $file->getClientOriginalName();
@@ -378,7 +378,7 @@ class CenterDashboardController extends Controller
                 $tmpPath = trim($tmpPath);
                 if (!$tmpPath) continue;
                 $dest = str_replace('tmp/', '', $tmpPath);
-                Storage::disk('azure')->move($tmpPath, $dest);
+                Storage::disk('s3')->move($tmpPath, $dest);
                 CenterImageGallery::create([
                     'center_id'   => $centerId,
                     'image_url'   => $dest,
@@ -404,7 +404,7 @@ class CenterDashboardController extends Controller
         $name   = preg_replace('/[^A-Za-z0-9]/', '', pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))
             . time() . '.' . $ext;
         $folder = 'tmp/centers/' . date('Y/m/d');
-        $file->storeAs($folder, $name, ['disk' => 'azure']);
+        $file->storeAs($folder, $name, ['disk' => 's3']);
         echo json_encode(['success' => true, 'filename' => $folder . '/' . $name]);
     }
 
@@ -415,7 +415,7 @@ class CenterDashboardController extends Controller
             ->where('center_id', $centerId)
             ->first();
         if ($gallery) {
-            Storage::disk('azure')->delete($gallery->image_url);
+            Storage::disk('s3')->delete($gallery->image_url);
             $gallery->delete();
             echo '1';
         } else {
@@ -428,7 +428,7 @@ class CenterDashboardController extends Controller
         $centerId = Session::get('center_id');
         $center   = Centers::where('id', $centerId)->firstOrFail();
         if ($center->banner_image_url) {
-            Storage::disk('azure')->delete($center->banner_image_url);
+            Storage::disk('s3')->delete($center->banner_image_url);
             $center->banner_image_url   = null;
             $center->banner_image_title = null;
             $center->save();
@@ -594,7 +594,7 @@ class CenterDashboardController extends Controller
             $filenameWithoutExt = preg_replace("~\." . $ext . "$~i", '', $baseFileName);
             $filename = preg_replace('/[^A-Za-z0-9 ]/', '', $filenameWithoutExt) . time() . "." . $ext;
             $folderName = 'experiences/' . date("Y") . "/" . date("m") . "/" . date("d");
-            $file->storeAs($folderName, $filename, ['disk' => 'azure']);
+            $file->storeAs($folderName, $filename, ['disk' => 's3']);
             $exp->thumbnail_image_url = $folderName . "/" . $filename;
         }
 
@@ -606,7 +606,7 @@ class CenterDashboardController extends Controller
             $filenameWithoutExt = preg_replace("~\." . $ext . "$~i", '', $baseFileName);
             $filename = preg_replace('/[^A-Za-z0-9 ]/', '', $filenameWithoutExt) . time() . "." . $ext;
             $folderName = 'experiences/' . date("Y") . "/" . date("m") . "/" . date("d");
-            $file->storeAs($folderName, $filename, ['disk' => 'azure']);
+            $file->storeAs($folderName, $filename, ['disk' => 's3']);
             $exp->banner_image_url   = $folderName . "/" . $filename;
             $exp->banner_image_title = $file->getClientOriginalName();
         }
@@ -657,9 +657,9 @@ class CenterDashboardController extends Controller
             $filenameWithoutExt = preg_replace("~\." . $ext . "$~i", '', $baseFileName);
             $renamefile = preg_replace('/[^A-Za-z0-9 ]/', '', $filenameWithoutExt) . time() . "." . $ext;
 
-            // Store to Azure blob storage
+            // Store to s3
             $folderName = 'experiences/' . date("Y") . "/" . date("m") . "/" . date("d");
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             $imageUrl = $folderName . "/" . $renamefile;
 
             ExperienceImageGallery::create([

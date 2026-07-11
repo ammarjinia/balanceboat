@@ -150,8 +150,8 @@ class CertificatesController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'certificates' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             return $saveFileName = $folderName . "/" . $renamefile;
         }
@@ -162,7 +162,7 @@ class CertificatesController extends Controller {
             $id = $request['id'];
             $objCertificate = Certificates::find($id);
             if (!empty($objCertificate)) {
-                \Illuminate\Support\Facades\Storage::disk('azure')->delete($objCertificate->image_url);
+                \Illuminate\Support\Facades\Storage::disk('s3')->delete($objCertificate->image_url);
                 $objCertificate->image_title = null;
                 $objCertificate->image_url = null;
                 $objCertificate->save();

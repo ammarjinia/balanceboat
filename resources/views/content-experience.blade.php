@@ -4,7 +4,7 @@
             @if($experience->thumbnail_image_url || $experience->banner_image_url)
             <div class="img_list">
                 <a href="{{ url("/experience/".$experience->slug) }}">
-                    <img data-src="{{ ($experience->thumbnail_image_url) ? Storage::disk('azure')->url(rawurlencode($experience->thumbnail_image_url)) : Storage::disk('azure')->url(rawurlencode($experience->banner_image_url)) }}" alt="{{ $experience->banner_image_title }}" class="img-responsive lazy" /> 
+                    <img data-src="{{ ($experience->thumbnail_image_url) ? Storage::disk('s3')->url(rawurlencode($experience->thumbnail_image_url)) : Storage::disk('s3')->url(rawurlencode($experience->banner_image_url)) }}" alt="{{ $experience->banner_image_title }}" class="img-responsive lazy" /> 
                 </a>
             </div>
             @endif

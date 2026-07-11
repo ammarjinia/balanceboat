@@ -43,7 +43,7 @@ foreach ($experience_destination as $edest) {
     @section('keywords', "learn ".$subcategory." in ".$country.", learn and find ".$subcategory.", learn and find ".$category.", ".$subcategory." in ".$city.", ".$category." in ".$country." ".$city.", course in ".$country." ".$city.", ".$category." retreat in ".$country." ".$city)
 <?php }?>
 <?php if (!empty(@$experience->banner_image_url)) { ?>
-    @section('image', Storage::disk('azure')->url(rawurlencode(@$experience->banner_image_url)))
+    @section('image', Storage::disk('s3')->url(rawurlencode(@$experience->banner_image_url)))
 <?php } ?>
 <!-- Meta Info End --> 
 @section('head')
@@ -172,7 +172,7 @@ foreach ($experience_destination as $edest) {
 </style>
 @endsection    
 @section('banner')
-<section class="parallax-window" data-parallax="scroll" data-image-src="{{ Storage::disk('azure')->url(rawurlencode(@$experience->banner_image_url)) }}" data-natural-width="1280" data-natural-height="780">
+<section class="parallax-window" data-parallax="scroll" data-image-src="{{ Storage::disk('s3')->url(rawurlencode(@$experience->banner_image_url)) }}" data-natural-width="1280" data-natural-height="780">
     <div class="parallax-content-2">
         <div class="container">
             <div class="row">
@@ -182,7 +182,7 @@ foreach ($experience_destination as $edest) {
                     <span>{{ @$experience->location }}</span> </div>
                 <div class="col-md-4 col-sm-4 text-right"> @if(sizeof(@$imagegalleries)>0) <a href="javascript:void(0);" class="btn_1 view_image">View Images</a>
                     <div class="carousel magnific-gallery"> @foreach(@$imagegalleries as $gallery)
-                        <div class="item hidden"> <a href="{{ Storage::disk('azure')->url(rawurlencode($gallery->image_url)) }}"> <img src="{{ Storage::disk('azure')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" /> </a> </div>
+                        <div class="item hidden"> <a href="{{ Storage::disk('s3')->url(rawurlencode($gallery->image_url)) }}"> <img src="{{ Storage::disk('s3')->url(rawurlencode($gallery->image_url)) }}" alt="{{ $gallery->image_title }}" /> </a> </div>
                         @endforeach </div>
                     @endif </div>
             </div>
@@ -256,8 +256,8 @@ foreach ($experience_destination as $edest) {
         <div class="carousel magnific-gallery">
             @if(@$accomodationimagegalleries)
                 @foreach(@$accomodationimagegalleries as $accomodationimagegallery)
-                    <div class="item"> <a href="{{ Storage::disk('azure')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}">
-                        <img src="{{ Storage::disk('azure')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" alt="Image"></a>
+                    <div class="item"> <a href="{{ Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}">
+                        <img src="{{ Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" alt="Image"></a>
                     </div>
                 @endforeach
             @endif 
@@ -567,16 +567,16 @@ foreach ($experience_destination as $edest) {
                             @if ((@$center->accomodation_banner_image_url) or (sizeof(@$accomodationimagegalleries)>0))
                             <div id="Img_carousel" class="slider-pro">
                                 <div class="sp-slides"> @if(@$center->accomodation_banner_image_url)
-                                    <div class="sp-slide"> <img alt="Image" class="sp-image" alt="" data-src="{{ Storage::disk('azure')->url(rawurlencode(@$center->accomodation_banner_image_url)) }}" /> </div>
+                                    <div class="sp-slide"> <img alt="Image" class="sp-image" alt="" data-src="{{ Storage::disk('s3')->url(rawurlencode(@$center->accomodation_banner_image_url)) }}" /> </div>
                                     @endif
                                     @if(@$accomodationimagegalleries)
                                     @foreach(@$accomodationimagegalleries as $accomodationimagegallery)
-                                    <div class="sp-slide"> <img alt="Image" class="sp-image" alt="" data-src="{{ Storage::disk('azure')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" /> </div>
+                                    <div class="sp-slide"> <img alt="Image" class="sp-image" alt="" data-src="{{ Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" /> </div>
                                     @endforeach
                                     @endif </div>
-                                <div class="sp-thumbnails"> @if(@$center->accomodation_banner_image_url) <img alt="Image" class="sp-thumbnail" alt="" src="{{ Storage::disk('azure')->url(rawurlencode(@$center->accomodation_banner_image_url)) }}" /> @endif
+                                <div class="sp-thumbnails"> @if(@$center->accomodation_banner_image_url) <img alt="Image" class="sp-thumbnail" alt="" src="{{ Storage::disk('s3')->url(rawurlencode(@$center->accomodation_banner_image_url)) }}" /> @endif
                                     @if(@$accomodationimagegalleries)
-                                    @foreach(@$accomodationimagegalleries as $accomodationimagegallery) <img alt="Image" class="sp-thumbnail" alt=""  data-src="{{ Storage::disk('azure')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" /> @endforeach
+                                    @foreach(@$accomodationimagegalleries as $accomodationimagegallery) <img alt="Image" class="sp-thumbnail" alt=""  data-src="{{ Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" /> @endforeach
                                     @endif </div>
                             </div>
                             <br />
@@ -602,16 +602,16 @@ foreach ($experience_destination as $edest) {
                             @if ((!empty(@$experience->food_banner_image_url)) or (sizeof(@$foodimagegalleries) > 0) )
                             <div id="Img_carousel" class="slider-pro">
                                 <div class="sp-slides"> @if(@$experience->food_banner_image_url)
-                                    <div class="sp-slide"> <img alt="Image" class="sp-image" alt="" data-src="{{ Storage::disk('azure')->url(rawurlencode(@$experience->food_banner_image_url)) }}" /> </div>
+                                    <div class="sp-slide"> <img alt="Image" class="sp-image" alt="" data-src="{{ Storage::disk('s3')->url(rawurlencode(@$experience->food_banner_image_url)) }}" /> </div>
                                     @endif
                                     @if(@$foodimagegalleries)
                                     @foreach(@$foodimagegalleries as $foodimagegallery)
-                                    <div class="sp-slide"> <img alt="Image" class="sp-image" alt="" data-src="{{ Storage::disk('azure')->url(@$foodimagegallery->image_url) }}" /> </div>
+                                    <div class="sp-slide"> <img alt="Image" class="sp-image" alt="" data-src="{{ Storage::disk('s3')->url(@$foodimagegallery->image_url) }}" /> </div>
                                     @endforeach
                                     @endif </div>
-                                <div class="sp-thumbnails"> @if(@$experience->food_banner_image_url) <img alt="Image" class="sp-thumbnail" alt="" src="{{ Storage::disk('azure')->url(rawurlencode(@$experience->food_banner_image_url)) }}" /> @endif
+                                <div class="sp-thumbnails"> @if(@$experience->food_banner_image_url) <img alt="Image" class="sp-thumbnail" alt="" src="{{ Storage::disk('s3')->url(rawurlencode(@$experience->food_banner_image_url)) }}" /> @endif
                                     @if(@$foodimagegalleries)
-                                    @foreach(@$foodimagegalleries as $foodimagegallery) <img alt="Image" class="sp-thumbnail" alt="" data-src="{{ Storage::disk('azure')->url(rawurlencode(@$foodimagegallery->image_url)) }}" /> @endforeach
+                                    @foreach(@$foodimagegalleries as $foodimagegallery) <img alt="Image" class="sp-thumbnail" alt="" data-src="{{ Storage::disk('s3')->url(rawurlencode(@$foodimagegallery->image_url)) }}" /> @endforeach
                                     @endif </div>
                             </div>
                             <br />
@@ -757,7 +757,7 @@ foreach ($experience_destination as $edest) {
                                 }
                                 ?>
                                 {{ \App\Http\Helpers\CommonHelper::get_currency_rate(@$pay - $discount, @$experience_accomodation->currency) }} </strong> @if(@$experience_accomodation->banner_image_url)
-                            <div class="text-center"> <a href="#mdlAccommodation{{ @$experience_accomodation->id }}"  data-toggle="modal"  class="text-info"> <img src="{{ Storage::disk('azure')->url(rawurlencode(@$experience_accomodation->banner_image_url)) }}" alt="" class="img-responsive img-thumbnail" /> </a> </div>
+                            <div class="text-center"> <a href="#mdlAccommodation{{ @$experience_accomodation->id }}"  data-toggle="modal"  class="text-info"> <img src="{{ Storage::disk('s3')->url(rawurlencode(@$experience_accomodation->banner_image_url)) }}" alt="" class="img-responsive img-thumbnail" /> </a> </div>
                             @endif </div>
                         @endforeach 
                     </div>
@@ -786,7 +786,7 @@ foreach ($experience_destination as $edest) {
             <div class="box_style_1 expose">
                 <h3 class="inner">Centre Overview</h3>
                 <div class="row">
-                    <div class="col-md-12"> <img src="{{ Storage::disk('azure')->url(rawurlencode(@$center->banner_image_url)) }}" alt="" class="img-responsive" />
+                    <div class="col-md-12"> <img src="{{ Storage::disk('s3')->url(rawurlencode(@$center->banner_image_url)) }}" alt="" class="img-responsive" />
                         <h3><a class="text-default" href="{{ url("center/".@$center->slug) }}">{{ @$center->name }}</a></h3>
                         <?php
                         if (@$center->address_of_center) {
@@ -804,7 +804,7 @@ foreach ($experience_destination as $edest) {
                                     foreach (@$certificates as $certificate) {
                                         if (in_array($certificate->id, explode("||", $center->certificate_id))) {
                                             ?>
-                                            <div class="col-md-4"> <img src="{{ Storage::disk('azure')->url(rawurlencode(@$certificate->image_url)) }}" alt="{{ $certificate->name }}" title="{{ $certificate->name }}" class="img-responsive" /> </div>
+                                            <div class="col-md-4"> <img src="{{ Storage::disk('s3')->url(rawurlencode(@$certificate->image_url)) }}" alt="{{ $certificate->name }}" title="{{ $certificate->name }}" class="img-responsive" /> </div>
                                             <?php
                                         }
                                     }
@@ -827,7 +827,7 @@ foreach ($experience_destination as $edest) {
                                         <?php
                                         $src = url("/public/basicfront/img/teacher_thumb.jpg");
                                         if (@$teacher->profile_image_url) {
-                                            $src = Storage::disk('azure')->url(rawurlencode($teacher->profile_image_url));
+                                            $src = Storage::disk('s3')->url(rawurlencode($teacher->profile_image_url));
                                         }
                                         ?>
                                         <img src="{{ $src }}" alt="" title="{{ $teacher->name }}" class="img-responsive img-circle"  style="width: 80px; height: 80px;" />
@@ -918,7 +918,7 @@ foreach ($experience_destination as $edest) {
                 <div class="carousel magnific-gallery"> @if(@$accomodationimagegalleries)
                     @foreach(@$accomodationimagegalleries as $accomodationimagegallery)
                     @if ($accomodationimagegallery->accomodation_id == $experience_accomodation->id)
-                    <div class="item"> <a href="{{ Storage::disk('azure')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}"><img src="{{ Storage::disk('azure')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" alt="Image"></a> </div>
+                    <div class="item"> <a href="{{ Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}"><img src="{{ Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)) }}" alt="Image"></a> </div>
                     @endif
                     @endforeach
                     @endif </div>

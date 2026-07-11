@@ -456,7 +456,7 @@
                     @foreach (@$featured_experiences as $experience)
                     <div class="single_place">
                         <div class="thumb">
-                            <a href="{{ url("/experience/".$experience->slug) }}"><img data-src="{{ Storage::disk('azure')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" style="box-sizing: content-box;" class="lazy" /></a>
+                            <a href="{{ url("/experience/".$experience->slug) }}"><img data-src="{{ Storage::disk('s3')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" style="box-sizing: content-box;" class="lazy" /></a>
                         </div>
                         <div class="place_info">
                             <h3><a href="{{ url("/experience/".$experience->slug) }}">{{ @$experience->location }}</a></h3>
@@ -543,7 +543,7 @@
     //                             $imagegalleries = \App\ExperienceImageGallery::where("experience_id", @$experience_d['id'])->get();
     ?>
     <!--                            @if(@$imagegalleries)-->
-    <!--<div class="thumb"><img src="{{ Storage::disk('azure')->url(rawurlencode(@$imagegalleries['image_url'])) }}" /></div>-->
+    <!--<div class="thumb"><img src="{{ Storage::disk('s3')->url(rawurlencode(@$imagegalleries['image_url'])) }}" /></div>-->
     <!--                            @endif-->
     <!--                            <div class="place_info px-0"><h3>{{ @$deal_d['name'] }}</h3></div>-->
     <!--                        </a>-->
@@ -571,7 +571,7 @@
                     @foreach ($featured_countries as $val_catesDestinations_top)
                     <div class="col-md-4 ftco-animate">
                         <div class="project-destination">
-                            <a href="{{ url("/location/".$val_catesDestinations_top->slug) }}" class="img" style="background-image: url({{ Storage::disk('azure')->url(rawurlencode($val_catesDestinations_top->image_url)) }})">
+                            <a href="{{ url("/location/".$val_catesDestinations_top->slug) }}" class="img" style="background-image: url({{ Storage::disk('s3')->url(rawurlencode($val_catesDestinations_top->image_url)) }})">
                             </a>
                             <div class="text">
                                 <a href="{{ url("/location/".$val_catesDestinations_top->slug) }}"><span>{{ $val_catesDestinations_top->name }}</span></a>
@@ -586,7 +586,7 @@
     @endif
     <div class="video_area">       
         <video controlslist="nodownload" preload="none" class="_1kffseb" style="object-fit: cover; width: 100%; height: 480px;" controls="" class="lazy">
-            <source type="video/mp4" src="{{ Storage::disk('azure')->url('video/Balanceboat.mp4') }}" ></video>
+            <source type="video/mp4" src="{{ Storage::disk('s3')->url('video/Balanceboat.mp4') }}" ></video>
     </div>
     <footer>
         <div class="container">

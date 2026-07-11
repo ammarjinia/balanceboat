@@ -71,7 +71,7 @@
 
                 <div class="relative h-40 bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden shrink-0">
                     @if($experience->thumbnail_image_url)
-                        <img src="{{ Storage::disk('azure')->url($experience->thumbnail_image_url) }}"
+                        <img src="{{ Storage::disk('s3')->url($experience->thumbnail_image_url) }}"
                              alt="{{ $experience->name }}"
                              class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent"></div>

@@ -110,8 +110,8 @@
                                 @if(@$edeal->image_url)
                                 <div class="col-md-3 m-t-10" id="col_img_container">
                                     <div class="card">
-                                        <a href="{{ Storage::disk('azure')->url(@$edeal->image_url) }}" target="_blank">
-                                            <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url(@$edeal->image_url) }}" alt="{{ @$edeal->image_title }}" />
+                                        <a href="{{ Storage::disk('s3')->url(@$edeal->image_url) }}" target="_blank">
+                                            <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url(@$edeal->image_url) }}" alt="{{ @$edeal->image_title }}" />
                                         </a>
                                         <div class="card-body">
                                             <a id="img_delete" href="{{ url('bbadmin/deal/delete_image') }}" data-id="{{ $edeal->id }}" class="btn btn-danger">Remove</a>

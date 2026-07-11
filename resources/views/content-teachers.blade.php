@@ -3,7 +3,7 @@
         <div class="col-lg-4 col-md-4 col-sm-4">
             <div class="img_list">
                 <a href="{{ url("/teacher/".$teacher->slug) }}">
-                    <img data-src="{{ ($teacher->profile_image_url) ? Storage::disk('azure')->url(rawurlencode($teacher->profile_image_url)) : '' }}" alt="{{ $teacher->profile_image_url }}" class="img-responsive lazy" /> 
+                    <img data-src="{{ ($teacher->profile_image_url) ? Storage::disk('s3')->url(rawurlencode($teacher->profile_image_url)) : '' }}" alt="{{ $teacher->profile_image_url }}" class="img-responsive lazy" /> 
                 </a>
             </div>
         </div>

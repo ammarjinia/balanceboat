@@ -104,8 +104,8 @@
                                 @if($ecategory->image_url)
                                 <div class="col-md-3 m-t-10" id="cat_img_container">
                                     <div class="card">
-                                        <a href="{{ Storage::disk('azure')->url($ecategory->image_url) }}" target="_blank">
-                                            <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($ecategory->image_url) }}" alt="{{ $ecategory->image_title }}">
+                                        <a href="{{ Storage::disk('s3')->url($ecategory->image_url) }}" target="_blank">
+                                            <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($ecategory->image_url) }}" alt="{{ $ecategory->image_title }}">
                                         </a>
                                         <div class="card-body">
                                             <a id="img_delete" href="{{ url('bbadmin/category/delete_image') }}" data-id="{{ $ecategory->id }}" class="btn btn-danger">Remove</a>
@@ -122,8 +122,8 @@
                                 @if($ecategory->banner_image_url)
                                 <div class="col-md-3 m-t-10" id="cat_img_banner_container">
                                     <div class="card">
-                                        <a href="{{ Storage::disk('azure')->url($ecategory->banner_image_url) }}" target="_blank">
-                                            <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($ecategory->banner_image_url) }}" alt="{{ $ecategory->banner_image_title }}">
+                                        <a href="{{ Storage::disk('s3')->url($ecategory->banner_image_url) }}" target="_blank">
+                                            <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($ecategory->banner_image_url) }}" alt="{{ $ecategory->banner_image_title }}">
                                         </a>
                                         <div class="card-body">
                                             <a id="img_banner_delete" href="{{ url('bbadmin/category/delete_banner_image') }}" data-id="{{ $ecategory->id }}" class="btn btn-danger">Remove</a>

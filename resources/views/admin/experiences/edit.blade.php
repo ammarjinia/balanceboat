@@ -810,8 +810,8 @@
                                 <div class="row" id="exp_thumb_img_container">
                                     <div class="col-md-3 m-t-10">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url(@$eexperience->thumbnail_image_url) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ strtok(Storage::disk('azure')->url(@$eexperience->thumbnail_image_url),'?') }}" alt="{{ @$eexperience->thumbnail_image_url }}">
+                                            <a href="{{ Storage::disk('s3')->url(@$eexperience->thumbnail_image_url) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ strtok(Storage::disk('s3')->url(@$eexperience->thumbnail_image_url),'?') }}" alt="{{ @$eexperience->thumbnail_image_url }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="img_thumbnail_delete" href="{{ url('bbadmin/experiences/delete_thumbnail_image') }}" data-id="{{ @$eexperience->id }}" class="btn btn-danger">Remove</a>
@@ -830,8 +830,8 @@
                                 <div class="row" id="exp_img_container">
                                     <div class="col-md-3 m-t-10">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url(@$eexperience->banner_image_url) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ strtok(Storage::disk('azure')->url(@$eexperience->banner_image_url),'?') }}" alt="{{ @$eexperience->banner_image_title }}">
+                                            <a href="{{ Storage::disk('s3')->url(@$eexperience->banner_image_url) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ strtok(Storage::disk('s3')->url(@$eexperience->banner_image_url),'?') }}" alt="{{ @$eexperience->banner_image_title }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="img_delete" href="{{ url('bbadmin/experiences/delete_image') }}" data-id="{{ @$eexperience->id }}" class="btn btn-danger">Remove</a>
@@ -859,8 +859,8 @@
                                     @if ($gallery->image_url)
                                     <div class="col-md-3 m-t-10" id="img-{{ $gallery->id }}">
                                         <div class="card">
-                                            <a href="{{ strtok(Storage::disk('azure')->url($gallery->image_url), '?') }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ strtok(Storage::disk('azure')->url($gallery->image_url), '?') }}" alt="{{ $gallery->image_title }}">
+                                            <a href="{{ strtok(Storage::disk('s3')->url($gallery->image_url), '?') }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ strtok(Storage::disk('s3')->url($gallery->image_url), '?') }}" alt="{{ $gallery->image_title }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="gallery_img_delete" href="{{ url('bbadmin/experiences/delete_gallery_image') }}" data-id="{{ $gallery->id }}" class="btn btn-danger">Remove</a>
@@ -935,8 +935,8 @@
                                 <div class="row" id="exp_food_img_container">
                                     <div class="col-md-3 m-t-10">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url(@$eexperience->food_banner_image_url) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url(@$eexperience->food_banner_image_url) }}" alt="{{ @$eexperience->food_banner_image_url }}">
+                                            <a href="{{ Storage::disk('s3')->url(@$eexperience->food_banner_image_url) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url(@$eexperience->food_banner_image_url) }}" alt="{{ @$eexperience->food_banner_image_url }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="img_food_delete" href="{{ url('bbadmin/experiences/delete_food_image') }}" data-id="{{ @$eexperience->id }}" class="btn btn-danger">Remove</a>
@@ -964,8 +964,8 @@
                                     @if($gallery->image_url)
                                     <div class="col-md-3 m-t-10" id="img-food-{{ $gallery->id }}">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url($gallery->image_url) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ strtok(Storage::disk('azure')->url($gallery->image_url), '?') }}" alt="{{ $gallery->image_title }}">
+                                            <a href="{{ Storage::disk('s3')->url($gallery->image_url) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ strtok(Storage::disk('s3')->url($gallery->image_url), '?') }}" alt="{{ $gallery->image_title }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="food_gallery_img_delete" href="{{ url('bbadmin/experiences/delete_food_gallery_image') }}" data-id="{{ $gallery->id }}" class="btn btn-danger food_gallery_img_delete">Remove</a>

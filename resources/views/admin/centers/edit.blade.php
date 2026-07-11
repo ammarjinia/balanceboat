@@ -259,8 +259,8 @@
                                 <div class="row" id="center_img_container">
                                     <div class="col-md-3 m-t-10">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url($ecenter->banner_image_url) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($ecenter->banner_image_url) }}" alt="{{ $ecenter->banner_image_title }}">
+                                            <a href="{{ Storage::disk('s3')->url($ecenter->banner_image_url) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($ecenter->banner_image_url) }}" alt="{{ $ecenter->banner_image_title }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="img_delete" href="{{ url('bbadmin/centers/delete_image') }}" data-id="{{ $ecenter->id }}" class="btn btn-danger">Remove</a>
@@ -292,8 +292,8 @@
                                                         <img class="card-img-top img-responsive" src="{{ Storage::disk('azure_bg')->url($gallery->image_url) }}" alt="{{ $gallery->image_title }}">
                                                     </a>
                                                 @else
-                                                    <a href="{{ Storage::disk('azure')->url($gallery->image_url) }}" target="_blank">
-                                                        <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($gallery->image_url) }}" alt="{{ $gallery->image_title }}">
+                                                    <a href="{{ Storage::disk('s3')->url($gallery->image_url) }}" target="_blank">
+                                                        <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($gallery->image_url) }}" alt="{{ $gallery->image_title }}">
                                                     </a>
                                                 @endif
                                                 <div class="card-body">
@@ -416,8 +416,8 @@
                                 <div class="row" id="accomodation_img_container">
                                     <div class="col-md-3 m-t-10">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url($ecenter->accomodation_banner_image_url) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($ecenter->accomodation_banner_image_url) }}" alt="{{ $ecenter->accomodation_banner_image_title }}">
+                                            <a href="{{ Storage::disk('s3')->url($ecenter->accomodation_banner_image_url) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($ecenter->accomodation_banner_image_url) }}" alt="{{ $ecenter->accomodation_banner_image_title }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="accomodation_img_delete" href="{{ url('bbadmin/centers/delete_accomodation_image') }}" data-id="{{ $ecenter->id }}" class="btn btn-danger">Remove</a>

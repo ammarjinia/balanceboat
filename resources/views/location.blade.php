@@ -8,7 +8,7 @@
     @section('keywords', @$destination->keywords)
 <?php } ?>
 <?php if (!empty(@$destination->banner_image_url)) { ?> 
-    @section('image', Storage::disk('azure')->url(@$destination->banner_image_url))
+    @section('image', Storage::disk('s3')->url(@$destination->banner_image_url))
 <?php } ?>
 
 @section('head')
@@ -23,7 +23,7 @@ if (!empty(request()->getQueryString())) {
 }
 ?>
 @section('banner')
-<section id="hero" style="<?php if (!empty(@$destination->banner_image_url)) { ?> background-image: url('{{ Storage::disk('azure')->url(@$destination->banner_image_url) }}') !important; <?php } ?>">
+<section id="hero" style="<?php if (!empty(@$destination->banner_image_url)) { ?> background-image: url('{{ Storage::disk('s3')->url(@$destination->banner_image_url) }}') !important; <?php } ?>">
     <div class="intro_title">
         <h3 class="animated fadeInDown">{{ @$destination->name }}</h3>
         <p class="animated fadeInDown"></p>
@@ -48,7 +48,7 @@ if (!empty(request()->getQueryString())) {
                 <div class="img_container">
                     <a href="{{ url()->current()."?category=".$category->slug.$qs }}">
                         @if($category->image_url)
-                        <img src="{{ Storage::disk('azure')->url($category->image_url) }}" class="img-responsive" style="height:170px" alt="{{ $category->image_title }}">
+                        <img src="{{ Storage::disk('s3')->url($category->image_url) }}" class="img-responsive" style="height:170px" alt="{{ $category->image_title }}">
                         @endif
                         <div class="short_info"> {{ $category->name }} </div>
                     </a>
@@ -254,7 +254,7 @@ if (!empty(request()->getQueryString())) {
                     <div class="img_container">
                         <a href = "{{ url("/location/".$destination->slug."/".$val_catesDestinations_top->slug).$qs }}">
                             @if($val_catesDestinations_top->image_url)
-                            <img src = "{{ Storage::disk('azure')->url($val_catesDestinations_top->image_url) }}" class = "img-responsive" alt = "{{ $val_catesDestinations_top->image_title }}" style = "max-height:173px;" />
+                            <img src = "{{ Storage::disk('s3')->url($val_catesDestinations_top->image_url) }}" class = "img-responsive" alt = "{{ $val_catesDestinations_top->image_title }}" style = "max-height:173px;" />
                             @endif
                         </a>
                     </div>

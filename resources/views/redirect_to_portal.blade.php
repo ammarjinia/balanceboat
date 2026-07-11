@@ -15,7 +15,7 @@
                         <h2>Namaste,</h2>
                         <p>You are being redirected to the Organizers website to complete this booking</p>
                         <a href="{{ url("/experience/".$experience->slug) }}">
-                            <img src="{{ Storage::disk('azure')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" class="img-thumbnail"> 
+                            <img src="{{ Storage::disk('s3')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" class="img-thumbnail"> 
                         </a>
                         <a href="{{ url("/experience/".$experience->slug) }}"><h4>{{ $experience->name }}</h4></a>
                         <p>Please wait...</p>

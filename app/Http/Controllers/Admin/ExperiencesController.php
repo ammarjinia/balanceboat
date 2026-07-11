@@ -347,7 +347,7 @@ class ExperiencesController extends Controller
                         $image_galleries_array = explode("|@|@|", @$image_galleries);
                         foreach ($image_galleries_array as $galimage) {
                             $dest = str_replace("tmp/", "", $galimage);
-                            Storage::disk('azure')->move($galimage, $dest);
+                            Storage::disk('s3')->move($galimage, $dest);
                             $objExperienceImageGallery = new \App\ExperienceImageGallery();
                             $objExperienceImageGallery->experience_id = $experience_id;
                             $objExperienceImageGallery->image_title = basename($dest);
@@ -361,7 +361,7 @@ class ExperiencesController extends Controller
                         $food_image_galleries_array = explode("|@|@|", @$food_image_galleries);
                         foreach ($food_image_galleries_array as $galimage) {
                             $dest = str_replace("tmp/", "", $galimage);
-                            Storage::disk('azure')->move($galimage, $dest);
+                            Storage::disk('s3')->move($galimage, $dest);
                             $objExperienceImageGallery = new \App\ExperienceFoodImageGallery();
                             $objExperienceImageGallery->experience_id = $experience_id;
                             $objExperienceImageGallery->image_title = basename($dest);
@@ -478,7 +478,7 @@ class ExperiencesController extends Controller
                                   $accomodation_galleries_array = explode("|@|@|", @$accomodation_galleries);
                                   foreach ($accomodation_galleries_array as $galimage) {
                                   $dest = str_replace("tmp/", "", $galimage);
-                                  Storage::disk('azure')->move($galimage, $dest);
+                                  Storage::disk('s3')->move($galimage, $dest);
                                   $objExperienceAccomodationImageGallery = new \App\ExperienceAccomodationImageGallery();
                                   $objExperienceAccomodationImageGallery->experience_id = $experience_id;
                                   $objExperienceAccomodationImageGallery->accomodation_id = $request['accomodation_title'][$acm_key];
@@ -657,7 +657,7 @@ class ExperiencesController extends Controller
                     $image_galleries_array = explode("|@|@|", @$image_galleries);
                     foreach ($image_galleries_array as $galimage) {
                         $dest = str_replace("tmp/", "", $galimage);
-                        Storage::disk('azure')->move($galimage, $dest);
+                        Storage::disk('s3')->move($galimage, $dest);
                         $objExperienceImageGallery = new \App\ExperienceImageGallery();
                         $objExperienceImageGallery->experience_id = $experience_id;
                         $objExperienceImageGallery->image_title = basename($dest);
@@ -671,7 +671,7 @@ class ExperiencesController extends Controller
                     $food_image_galleries_array = explode("|@|@|", @$food_image_galleries);
                     foreach ($food_image_galleries_array as $galimage) {
                         $dest = str_replace("tmp/", "", $galimage);
-                        Storage::disk('azure')->move($galimage, $dest);
+                        Storage::disk('s3')->move($galimage, $dest);
                         $objExperienceImageGallery = new \App\ExperienceFoodImageGallery();
                         $objExperienceImageGallery->experience_id = $experience_id;
                         $objExperienceImageGallery->image_title = basename($dest);
@@ -740,7 +740,7 @@ class ExperiencesController extends Controller
                               $accomodation_galleries_array = explode("|@|@|", @$accomodation_galleries);
                               foreach ($accomodation_galleries_array as $galimage) {
                               $dest = str_replace("tmp/", "", $galimage);
-                              Storage::disk('azure')->move($galimage, $dest);
+                              Storage::disk('s3')->move($galimage, $dest);
                               $objExperienceAccomodationImageGallery = new \App\ExperienceAccomodationImageGallery();
                               $objExperienceAccomodationImageGallery->experience_id = $experience_id;
                               $objExperienceAccomodationImageGallery->accomodation_id = $request['accomodation_title'][$acm_key];
@@ -904,7 +904,7 @@ class ExperiencesController extends Controller
             $objExperience = Experiences::find($id);
             if (!empty($objExperience)) {
                 /* if (!empty($objExperience->banner_image_url)) {
-                  Storage::disk('azure')->delete($objExperience->banner_image_url);
+                  Storage::disk('s3')->delete($objExperience->banner_image_url);
                   } */
                 $objExperience->delete();
                 \App\ExperienceAccomodations::where("experience_id", $id)->delete();
@@ -922,7 +922,7 @@ class ExperiencesController extends Controller
                   $imagegalleries = \App\ExperienceImageGallery::get_data($paramEGI);
                   if (!empty(@$imagegalleries)) {
                   foreach (@$imagegalleries as $imagegallery) {
-                  Storage::disk('azure')->delete(@$imagegallery->image_url);
+                  Storage::disk('s3')->delete(@$imagegallery->image_url);
                   $imagegallery->delete();
                   }
                   } */
@@ -961,8 +961,8 @@ class ExperiencesController extends Controller
             $renamefile = preg_replace('/[^A-Za-z0-9 ]/', '', $filenameWithoutExt) . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'experiences' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             return $saveFileName = $folderName . "/" . $renamefile;
         }
@@ -980,7 +980,7 @@ class ExperiencesController extends Controller
             $id = $request['id'];
             $objExperience = Experiences::find($id);
             if (!empty($objExperience)) {
-                Storage::disk('azure')->delete($objExperience->thumbnail_image_url);
+                Storage::disk('s3')->delete($objExperience->thumbnail_image_url);
                 $objExperience->thumbnail_image_url = null;
                 $objExperience->save();
                 echo true;
@@ -1004,7 +1004,7 @@ class ExperiencesController extends Controller
             $id = $request['id'];
             $objExperience = Experiences::find($id);
             if (!empty($objExperience)) {
-                Storage::disk('azure')->delete($objExperience->banner_image_url);
+                Storage::disk('s3')->delete($objExperience->banner_image_url);
                 $objExperience->banner_image_title = null;
                 $objExperience->banner_image_url = null;
                 $objExperience->save();
@@ -1023,7 +1023,7 @@ class ExperiencesController extends Controller
             $id = $request['id'];
             $objExperience = Experiences::find($id);
             if (!empty($objExperience)) {
-                Storage::disk('azure')->delete($objExperience->food_banner_image_url);
+                Storage::disk('s3')->delete($objExperience->food_banner_image_url);
                 $objExperience->food_banner_image_title = null;
                 $objExperience->food_banner_image_url = null;
                 $objExperience->save();
@@ -1047,7 +1047,7 @@ class ExperiencesController extends Controller
             $id = $request['id'];
             $objExperienceFoodImageGallery = \App\ExperienceFoodImageGallery::find($id);
             if (!empty($objExperienceFoodImageGallery)) {
-                Storage::disk('azure')->delete($objExperienceFoodImageGallery->image_url);
+                Storage::disk('s3')->delete($objExperienceFoodImageGallery->image_url);
                 $objExperienceFoodImageGallery->delete();
                 echo true;
             } else {
@@ -1080,8 +1080,8 @@ class ExperiencesController extends Controller
             $renamefile = preg_replace('/[^A-Za-z0-9 ]/', '', $filenameWithoutExt) . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'tmp/experiences' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             $saveFileName = $folderName . "/" . $renamefile;
             echo (json_encode(array('success' => true, 'filename' => $saveFileName)));
@@ -1101,7 +1101,7 @@ class ExperiencesController extends Controller
             $id = $request['id'];
             $objExperienceImageGallery = \App\ExperienceImageGallery::find($id);
             if (!empty($objExperienceImageGallery)) {
-                Storage::disk('azure')->delete($objExperienceImageGallery->image_url);
+                Storage::disk('s3')->delete($objExperienceImageGallery->image_url);
                 $objExperienceImageGallery->delete();
                 echo true;
             } else {
@@ -1134,8 +1134,8 @@ class ExperiencesController extends Controller
             $renamefile = preg_replace('/[^A-Za-z0-9 ]/', '', $filenameWithoutExt) . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'tmp/experiences/accomodations' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             $saveFileName = $folderName . "/" . $renamefile;
             echo (json_encode(array('success' => true, 'filename' => $saveFileName)));
@@ -1155,7 +1155,7 @@ class ExperiencesController extends Controller
             $id = $request['id'];
             $objExperienceImageGallery = \App\ExperienceImageGallery::find($id);
             if (!empty($objExperienceImageGallery)) {
-                Storage::disk('azure')->delete($objExperienceImageGallery->image_url);
+                Storage::disk('s3')->delete($objExperienceImageGallery->image_url);
                 $objExperienceImageGallery->delete();
                 echo true;
             } else {

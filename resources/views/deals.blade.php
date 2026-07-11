@@ -17,7 +17,7 @@
                             @if($objDeal->image_url)
                             <div class="img_list">
                                 <a href="{!! url('/deal/'.$objDeal->slug) !!}">
-                                    <img data-src="{!! Storage::disk('azure')->url($objDeal->image_url) !!}" alt="{{ $objDeal->image_title }}" class="img-responsive lazy" /> 
+                                    <img data-src="{!! Storage::disk('s3')->url($objDeal->image_url) !!}" alt="{{ $objDeal->image_title }}" class="img-responsive lazy" /> 
                                 </a>
                             </div>
                             @endif

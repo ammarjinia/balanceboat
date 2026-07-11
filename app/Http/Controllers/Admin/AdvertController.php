@@ -65,7 +65,7 @@ class AdvertController extends Controller {
                             
                     $listingData[] = array(
                         $objAdvert->banner_image_title,
-                        ($objAdvert->banner_image_url) ? '<img src="'.Storage::disk('azure')->url($objAdvert->banner_image_url).'" height="50px" />' : '',
+                        ($objAdvert->banner_image_url) ? '<img src="'.Storage::disk('s3')->url($objAdvert->banner_image_url).'" height="50px" />' : '',
                         $objAdvert->position,
                         ($objAdvert->is_draft == 0) ? 'Publish' : 'Draft',
                         $action
@@ -164,7 +164,7 @@ class AdvertController extends Controller {
             $objAdvert = Advert::find($id);
             if (!empty($objAdvert)) {
                 if ($objAdvert->banner_image_title) {
-                    Storage::disk('azure')->delete($objAdvert->banner_image_title);
+                    Storage::disk('s3')->delete($objAdvert->banner_image_title);
                 }
                 $objAdvert->delete();
             } else {
@@ -192,8 +192,8 @@ class AdvertController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'adverts' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             return $saveFileName = $folderName . "/" . $renamefile;
         }
@@ -205,7 +205,7 @@ class AdvertController extends Controller {
             $field = $request['field'];
             $objAdvert = Advert::find($id);
             if (!empty($objAdvert)) {
-                Storage::disk('azure')->delete($objAdvert->$field);
+                Storage::disk('s3')->delete($objAdvert->$field);
                 if ($field == "banner_image_url") {
                     $objAdvert->banner_image_url = null;
                 }

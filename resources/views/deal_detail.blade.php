@@ -8,7 +8,7 @@
     @section('keywords', strip_tags(@$deal->keywords))
 <?php } ?>
 <?php if (!empty(@$deal->image_url)) { ?>
-    @section('image', Storage::disk('azure')->url(rawurlencode(@$deal->image_url)))
+    @section('image', Storage::disk('s3')->url(rawurlencode(@$deal->image_url)))
 <?php } ?>
 @section('head')
 <style>
@@ -142,14 +142,14 @@
                                         <div class="slideshow-container">
                                             @if(@$experience_d->banner_image_url)
                                             <div class="mySlides fade">
-                                                <img data-src="{{ strtok(Storage::disk('azure')->url(rawurlencode(@$experience_d->banner_image_url)),'?') }}" class="lazy" />
+                                                <img data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode(@$experience_d->banner_image_url)),'?') }}" class="lazy" />
                                             </div>
                                             @endif
                                             @foreach(@$imagegalleries as $gallery)
                                             @if($gallery)
                                             @if(@$gallery->image_url)
                                             <div class="mySlides fade">
-                                                <img data-src="{{ strtok(Storage::disk('azure')->url(rawurlencode($gallery->image_url)),'?') }}" class="lazy" />
+                                                <img data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode($gallery->image_url)),'?') }}" class="lazy" />
                                             </div>
                                             @endif
                                             @endif
@@ -159,14 +159,14 @@
                                             <div class="thumnnails">
                                                 @if(@$experience_d->banner_image_url)
                                                 <span class="dot">
-                                                    <img data-src="{{ strtok(Storage::disk('azure')->url(rawurlencode(@$experience_d->banner_image_url)),'?') }}" class="lazy" />
+                                                    <img data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode(@$experience_d->banner_image_url)),'?') }}" class="lazy" />
                                                 </span>
                                                 @endif
                                                 @foreach(@$imagegalleries as $gallery)
                                                 @if($gallery)
                                                 @if(@$gallery->image_url)
                                                 <span class="dot">
-                                                    <img data-src="{{ strtok(Storage::disk('azure')->url(rawurlencode($gallery->image_url)),'?') }}" class="lazy" />
+                                                    <img data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode($gallery->image_url)),'?') }}" class="lazy" />
                                                 </span>
                                                 @endif
                                                 @endif

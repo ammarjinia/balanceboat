@@ -47,8 +47,8 @@
                                 @if($ecertificate->image_url)
                                 <div class="col-md-3 m-t-10" id="cert_img_container">
                                     <div class="card">
-                                        <a href="{{ Storage::disk('azure')->url($ecertificate->image_url) }}" target="_blank">
-                                            <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($ecertificate->image_url) }}" alt="{{ $ecertificate->image_title }}">
+                                        <a href="{{ Storage::disk('s3')->url($ecertificate->image_url) }}" target="_blank">
+                                            <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($ecertificate->image_url) }}" alt="{{ $ecertificate->image_title }}">
                                         </a>
                                         <div class="card-body">
                                             <a id="img_delete" href="{{ url('bbadmin/certificates/delete_image') }}" data-id="{{ $ecertificate->id }}" class="btn btn-danger">Remove</a>

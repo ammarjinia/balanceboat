@@ -383,7 +383,7 @@
                     @foreach (@$featured_experiences as $experience)
                     <div class="single_place">
                         <div class="thumb">
-                            <a href="{{ url("/experience/".$experience->slug) }}"><img data-src="{{ Storage::disk('azure')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" class="lazy" /></a>
+                            <a href="{{ url("/experience/".$experience->slug) }}"><img data-src="{{ Storage::disk('s3')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" class="lazy" /></a>
                         </div>
                         <div class="place_info">
                             <h3><a href="{{ url("/experience/".$experience->slug) }}">{{ @$experience->location }}</a></h3>
@@ -466,7 +466,7 @@
                     @foreach ($featured_countries as $val_catesDestinations_top)
                     <div class="col-md-4 ftco-animate">
                         <div class="project-destination">
-                            <a href="{{ url("/location/".$val_catesDestinations_top->slug) }}" class="img" style="background-image: url({{ Storage::disk('azure')->url($val_catesDestinations_top->image_url) }})">
+                            <a href="{{ url("/location/".$val_catesDestinations_top->slug) }}" class="img" style="background-image: url({{ Storage::disk('s3')->url($val_catesDestinations_top->image_url) }})">
                             </a>
                             <div class="text">
                                 <a href="{{ url("/location/".$val_catesDestinations_top->slug) }}"><span>{{ $val_catesDestinations_top->name }}</span></a>
@@ -481,7 +481,7 @@
     @endif
     <div class="video_area">       
         <video controlslist="nodownload" preload="metadata" class="_1kffseb" style="object-fit: cover; width: 100%; height: 480px;" controls="">
-            <source type="video/mp4" src="{{ Storage::disk('azure')->url('video/Balanceboat.mp4') }}"></video>
+            <source type="video/mp4" src="{{ Storage::disk('s3')->url('video/Balanceboat.mp4') }}"></video>
     </div>
     <footer>
         <div class="container">

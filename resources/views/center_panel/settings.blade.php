@@ -465,7 +465,7 @@
                         <label class="fl">Banner / Hero Image</label>
                         @if($center->banner_image_url)
                         <div class="relative rounded-2xl overflow-hidden mb-3" id="banner-preview-wrap" style="height:160px">
-                            <img src="{{ Storage::disk('azure')->url($center->banner_image_url) }}"
+                            <img src="{{ Storage::disk('s3')->url($center->banner_image_url) }}"
                                  alt="Banner"
                                  class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
@@ -489,7 +489,7 @@
                             <div class="relative group rounded-xl overflow-hidden bg-[#F8FAF8]"
                                  style="aspect-ratio:1"
                                  id="gallery-item-{{ $img->id }}">
-                                <img src="{{ Storage::disk('azure')->url($img->image_url) }}"
+                                <img src="{{ Storage::disk('s3')->url($img->image_url) }}"
                                      alt=""
                                      class="w-full h-full object-cover">
                                 <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
@@ -708,7 +708,7 @@
                 {{-- Banner --}}
                 <div class="h-40 relative bg-gradient-to-br from-[#2F6F57] to-[#1A4035] flex items-end">
                     @if($center->banner_image_url)
-                    <img src="{{ Storage::disk('azure')->url($center->banner_image_url) }}"
+                    <img src="{{ Storage::disk('s3')->url($center->banner_image_url) }}"
                          alt="{{ $center->name }}"
                          class="absolute inset-0 w-full h-full object-cover opacity-60">
                     @endif

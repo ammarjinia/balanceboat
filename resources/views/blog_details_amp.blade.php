@@ -8,7 +8,7 @@
     @section('keywords', strip_tags(@$blog->meta_keywords))
 <?php } ?>
 <?php if (!empty(@$blog->banner_image_url)) { ?> 
-    @section('image', Storage::disk('azure')->url(@$blog->banner_image_url))
+    @section('image', Storage::disk('s3')->url(@$blog->banner_image_url))
 <?php }
 $arImgAr = array(
     @$blog->name,
@@ -23,7 +23,7 @@ if($objAdverts) {?>
         <amp-carousel width="400" height="400" layout="responsive" type="slides" autoplay delay="5000" aria-label="Ads.">
             <?php
             foreach ($objAdverts as $objAdvert) {
-            $url_top_img = Storage::disk('azure')->url($objAdvert->banner_image_url);
+            $url_top_img = Storage::disk('s3')->url($objAdvert->banner_image_url);
             $url = \Crypt::encrypt($objAdvert->website);
             ?>
             <div>
@@ -53,7 +53,7 @@ if($objAdverts) {?>
 <?php
 $imgsrc = asset('public/basicfront/images/bg/1.jpg');
 if (!empty($blog->banner_image_url)) {
-    $imgsrc = Storage::disk('azure')->url(@$blog->banner_image_url);
+    $imgsrc = Storage::disk('s3')->url(@$blog->banner_image_url);
 }?>
 <script type="application/ld+json">
 {
@@ -91,7 +91,7 @@ if (!empty($blog->banner_image_url)) {
                 if($blog->topbar_adv_image) {?>
                 <div class="mb-60 c-pointer" on="tap:quote-lb" tabindex="1" role="Book Online" >
                 <!--<a href="!#" style="margin:0 auto 20px;display:block;text-align:center;" data-target="#requstcontactPopup" data-toggle="modal" data-url="{{ url("/blog/".@$blog->slug) }}">-->
-                    <amp-img src="{{ Storage::disk('azure')->url(@$blog->topbar_adv_image) }}" width="750" height="500" layout="intrinsic" alt="{{ @$blog->name }}"></amp-img>
+                    <amp-img src="{{ Storage::disk('s3')->url(@$blog->topbar_adv_image) }}" width="750" height="500" layout="intrinsic" alt="{{ @$blog->name }}"></amp-img>
                 <!--</a>-->
                 </div>
                 <?php }?>
@@ -139,7 +139,7 @@ if (!empty($blog->banner_image_url)) {
                             <?php
                                 $imgsrc = asset('public/basicfront/images/bg/1.jpg');
                                 if (!empty($blog->banner_image_url)) {
-                                    $imgsrc = Storage::disk('azure')->url(rawurlencode(@$blog->banner_image_url));
+                                    $imgsrc = Storage::disk('s3')->url(rawurlencode(@$blog->banner_image_url));
                                 }
                                 ?>
                                 <amp-img src="<?php echo $imgsrc;?>" width="750" height="500" layout="intrinsic" alt=""></amp-img>
@@ -168,8 +168,8 @@ if (!empty($blog->banner_image_url)) {
                                     <div class="gallery-item" style="position: absolute; left: 0px; top: 0px;">
                                         <div class="grid-item-holder">
                                             <div class="box-item">
-                                                <amp-img src="{{ Storage::disk('azure')->url($objGallery->image_url) }}" alt="{{ $arImgAr[array_rand($arImgAr,1)] }}"></amp-img>
-                                                <a href="{{ Storage::disk('azure')->url($objGallery->image_url) }}" class="gal-link popup-image"><i class="fa fa-link"></i></a>
+                                                <amp-img src="{{ Storage::disk('s3')->url($objGallery->image_url) }}" alt="{{ $arImgAr[array_rand($arImgAr,1)] }}"></amp-img>
+                                                <a href="{{ Storage::disk('s3')->url($objGallery->image_url) }}" class="gal-link popup-image"><i class="fa fa-link"></i></a>
                                             </div>
                                         </div>
                                     </div>
@@ -215,7 +215,7 @@ if (!empty($blog->banner_image_url)) {
                                     <?php
                                     $imgsrc = asset('public/basicfront/images/all/1.jpg');
                                     if (!empty($listing->banner_image_url)) {
-                                        $imgsrc = Storage::disk('azure')->url(rawurlencode(@$listing->banner_image_url));
+                                        $imgsrc = Storage::disk('s3')->url(rawurlencode(@$listing->banner_image_url));
                                     }
                                     ?>
                                     <a href="{{ url("location/".\App\Http\Helpers\CommonHelper::create_slug($listing->country)."/".\App\Http\Helpers\CommonHelper::create_slug($listing->city)."/".$listing->slug) }}">
@@ -255,7 +255,7 @@ if (!empty($blog->banner_image_url)) {
                                     <div class="content-block post-medium mb--20">
                                         <div class="post-thumbnail">
                                             <a href="{{ "https://balanceboat.com/experience/".$experience->slug }}" class="widget-posts-img">
-                                                <amp-img src="{{ ($experience->thumbnail_image_url) ? Storage::disk('bbazure')->url(rawurlencode($experience->thumbnail_image_url)) : Storage::disk('bbazure')->url(rawurlencode($experience->banner_image_url)) }}" alt="{{ $experience->banner_image_title }}" class="img-responsive lazy"></amp-img>
+                                                <amp-img src="{{ ($experience->thumbnail_image_url) ? Storage::disk('s3')->url(rawurlencode($experience->thumbnail_image_url)) : Storage::disk('s3')->url(rawurlencode($experience->banner_image_url)) }}" alt="{{ $experience->banner_image_title }}" class="img-responsive lazy"></amp-img>
                                             </a>
                                         </div>
                                         <div class="post-content">
@@ -301,7 +301,7 @@ if (!empty($blog->banner_image_url)) {
                                     <div class="content-block post-medium mb--20">
                                         <div class="post-thumbnail">
                                             <a href="{{ url("/blog/".@$objBlog->slug) }}" class="widget-posts-img">
-                                                <amp-img width="750" height="500" layout="intrinsic" src="{{ Storage::disk('azure')->url(@$objBlog->banner_image_url) }}" alt="{{ $arImgAr[array_rand($arImgAr,1)] }}"></amp-img>
+                                                <amp-img width="750" height="500" layout="intrinsic" src="{{ Storage::disk('s3')->url(@$objBlog->banner_image_url) }}" alt="{{ $arImgAr[array_rand($arImgAr,1)] }}"></amp-img>
                                             </a>
                                         </div>
                                         <div class="post-content">
@@ -444,7 +444,7 @@ if (!empty($blog->banner_image_url)) {
                             if(@$blog->sidebar_adv_image) {?>
                             <div class="mb-60 c-pointer" on="tap:quote-lb" tabindex="1" role="Book Online" >
                             <!--<a href="!#" data-target="#requstcontactPopup" data-toggle="modal" data-url="{{ url("/blog/".@$blog->slug) }}">-->
-                                <amp-img width="750" height="500" layout="intrinsic" src="{{ Storage::disk('azure')->url(@$blog->sidebar_adv_image) }}" alt="{{ @$blog->name }}"></amp-img>
+                                <amp-img width="750" height="500" layout="intrinsic" src="{{ Storage::disk('s3')->url(@$blog->sidebar_adv_image) }}" alt="{{ @$blog->name }}"></amp-img>
                             <!--
                             </div></a>-->
                             <?php }?>
@@ -453,7 +453,7 @@ if (!empty($blog->banner_image_url)) {
                             <amp-carousel width="400" height="400" layout="responsive" type="slides" autoplay delay="5000" aria-label="Ads.">
                                 <?php
                                 foreach ($objSideAdverts as $objAdvert) {
-                                $url_top_img = Storage::disk('azure')->url($objAdvert->banner_image_url);
+                                $url_top_img = Storage::disk('s3')->url($objAdvert->banner_image_url);
                                 $url = \Crypt::encrypt($objAdvert->website);
                                 ?>
                                 <div class="item">
@@ -493,7 +493,7 @@ if (!empty($blog->banner_image_url)) {
                         <?php
                         $imgsrc = asset('public/blog_assets/images/post-images/post-sm-01.jpg');
                         if (!empty(@$objBlog->banner_image_url)) {
-                            $imgsrc = Storage::disk('azure')->url(rawurlencode(@$objBlog->banner_image_url));
+                            $imgsrc = Storage::disk('s3')->url(rawurlencode(@$objBlog->banner_image_url));
                         }
                         ?>
                         <a href="{{ url("/blog/".@$objBlog->slug) }}">
@@ -539,7 +539,7 @@ if (!empty($blog->banner_image_url)) {
                         <?php
                         $imgsrc = asset('public/basicfront/images/team/1.jpg');
                         if (!empty($teacher->profile_image_url)) {
-                            $imgsrc = Storage::disk('azure')->url(rawurlencode(@$teacher->profile_image_url));
+                            $imgsrc = Storage::disk('s3')->url(rawurlencode(@$teacher->profile_image_url));
                         }
                         ?>
                         <a href="{{ url("teacher/".$teacher->slug) }}"><amp-img width="750" height="500" layout="intrinsic" src="{{ $imgsrc }}" alt=""></amp-img></a>
@@ -580,7 +580,7 @@ if (!empty($blog->banner_image_url)) {
                         <?php
                         $imgsrc = asset('public/basicfront/images/all/1.jpg');
                         if (!empty($objCourse->image_url)) {
-                            $imgsrc = Storage::disk('azure')->url(rawurlencode(@$objCourse->image_url));
+                            $imgsrc = Storage::disk('s3')->url(rawurlencode(@$objCourse->image_url));
                         }
                         ?>
                         <a href="{{ url("course/".$objCourse->slug) }}"><amp-img width="750" height="500" layout="intrinsic" src="{{ $imgsrc }}" alt=""></amp-img></a>
@@ -624,7 +624,7 @@ if (!empty($blog->banner_image_url)) {
                         <?php
                         $imgsrc = asset('public/basicfront/images/all/1.jpg');
                         if (!empty($objVideo->image_url)) {
-                            $imgsrc = Storage::disk('azure')->url(rawurlencode(@$objVideo->image_url));
+                            $imgsrc = Storage::disk('s3')->url(rawurlencode(@$objVideo->image_url));
                         }
                         ?>
                         <a href="{{ url("video/".$objVideo->slug) }}"><amp-img width="750" height="500" layout="intrinsic" src="{{ $imgsrc }}" alt="" ></amp-img></a>

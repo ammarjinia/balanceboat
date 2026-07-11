@@ -24,7 +24,7 @@
                         <div class="col-lg-4 col-md-4 col-sm-4">
                             <div class="img_list">
                                 <a href="{{ url("/experience/".$experience->slug) }}">
-                                    <img src="{{ Storage::disk('azure')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" class="img-responsive"> 
+                                    <img src="{{ Storage::disk('s3')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" class="img-responsive"> 
                                 </a>
                             </div>
                         </div>

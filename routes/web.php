@@ -328,11 +328,11 @@ Route::group(['prefix' => 'bbadmin', 'middleware' => ['auth', 'isAdmin'], 'names
     Route::post('/advert/delete_image', 'Admin\AdvertController@delete_image');
     
     
-    Route::get('list-azure-files', function() {
+    Route::get('list-s3-files', function() {
 
         $path = "/experiences/2023/06/10/";
-        // Get the Larvel disk for Azure
-        $disk = \Storage::disk('azure');
+        // Get the Laravel disk for S3
+        $disk = \Storage::disk('s3');
         
         //$disk->exists("job-manager-uploads/gallery_images/2015/09/cherai_beachresorssst_10.jpg");
         

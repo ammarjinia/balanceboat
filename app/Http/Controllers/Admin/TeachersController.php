@@ -126,7 +126,7 @@ class TeachersController extends Controller {
                         $image_galleries_array = explode("|@|@|", @$image_galleries);
                         foreach ($image_galleries_array as $galimage) {
                             $dest = str_replace("tmp/", "", $galimage);
-                            \Storage::disk('azure')->move($galimage, $dest);
+                            \Storage::disk('s3')->move($galimage, $dest);
                             $objTeacherImageGallery = new \App\TeacherImageGallery();
                             $objTeacherImageGallery->teacher_id = $teacher_id;
                             $objTeacherImageGallery->image_title = basename($dest);
@@ -180,7 +180,7 @@ class TeachersController extends Controller {
                     $image_galleries_array = explode("|@|@|", @$image_galleries);
                     foreach ($image_galleries_array as $galimage) {
                         $dest = str_replace("tmp/", "", $galimage);
-                        \Storage::disk('azure')->move($galimage, $dest);
+                        \Storage::disk('s3')->move($galimage, $dest);
                         $objTeacherImageGallery = new \App\TeacherImageGallery();
                         $objTeacherImageGallery->teacher_id = $teacher_id;
                         $objTeacherImageGallery->image_title = basename($dest);
@@ -248,7 +248,7 @@ class TeachersController extends Controller {
             $teacher = Teachers::find($id);
             if (!empty($teacher)) {
                 if (!empty($teacher->profile_image_url)) {
-                    \Storage::disk('azure')->delete($teacher->profile_image_url);
+                    \Storage::disk('s3')->delete($teacher->profile_image_url);
                 }
                 $teacher->delete();                
                 \App\CenterTeachers::where("teacher_id", $id)->delete();
@@ -257,7 +257,7 @@ class TeachersController extends Controller {
                 $imagegalleries = \App\TeacherImageGallery::get_data($paramTGI);
                 if (!empty(@$imagegalleries)) {
                     foreach (@$imagegalleries as $imagegallery) {
-                        \Storage::disk('azure')->delete(@$imagegallery->image_url);
+                        \Storage::disk('s3')->delete(@$imagegallery->image_url);
                         $imagegallery->delete();
                     }
                 }
@@ -287,8 +287,8 @@ class TeachersController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'teachers' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             return $saveFileName = $folderName . "/" . $renamefile;
         }
@@ -299,7 +299,7 @@ class TeachersController extends Controller {
             $id = $request['id'];
             $objTeacher = Teachers::find($id);
             if (!empty($objTeacher)) {
-                \Illuminate\Support\Facades\Storage::disk('azure')->delete($objTeacher->profile_image_url);
+                \Illuminate\Support\Facades\Storage::disk('s3')->delete($objTeacher->profile_image_url);
                 $objTeacher->profile_image_title = null;
                 $objTeacher->profile_image_url = null;
                 $objTeacher->save();
@@ -330,8 +330,8 @@ class TeachersController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'tmp/teachers' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             $saveFileName = $folderName . "/" . $renamefile;
             echo (json_encode(array('success' => true, 'filename' => $saveFileName)));
@@ -350,7 +350,7 @@ class TeachersController extends Controller {
             $id = $request['id'];
             $objTeacherImageGallery = \App\TeacherImageGallery::find($id);
             if (!empty($objTeacherImageGallery)) {
-                Storage::disk('azure')->delete($objTeacherImageGallery->image_url);
+                Storage::disk('s3')->delete($objTeacherImageGallery->image_url);
                 $objTeacherImageGallery->delete();
                 echo true;
             } else {

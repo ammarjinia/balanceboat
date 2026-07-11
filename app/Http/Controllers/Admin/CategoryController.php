@@ -195,8 +195,8 @@ class CategoryController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'categories' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             return $saveFileName = $folderName . "/" . $renamefile;
         }
@@ -216,8 +216,8 @@ class CategoryController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'categories' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             return $saveFileName = $folderName . "/" . $renamefile;
         }
@@ -228,7 +228,7 @@ class CategoryController extends Controller {
             $id = $request['id'];
             $objCategory = Category::find($id);
             if (!empty($objCategory)) {
-                \Illuminate\Support\Facades\Storage::disk('azure')->delete($objCategory->image_url);
+                \Illuminate\Support\Facades\Storage::disk('s3')->delete($objCategory->image_url);
                 $objCategory->image_title = null;
                 $objCategory->image_url = null;
                 $objCategory->save();
@@ -246,7 +246,7 @@ class CategoryController extends Controller {
             $id = $request['id'];
             $objCategory = Category::find($id);
             if (!empty($objCategory)) {
-                \Illuminate\Support\Facades\Storage::disk('azure')->delete($objCategory->banner_image_url);
+                \Illuminate\Support\Facades\Storage::disk('s3')->delete($objCategory->banner_image_url);
                 $objCategory->banner_image_title = null;
                 $objCategory->banner_image_url = null;
                 $objCategory->save();

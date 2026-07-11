@@ -148,8 +148,8 @@
                                 <div class="row" id="teach_img_container">
                                     <div class="col-md-3 m-t-10">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url($eteacher->profile_image_url) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($eteacher->profile_image_url) }}" alt="{{ $eteacher->profile_image_title }}">
+                                            <a href="{{ Storage::disk('s3')->url($eteacher->profile_image_url) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($eteacher->profile_image_url) }}" alt="{{ $eteacher->profile_image_title }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="img_delete" href="{{ url('bbadmin/teachers/delete_image') }}" data-id="{{ $eteacher->id }}" class="btn btn-danger">Remove</a>
@@ -176,8 +176,8 @@
                                     @foreach(@$imagegalleries as $gallery)
                                     <div class="col-md-3 m-t-10" id="img-{{ $gallery->id }}">
                                         <div class="card">
-                                            <a href="{{ Storage::disk('azure')->url($gallery->image_url) }}" target="_blank">
-                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('azure')->url($gallery->image_url) }}" alt="{{ $gallery->image_title }}">
+                                            <a href="{{ Storage::disk('s3')->url($gallery->image_url) }}" target="_blank">
+                                                <img class="card-img-top img-responsive" src="{{ Storage::disk('s3')->url($gallery->image_url) }}" alt="{{ $gallery->image_title }}">
                                             </a>
                                             <div class="card-body">
                                                 <a id="gallery_img_delete" href="{{ url('bbadmin/teachers/delete_gallery_image') }}" data-id="{{ $gallery->id }}" class="btn btn-danger">Remove</a>

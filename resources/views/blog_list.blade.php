@@ -33,7 +33,7 @@
                         <?php
                         $imgsrc = asset('public/blog_assets/images/post-images/post-sm-01.jpg');
                         if (!empty(@$blog->banner_image_url)) {
-                            $imgsrc = Storage::disk('azure')->url(rawurlencode(@$blog->banner_image_url));
+                            $imgsrc = Storage::disk('s3')->url(rawurlencode(@$blog->banner_image_url));
                         }
                         ?>
                         <a href="{{ url("/blog/".@$blog->slug) }}">
@@ -82,7 +82,7 @@
                                     <?php
                                     $imgsrc = asset('public/basicfront/images/all/1.jpg');
                                     if (!empty($listing->banner_image_url)) {
-                                        $imgsrc = Storage::disk('azure')->url(rawurlencode(@$listing->banner_image_url));
+                                        $imgsrc = Storage::disk('s3')->url(rawurlencode(@$listing->banner_image_url));
                                     }
                                     ?>
                                     <a href="{{ url("location/".\App\Http\Helpers\CommonHelper::create_slug($listing->country)."/".\App\Http\Helpers\CommonHelper::create_slug($listing->city)."/".$listing->slug) }}">
@@ -123,7 +123,7 @@
                             <div class="content-block post-medium mb--20">
                                 <div class="post-thumbnail">
                                     <a href="{{ url("/blog/".@$blog->slug) }}" class="widget-posts-img">
-                                        <img src="{{ Storage::disk('azure')->url(@$blog->banner_image_url) }}" alt="{{ @$blog->name }}">
+                                        <img src="{{ Storage::disk('s3')->url(@$blog->banner_image_url) }}" alt="{{ @$blog->name }}">
                                     </a>
                                 </div>
                                 <div class="post-content">
@@ -173,7 +173,7 @@
                         <?php
                         $imgsrc = asset('public/blog_assets/images/post-images/post-sm-01.jpg');
                         if (!empty(@$objBlog->banner_image_url)) {
-                            $imgsrc = Storage::disk('azure')->url(rawurlencode(@$objBlog->banner_image_url));
+                            $imgsrc = Storage::disk('s3')->url(rawurlencode(@$objBlog->banner_image_url));
                         }
                         ?>
                         <a href="{{ url("/blog/".@$objBlog->slug) }}">
@@ -219,7 +219,7 @@
                         <?php
                         $imgsrc = asset('public/basicfront/images/team/1.jpg');
                         if (!empty($teacher->profile_image_url)) {
-                            $imgsrc = Storage::disk('azure')->url(rawurlencode(@$teacher->profile_image_url));
+                            $imgsrc = Storage::disk('s3')->url(rawurlencode(@$teacher->profile_image_url));
                         }
                         ?>
                         <a href="{{ url("teacher/".$teacher->slug) }}"><img src="{{ $imgsrc }}" alt="" /></a>
@@ -260,7 +260,7 @@
                         <?php
                         $imgsrc = asset('public/basicfront/images/all/1.jpg');
                         if (!empty($objCourse->image_url)) {
-                            $imgsrc = Storage::disk('azure')->url(rawurlencode(@$objCourse->image_url));
+                            $imgsrc = Storage::disk('s3')->url(rawurlencode(@$objCourse->image_url));
                         }
                         ?>
                         <a href="{{ url("course/".$objCourse->slug) }}"><img src="{{ $imgsrc }}" alt="" /></a>
@@ -304,7 +304,7 @@
                         <?php
                         $imgsrc = asset('public/basicfront/images/all/1.jpg');
                         if (!empty($objVideo->image_url)) {
-                            $imgsrc = Storage::disk('azure')->url(rawurlencode(@$objVideo->image_url));
+                            $imgsrc = Storage::disk('s3')->url(rawurlencode(@$objVideo->image_url));
                         }
                         ?>
                         <a href="{{ url("video/".$objVideo->slug) }}"><img src="{{ $imgsrc }}" alt="" /></a>

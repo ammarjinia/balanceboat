@@ -578,7 +578,7 @@
                     <label class="wiz-label">Thumbnail Image <span class="text-slate-400 font-normal">(shown in search listings)</span></label>
                     @if($experience?->thumbnail_image_url)
                         <div class="mb-3">
-                            <img src="{{ Storage::disk('azure')->url($experience->thumbnail_image_url) }}" alt="Current thumbnail"
+                            <img src="{{ Storage::disk('s3')->url($experience->thumbnail_image_url) }}" alt="Current thumbnail"
                                  class="h-24 w-40 object-cover rounded-2xl border border-slate-200">
                             <p class="text-[10px] text-slate-400 mt-1">Current thumbnail. Upload a new file to replace it.</p>
                         </div>
@@ -602,7 +602,7 @@
                     <label class="wiz-label">Banner / Hero Image <span class="text-slate-400 font-normal">(shown on the detail page header)</span></label>
                     @if($experience?->banner_image_url)
                         <div class="mb-3">
-                            <img src="{{ Storage::disk('azure')->url($experience->banner_image_url) }}" alt="Current banner"
+                            <img src="{{ Storage::disk('s3')->url($experience->banner_image_url) }}" alt="Current banner"
                                  class="h-24 w-64 object-cover rounded-2xl border border-slate-200">
                             <p class="text-[10px] text-slate-400 mt-1">Current banner. Upload a new file to replace.</p>
                         </div>
@@ -655,7 +655,7 @@
                         @if(isset($experience) && $experience->image_galleries)
                             @foreach($experience->image_galleries as $img)
                                 <div class="relative aspect-square bg-slate-100 rounded-2xl overflow-hidden shadow-sm">
-                                    <img src="{{ Storage::disk('azure')->url($img->image_url) }}" alt="Gallery Image" class="w-full h-full object-cover">
+                                    <img src="{{ Storage::disk('s3')->url($img->image_url) }}" alt="Gallery Image" class="w-full h-full object-cover">
                                     <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button type="button" onclick="removeExistingGalleryImage(this, '{{ $img->id }}')"
                                                 class="text-white text-xs font-semibold px-2 py-1 bg-red-600 rounded">

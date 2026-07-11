@@ -109,7 +109,7 @@ class AccomodationController extends Controller {
                         $image_galleries_array = explode("|@|@|", @$image_galleries);
                         foreach ($image_galleries_array as $galimage) {
                             $dest = str_replace("tmp/", "", $galimage);
-                            Storage::disk('azure')->move($galimage, $dest);
+                            Storage::disk('s3')->move($galimage, $dest);
                             $objAccomodationImageGallery = new \App\AccomodationImageGallery();
                             $objAccomodationImageGallery->accomodation_id = $accomodation_id;
                             $objAccomodationImageGallery->image_title = basename($dest);
@@ -156,7 +156,7 @@ class AccomodationController extends Controller {
                     $image_galleries_array = explode("|@|@|", @$image_galleries);
                     foreach ($image_galleries_array as $galimage) {
                         $dest = str_replace("tmp/", "", $galimage);
-                        Storage::disk('azure')->move($galimage, $dest);
+                        Storage::disk('s3')->move($galimage, $dest);
                         $objCenterImageGallery = new \App\CenterImageGallery();
                         $objCenterImageGallery->accomodation_id = $accomodation_id;
                         $objCenterImageGallery->image_title = basename($dest);
@@ -252,8 +252,8 @@ class AccomodationController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'accomodations' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             return $saveFileName = $folderName . "/" . $renamefile;
         }
@@ -264,7 +264,7 @@ class AccomodationController extends Controller {
             $id = $request['id'];
             $objAccomodation = Accomodation::find($id);
             if (!empty($objAccomodation)) {
-                Storage::disk('azure')->delete($objAccomodation->banner_image_url);
+                Storage::disk('s3')->delete($objAccomodation->banner_image_url);
                 $objAccomodation->banner_image_title = null;
                 $objAccomodation->banner_image_url = null;
                 $objAccomodation->save();
@@ -297,8 +297,8 @@ class AccomodationController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'tmp/accomodations' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             $saveFileName = $folderName . "/" . $renamefile;
             echo (json_encode(array('success' => true, 'filename' => $saveFileName)));
@@ -317,7 +317,7 @@ class AccomodationController extends Controller {
             $id = $request['id'];
             $objAccomodationImageGallery = \App\AccomodationImageGallery::find($id);
             if (!empty($objAccomodationImageGallery)) {
-                Storage::disk('azure')->delete($objAccomodationImageGallery->image_url);
+                Storage::disk('s3')->delete($objAccomodationImageGallery->image_url);
                 $objAccomodationImageGallery->delete();
                 echo true;
             } else {

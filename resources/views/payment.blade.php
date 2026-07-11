@@ -41,7 +41,7 @@
                     <div class="col-lg-4 col-md-4 col-sm-4">
                         <div class="img_list">
                             <a href="{{ url("/experience/".$experience->slug) }}">
-                                <img src="{{ Storage::disk('azure')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" class="img-responsive"> 
+                                <img src="{{ Storage::disk('s3')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" class="img-responsive"> 
                             </a>
                         </div>
                     </div>
@@ -181,7 +181,7 @@
                             @if(@$experience_accomodation->banner_image_url)
                             <div class="text-center">    
                                 <a href="#mdlAccommodation{{ @$experience_accomodation->id }}"  data-toggle="modal"  class="text-info">
-                                    <img src="{{ Storage::disk('azure')->url(@$experience_accomodation->banner_image_url) }}" alt="" class="img-responsive img-thumbnail" />
+                                    <img src="{{ Storage::disk('s3')->url(@$experience_accomodation->banner_image_url) }}" alt="" class="img-responsive img-thumbnail" />
                                 </a>
                             </div>
                             @endif
@@ -398,7 +398,7 @@
                     @foreach(@$accomodationimagegalleries as $accomodationimagegallery)
                     @if ($accomodationimagegallery->accomodation_id == $experience_accomodation->id)
                     <div class="item">
-                        <a href="{{ Storage::disk('azure')->url(@$accomodationimagegallery->image_url) }}"><img src="{{ Storage::disk('azure')->url(@$accomodationimagegallery->image_url) }}" alt="Image"></a>
+                        <a href="{{ Storage::disk('s3')->url(@$accomodationimagegallery->image_url) }}"><img src="{{ Storage::disk('s3')->url(@$accomodationimagegallery->image_url) }}" alt="Image"></a>
                     </div>
                     @endif
                     @endforeach

@@ -220,7 +220,7 @@
                             @if($accommodation && $accommodation->banner_image_url)
                                 <div id="banner_img_container" class="relative rounded-2xl overflow-hidden border border-[#2F6F57]/15">
                                     <img id="banner_current"
-                                         src="{{ Storage::disk('azure')->url($accommodation->banner_image_url) }}"
+                                         src="{{ Storage::disk('s3')->url($accommodation->banner_image_url) }}"
                                          alt="{{ $accommodation->banner_image_title }}"
                                          class="w-full h-52 object-cover">
                                     <div class="absolute inset-0 bg-gradient-to-t from-[#1E2522]/50 via-transparent to-transparent"></div>
@@ -274,7 +274,7 @@
                             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" id="existing_gallery">
                                 @foreach($imagegalleries as $gallery)
                                 <div id="gallery-img-{{ $gallery->id }}" class="relative group rounded-2xl overflow-hidden border border-[#2F6F57]/10">
-                                    <img src="{{ Storage::disk('azure')->url($gallery->image_url) }}"
+                                    <img src="{{ Storage::disk('s3')->url($gallery->image_url) }}"
                                          alt="{{ $gallery->image_title }}"
                                          class="w-full h-24 object-cover">
                                     <div class="absolute inset-0 bg-[#1E2522]/45 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
@@ -399,7 +399,7 @@
                 <div id="live-preview-card" class="bg-white rounded-3xl overflow-hidden border border-[#2F6F57]/12 shadow-xl">
                     {{-- Preview Image --}}
                     <div class="h-48 relative overflow-hidden preview-image-placeholder">
-                        <img id="preview-img" src="{{ ($accommodation && $accommodation->banner_image_url) ? Storage::disk('azure')->url($accommodation->banner_image_url) : '' }}"
+                        <img id="preview-img" src="{{ ($accommodation && $accommodation->banner_image_url) ? Storage::disk('s3')->url($accommodation->banner_image_url) : '' }}"
                              alt=""
                              class="{{ ($accommodation && $accommodation->banner_image_url) ? '' : 'hidden' }} w-full h-full object-cover transition-transform duration-700">
                         <div id="preview-img-placeholder"

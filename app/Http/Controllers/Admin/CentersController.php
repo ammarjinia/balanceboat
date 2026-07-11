@@ -299,7 +299,7 @@ class CentersController extends Controller {
                         $image_galleries_array = explode("|@|@|", @$image_galleries);
                         foreach ($image_galleries_array as $galimage) {
                             $dest = str_replace("tmp/", "", $galimage);
-                            Storage::disk('azure')->move($galimage, $dest);
+                            Storage::disk('s3')->move($galimage, $dest);
                             $objCenterImageGallery = new \App\CenterImageGallery();
                             $objCenterImageGallery->center_id = $center_id;
                             $objCenterImageGallery->image_title = basename($dest);
@@ -405,7 +405,7 @@ class CentersController extends Controller {
                     $image_galleries_array = explode("|@|@|", @$image_galleries);
                     foreach ($image_galleries_array as $galimage) {
                         $dest = str_replace("tmp/", "", $galimage);
-                        Storage::disk('azure')->move($galimage, $dest);
+                        Storage::disk('s3')->move($galimage, $dest);
                         $objCenterImageGallery = new \App\CenterImageGallery();
                         $objCenterImageGallery->center_id = $center_id;
                         $objCenterImageGallery->image_title = basename($dest);
@@ -499,10 +499,10 @@ class CentersController extends Controller {
             $objCenter = Centers::find($id);
             if (!empty($objCenter)) {
                 if (!empty($objCenter->banner_image_url)) {
-                    Storage::disk('azure')->delete($objCenter->banner_image_url);
+                    Storage::disk('s3')->delete($objCenter->banner_image_url);
                 }
                 if (!empty($objCenter->accomodation_banner_image_url)) {
-                    Storage::disk('azure')->delete($objCenter->accomodation_banner_image_url);
+                    Storage::disk('s3')->delete($objCenter->accomodation_banner_image_url);
                 }
                 $objCenter->delete();
                 \App\CenterAccomodations::where("center_id", $id)->delete();
@@ -513,7 +513,7 @@ class CentersController extends Controller {
                 $imagegalleries = \App\CenterImageGallery::get_data($paramCGI);
                 if (!empty(@$imagegalleries)) {
                     foreach (@$imagegalleries as $imagegallery) {
-                        Storage::disk('azure')->delete(@$imagegallery->image_url);
+                        Storage::disk('s3')->delete(@$imagegallery->image_url);
                         $imagegallery->delete();
                     }
                 }
@@ -544,8 +544,8 @@ class CentersController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'centers' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             return $saveFileName = $folderName . "/" . $renamefile;
         }
@@ -562,7 +562,7 @@ class CentersController extends Controller {
             $id = $request['id'];
             $objCenter = Centers::find($id);
             if (!empty($objCenter)) {
-                Storage::disk('azure')->delete($objCenter->banner_image_url);
+                Storage::disk('s3')->delete($objCenter->banner_image_url);
                 $objCenter->banner_image_title = null;
                 $objCenter->banner_image_url = null;
                 $objCenter->save();
@@ -594,8 +594,8 @@ class CentersController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'tmp/centers' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             $saveFileName = $folderName . "/" . $renamefile;
             echo (json_encode(array('success' => true, 'filename' => $saveFileName)));
@@ -614,7 +614,7 @@ class CentersController extends Controller {
             $id = $request['id'];
             $objCenterImageGallery = \App\CenterImageGallery::find($id);
             if (!empty($objCenterImageGallery)) {
-                Storage::disk('azure')->delete($objCenterImageGallery->image_url);
+                Storage::disk('s3')->delete($objCenterImageGallery->image_url);
                 $objCenterImageGallery->delete();
                 echo true;
             } else {
@@ -672,8 +672,8 @@ class CentersController extends Controller {
             $renamefile = $filenameWithoutExt . time() . "." . $ext;
             // folder name in container, could be empty
             $folderName = 'accomodation' . '/' . date("Y") . "/" . date("m") . "/" . date("d");
-            // store file on azure blob
-            $file->storeAs($folderName, $renamefile, ['disk' => 'azure']);
+            // store file on s3
+            $file->storeAs($folderName, $renamefile, ['disk' => 's3']);
             // save file name somewhere
             return $saveFileName = $folderName . "/" . $renamefile;
         }
@@ -684,7 +684,7 @@ class CentersController extends Controller {
             $id = $request['id'];
             $objCenter = Centers::find($id);
             if (!empty($objCenter)) {
-                Storage::disk('azure')->delete($objCenter->accomodation_banner_image_url);
+                Storage::disk('s3')->delete($objCenter->accomodation_banner_image_url);
                 $objCenter->accomodation_banner_image_title = null;
                 $objCenter->accomodation_banner_image_url = null;
                 $objCenter->save();

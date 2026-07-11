@@ -10,7 +10,7 @@
     @section('keywords', strip_tags(@$teacher->keywords))
 <?php } ?>
 <?php if (!empty(@$teacher->profile_image_url)) { ?> 
-    @section('image', Storage::disk('azure')->url(rawurlencode(@$teacher->profile_image_url)))
+    @section('image', Storage::disk('s3')->url(rawurlencode(@$teacher->profile_image_url)))
 <?php } ?>
 <!-- Meta Info End -->
 @section('head')
@@ -63,7 +63,7 @@
 <?php
 $src = url("public/basicfront/img/banner_default.jpg");
 if (!empty(@$teacher->profile_image_url)) {
-    $src = Storage::disk('azure')->url(rawurlencode(@$teacher->profile_image_url));
+    $src = Storage::disk('s3')->url(rawurlencode(@$teacher->profile_image_url));
 }
 ?>
 <section class="parallax-window" data-parallax="scroll" data-image-src="{{ $src }}" data-natural-width="1280" data-natural-height="780">
@@ -202,7 +202,7 @@ if (!empty(@$teacher->profile_image_url)) {
                                     if (in_array($certificate->id, explode("||", @$teacher->certificate_id))) {
                                         ?>
                                         <div class="col-md-4">
-                                            <img data-src="{{ @$certificate->image_url ? Storage::disk('azure')->url(rawurlencode(@$certificate->image_url)) : '' }}" alt="{{ $certificate->name }}" title="{{ $certificate->name }}" class="img-responsive lazy" />
+                                            <img data-src="{{ @$certificate->image_url ? Storage::disk('s3')->url(rawurlencode(@$certificate->image_url)) : '' }}" alt="{{ $certificate->name }}" title="{{ $certificate->name }}" class="img-responsive lazy" />
                                             <p>{{ $certificate->name }}</p>
                                         </div>
                                         <?php

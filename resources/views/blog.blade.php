@@ -14,7 +14,7 @@
                                     <?php
                                     $imgsrc = asset('basicfront/images/bg/1.jpg');
                                     if (!empty($blogs[0]->banner_image_url)) {
-                                        $imgsrc = Storage::disk('azure')->url(rawurlencode($blogs[0]->banner_image_url));
+                                        $imgsrc = Storage::disk('s3')->url(rawurlencode($blogs[0]->banner_image_url));
                                     }
                                     ?>
                                     <a href="{{ url("/blog/".@$blogs[0]->slug) }}">
@@ -39,7 +39,7 @@
                                     <?php
                                     $imgsrc = asset('basicfront/images/bg/1.jpg');
                                     if (!empty($blogs[1]->banner_image_url)) {
-                                        $imgsrc = Storage::disk('azure')->url(rawurlencode($blogs[1]->banner_image_url));
+                                        $imgsrc = Storage::disk('s3')->url(rawurlencode($blogs[1]->banner_image_url));
                                     }
                                     ?>
                                     <a href="{{ url("/blog/".@$blogs[1]->slug) }}">
@@ -59,7 +59,7 @@
                                     <?php
                                     $imgsrc = asset('basicfront/images/bg/1.jpg');
                                     if (!empty(@$blogs[2]->banner_image_url)) {
-                                        $imgsrc = Storage::disk('azure')->url(rawurlencode(@$blogs[2]->banner_image_url));
+                                        $imgsrc = Storage::disk('s3')->url(rawurlencode(@$blogs[2]->banner_image_url));
                                     }
                                     ?>
                                     <a href="{{ url("/blog/".@$blogs[2]->slug) }}">
@@ -91,7 +91,7 @@
                                     <?php
                                     $imgsrc = asset('basicfront/images/bg/1.jpg');
                                     if (!empty(@$blogs[3]->banner_image_url)) {
-                                        $imgsrc = Storage::disk('azure')->url(rawurlencode(@$blogs[3]->banner_image_url));
+                                        $imgsrc = Storage::disk('s3')->url(rawurlencode(@$blogs[3]->banner_image_url));
                                     }
                                     ?>
                                     <a href="{{ url("/blog/".@$blogs[3]->slug) }}">
@@ -144,7 +144,7 @@
                                                 <?php
                                                 $imgsrc = asset('blog_assets/images/post-images/post-sm-01.jpg');
                                                 if (!empty(@$mpblog->banner_image_url)) {
-                                                    $imgsrc = Storage::disk('azure')->url(rawurlencode(@$mpblog->banner_image_url));
+                                                    $imgsrc = Storage::disk('s3')->url(rawurlencode(@$mpblog->banner_image_url));
                                                 }
                                                 ?>
                                                 <a href="javascript:void(0);">

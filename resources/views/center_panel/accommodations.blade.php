@@ -150,7 +150,7 @@
 
             @foreach($accommodations as $accommodation)
             @php
-                $bannerUrl  = $accommodation->banner_image_url ? Storage::disk('azure')->url($accommodation->banner_image_url) : null;
+                $bannerUrl  = $accommodation->banner_image_url ? Storage::disk('s3')->url($accommodation->banner_image_url) : null;
                 $descPlain  = Str::limit(strip_tags($accommodation->description ?? ''), 80);
                 $capacity   = $accommodation->max_guest_in_room ?? 0;
             @endphp
