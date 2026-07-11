@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Inquiry extends Model {
 
     protected $fillable = [
-        'name', 'lastname', 'email', 'country_code', 'phone', 'message', 'experience_id', 'conversation_id','source','ref_url'
+        'name', 'lastname', 'email', 'country_code', 'phone', 'message', 'experience_id', 'conversation_id','source','ref_url',
+        'stage', 'deal_value', 'loss_reason', 'note'
     ];
 
     /**

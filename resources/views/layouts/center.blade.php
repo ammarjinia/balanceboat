@@ -71,6 +71,10 @@
                     <i class="fa-solid fa-percent text-sm w-4 text-purple-600"></i>
                     <span>Commission Engine</span>
                 </a>
+                <a href="{{ route('center-panel.leads') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.leads') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
+                    <i class="fa-regular fa-inbox text-sm w-4 text-purple-600"></i>
+                    <span>Lead Pipeline</span>
+                </a>
                 <a href="{{ route('center-panel.bookings') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.bookings') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
                     <i class="fa-regular fa-calendar-check text-sm w-4"></i>
                     <span>Bookings Ledger</span>

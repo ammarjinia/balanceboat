@@ -417,6 +417,12 @@ Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\C
         Route::post('/accommodations/delete-gallery-image', 'CenterAccommodationController@deleteGalleryImage')->name('center-panel.accommodation.delete_gallery_image');
         Route::post('/accommodations/delete-banner-image', 'CenterAccommodationController@deleteBannerImage')->name('center-panel.accommodation.delete_banner_image');
 
+        // Lead Pipeline & CRM
+        Route::get('/leads', 'CenterLeadsController@index')->name('center-panel.leads');
+        Route::post('/leads/store', 'CenterLeadsController@store')->name('center-panel.leads.store');
+        Route::post('/leads/{id}/stage', 'CenterLeadsController@updateStage')->name('center-panel.leads.update_stage');
+        Route::post('/leads/{id}/respond', 'CenterLeadsController@respond')->name('center-panel.leads.respond');
+
         // Bookings Management
         Route::get('/bookings', 'CenterBookingsController@index')->name('center-panel.bookings');
         Route::post('/bookings/store', 'CenterBookingsController@store')->name('center-panel.bookings.store');
