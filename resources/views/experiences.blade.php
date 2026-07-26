@@ -126,7 +126,7 @@
                             </div>
                         <?php } ?>
                         <?php
-                        if ($tags && $tags->isNotEmpty()) {
+                        if (@$tags && @$tags->isNotEmpty()) {
                         ?>
                             <div class="filter_type">
                                 <h6>Tags</h6>

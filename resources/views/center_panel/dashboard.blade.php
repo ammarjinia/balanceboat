@@ -11,13 +11,13 @@
         </div>
         <a href="{{ route('center-panel.experiences') }}"
             class="py-3 px-5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-semibold shadow-md flex items-center space-x-2 transition-all hover:scale-[1.01] glow-ai shrink-0">
-            <i class="fa-regular fa-spa text-purple-300"></i>
+            <i class="fa-solid fa-spa text-purple-300"></i>
             <span>Manage Retreat Programs</span>
         </a>
     </div>
 
     {{-- KPI Grid --}}
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm card-hover space-y-2">
             <p class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Total Inquiries</p>
             <h3 class="text-3xl font-serif font-bold text-slate-900">{{ number_format($totalInquiries) }}</h3>
@@ -33,16 +33,50 @@
             </p>
         </div>
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm card-hover space-y-2">
-            <p class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Monthly Booking Value</p>
-            <h3 class="text-3xl font-serif font-bold text-slate-900">{{ $currencySymbol }}{{ number_format($monthlyRevenue) }}</h3>
-            <p class="text-[11px] font-bold {{ $revenueDelta['positive'] ? 'text-emerald-600' : 'text-rose-500' }}">
-                <i class="fa-solid fa-arrow-{{ $revenueDelta['positive'] ? 'up' : 'down' }}"></i> {{ $revenueDelta['value'] }}% vs last month
-            </p>
+            <p class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Total Converted Value</p>
+            <h3 class="text-3xl font-serif font-bold text-slate-900">${{ number_format($totalConvertedValue) }}</h3>
+            <p class="text-[11px] font-bold text-slate-400">All-time, converted to USD</p>
+        </div>
+        <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm card-hover space-y-2">
+            <p class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Total Views</p>
+            <h3 class="text-3xl font-serif font-bold text-slate-900">{{ number_format($totalViews) }}</h3>
+            <p class="text-[11px] font-bold text-slate-400">Across all retreat programs</p>
         </div>
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm card-hover space-y-2">
             <p class="text-[10px] uppercase tracking-wider font-bold text-purple-600">Active Retreats</p>
             <h3 class="text-3xl font-serif font-bold text-purple-600">{{ $activeExperiences }} <span class="text-sm text-slate-400 font-sans font-normal">/ {{ $totalExperiences }}</span></h3>
             <p class="text-[11px] font-bold text-slate-400">Listings live in distribution</p>
+        </div>
+    </section>
+
+    {{-- Visitor Analytics --}}
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-eye text-purple-600"></i> Retreat Views Breakdown
+                </h3>
+                <span class="text-[11px] text-slate-400">Unique visitors, all-time</span>
+            </div>
+            @if($retreatViewsChart->sum('views') > 0)
+                <canvas id="retreatViewsChart" height="220"></canvas>
+            @else
+                <p class="text-xs text-slate-400 text-center py-8">No views recorded yet for your retreat programs.</p>
+            @endif
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-earth-americas text-purple-600"></i> Visitor Geography
+                </h3>
+                <span class="text-[11px] text-slate-400">Top {{ $viewsByCountry->count() }} countries</span>
+            </div>
+            @if($viewsByCountry->count() > 0)
+                <canvas id="viewsByCountryChart" height="220"></canvas>
+            @else
+                <p class="text-xs text-slate-400 text-center py-8">No visitor location data recorded yet.</p>
+            @endif
         </div>
     </section>
 
@@ -56,7 +90,7 @@
             <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                     <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                        <i class="fa-regular fa-chart-mixed text-purple-600"></i> Retreat Performance Leaderboard
+                        <i class="fa-solid fa-chart-column text-purple-600"></i> Retreat Performance Leaderboard
                     </h3>
                     <span class="text-[10px] font-bold uppercase tracking-wider px-3 py-1 bg-purple-50 text-purple-700 rounded-2xl border border-purple-100">Top {{ $retreatPerformance->count() }} of {{ $totalExperiences }}</span>
                 </div>
@@ -104,7 +138,7 @@
             <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                     <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                        <i class="fa-regular fa-filter-list text-purple-600"></i> Booking Pipeline Funnel
+                        <i class="fa-solid fa-filter text-purple-600"></i> Booking Pipeline Funnel
                     </h3>
                     <span class="text-[11px] text-slate-400">By stage, all-time</span>
                 </div>
@@ -130,7 +164,7 @@
             <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                     <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                        <i class="fa-regular fa-inbox text-purple-600"></i> Recent Inquiry Activity
+                        <i class="fa-solid fa-inbox text-purple-600"></i> Recent Inquiry Activity
                     </h3>
                     <span class="text-[10px] font-bold uppercase tracking-wider px-3 py-1 bg-amber-50 text-amber-700 rounded-2xl border border-amber-100">{{ $totalInquiries }} All-Time</span>
                 </div>
@@ -202,7 +236,7 @@
                         @endforeach
                     </ul>
                     <a href="{{ route('center-panel.settings') }}" class="mt-4 w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-semibold transition-all flex items-center justify-center gap-2">
-                        <i class="fa-regular fa-user-gear"></i> Complete Center Profile
+                        <i class="fa-solid fa-user-gear"></i> Complete Center Profile
                     </a>
                 @else
                     <p class="text-xs text-emerald-600 font-semibold flex items-center gap-2"><i class="fa-solid fa-circle-check"></i> Your profile is fully complete.</p>
@@ -230,4 +264,57 @@
 
         </div>
     </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const retreatViewsCanvas = document.getElementById('retreatViewsChart');
+    if (retreatViewsCanvas) {
+        const rows = @json($retreatViewsChart->take(8)->values());
+        new Chart(retreatViewsCanvas, {
+            type: 'bar',
+            data: {
+                labels: rows.map(r => r.name),
+                datasets: [{
+                    label: 'Views',
+                    data: rows.map(r => r.views),
+                    backgroundColor: '#8B5CF6',
+                    borderRadius: 6,
+                    maxBarThickness: 36,
+                }],
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { font: { size: 10 } } },
+                    y: { beginAtZero: true, ticks: { precision: 0, font: { size: 10 } } },
+                },
+            },
+        });
+    }
+
+    const countryCanvas = document.getElementById('viewsByCountryChart');
+    if (countryCanvas) {
+        const countries = @json($viewsByCountry->keys());
+        const counts = @json($viewsByCountry->values());
+        new Chart(countryCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: countries,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: ['#8B5CF6', '#06B6D4', '#F59E0B', '#10B981', '#F43F5E', '#6366F1', '#EC4899', '#84CC16', '#0EA5E9', '#A855F7'],
+                    borderWidth: 0,
+                }],
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10 } } },
+            },
+        });
+    }
+});
+</script>
 @endsection

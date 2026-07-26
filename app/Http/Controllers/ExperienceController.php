@@ -32,7 +32,22 @@ class ExperienceController extends Controller {
             $experience = \App\Experiences::get_data($exParam);
             $data['experience'] = (@$experience[0]) ? @$experience[0] : array();
             if (!empty(@$data['experience'])) {
-                
+
+                // Track a de-duplicated (per visitor, per retreat, per day) page view for center analytics.
+                try {
+                    $geo = \App\Http\Helpers\CommonHelper::getLocationInfoByIp();
+                    \App\ExperienceView::firstOrCreate([
+                        'experience_id' => $data['experience']->id,
+                        'visitor_hash'  => sha1(request()->ip() . '|' . request()->userAgent()),
+                        'viewed_date'   => now()->toDateString(),
+                    ], [
+                        'country_code' => $geo['country'] ?? null,
+                        'country_name' => $geo['country_name'] ?? null,
+                    ]);
+                } catch (\Exception $e) {
+                    // Never let view tracking break the retreat detail page.
+                }
+
                 $cnd = ' AND e.id = '.@$data['experience']->id;
                 $experienceList = \App\Experiences::get_exp_deal_price_data($cnd, 'e.id', 'ASC', 1);
                 $data['experienceList'] = @$experienceList[0];

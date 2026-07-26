@@ -135,8 +135,8 @@ class PaymentController extends Controller {
                     $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
                     $orderData = [
                         'receipt' => 'rcptbb_' . uniqid(),
-                        'amount' => \App\Http\Helpers\CommonHelper::get_currency_rate(@$booking_amount, @$experience_accomodation->currency, false) * 100, // ₹500 in paise
-                        'currency' => \App\Http\Helpers\CommonHelper::get_site_currency(),
+                        'amount' => \App\Http\Helpers\CommonHelper::convert_amount(@$booking_amount, @$experience_accomodation->currency, 'USD') * 100, // amount in USD cents
+                        'currency' => 'USD',
                         'payment_capture' => 1, // auto-capture
                     ];
                     $razorpayOrder = $api->order->create($orderData);
@@ -357,8 +357,9 @@ class PaymentController extends Controller {
             $objCurrency = \App\Currency::select("rate")->where("name", @$data['experience_accomodations']->currency)->first();
             $objBooking->currency_rate = $objCurrency->rate;
             
-            $objBooking->booking_currency = \App\Http\Helpers\CommonHelper::get_site_currency();
-            $objBooking->booking_currency_rate = \App\Http\Helpers\CommonHelper::get_site_currency_rate();
+            // Guests are always charged in USD at checkout, regardless of the listing's currency or their location.
+            $objBooking->booking_currency = 'USD';
+            $objBooking->booking_currency_rate = 1;
             $objBooking->transaction_id = @$payment_id;
             $objBooking->user_id = (Auth::hasUser()) ? Auth::user()->id : "";
             $objBooking->save();

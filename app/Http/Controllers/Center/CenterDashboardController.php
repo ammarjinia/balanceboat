@@ -10,6 +10,7 @@ use Storage;
 use App\Centers;
 use App\Experiences;
 use App\Bookings;
+use App\ExperienceView;
 use App\Category;
 use App\Amenities;
 use App\CenterImageGallery;
@@ -64,17 +65,34 @@ class CenterDashboardController extends Controller
         $totalInquiries = (clone $inquiriesQuery)->count();
 
         $monthlyBookings = (clone $bookingsQuery)->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->get();
-        $monthlyRevenue  = $monthlyBookings->sum('pay_amount');
         $monthlyBookingsCount = $monthlyBookings->count();
         $monthlyInquiriesCount = (clone $inquiriesQuery)->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->count();
 
         $lastMonthBookingsCount = (clone $bookingsQuery)->whereMonth('created_at', $lastMonth->month)->whereYear('created_at', $lastMonth->year)->count();
         $lastMonthInquiriesCount = (clone $inquiriesQuery)->whereMonth('created_at', $lastMonth->month)->whereYear('created_at', $lastMonth->year)->count();
-        $lastMonthRevenue = (clone $bookingsQuery)->whereMonth('created_at', $lastMonth->month)->whereYear('created_at', $lastMonth->year)->sum('pay_amount');
 
         $bookingsDelta  = $this->percentDelta($monthlyBookingsCount, $lastMonthBookingsCount);
         $inquiriesDelta = $this->percentDelta($monthlyInquiriesCount, $lastMonthInquiriesCount);
-        $revenueDelta   = $this->percentDelta($monthlyRevenue, $lastMonthRevenue);
+
+        // Total Converted Value: all-time bookings for this center, converted to USD.
+        $totalConvertedValue = (clone $bookingsQuery)->get(['pay_amount', 'currency'])->sum(function ($booking) {
+            return \App\Http\Helpers\CommonHelper::convert_amount($booking->pay_amount, $booking->currency ?: 'USD', 'USD');
+        });
+
+        // Total Views: cumulative, deduplicated (per visitor/day) page views across all of this center's retreats.
+        $totalViews = ExperienceView::whereIn('experience_id', $expIds)->count();
+
+        $viewCountsByExp = ExperienceView::whereIn('experience_id', $expIds)
+            ->select('experience_id', DB::raw('count(*) as cnt'))
+            ->groupBy('experience_id')->pluck('cnt', 'experience_id');
+
+        $viewsByCountry = ExperienceView::whereIn('experience_id', $expIds)
+            ->whereNotNull('country_name')
+            ->select('country_name', DB::raw('count(*) as cnt'))
+            ->groupBy('country_name')
+            ->orderByDesc('cnt')
+            ->limit(10)
+            ->pluck('cnt', 'country_name');
 
         // Booking pipeline funnel by stage
         $stageOrder  = ['inquiry', 'qualified', 'proposal_sent', 'confirmed', 'checked_in', 'completed', 'cancelled', 'refunded'];
@@ -98,16 +116,22 @@ class CenterDashboardController extends Controller
         $bookingCountsByExp  = (clone $bookingsQuery)->select('experience_id', DB::raw('count(*) as cnt'))->groupBy('experience_id')->pluck('cnt', 'experience_id');
         $inquiryCountsByExp  = (clone $inquiriesQuery)->select('experience_id', DB::raw('count(*) as cnt'))->groupBy('experience_id')->pluck('cnt', 'experience_id');
 
-        $retreatPerformance = $experiences->map(function ($exp) use ($bookingCountsByExp, $inquiryCountsByExp) {
+        $retreatPerformance = $experiences->map(function ($exp) use ($bookingCountsByExp, $inquiryCountsByExp, $viewCountsByExp) {
             $bookings  = (int) ($bookingCountsByExp[$exp->id] ?? 0);
             $inquiries = (int) ($inquiryCountsByExp[$exp->id] ?? 0);
             $exp->bookings_count  = $bookings;
             $exp->inquiries_count = $inquiries;
+            $exp->views_count     = (int) ($viewCountsByExp[$exp->id] ?? 0);
             $exp->activity_score  = $bookings + $inquiries;
             return $exp;
         })->sortByDesc('activity_score')->values();
 
         $topPerformer = $retreatPerformance->first();
+
+        // Per-retreat views breakdown for the dashboard chart (all retreats, sorted by views).
+        $retreatViewsChart = $experiences->map(function ($exp) use ($viewCountsByExp) {
+            return ['name' => $exp->name, 'views' => (int) ($viewCountsByExp[$exp->id] ?? 0)];
+        })->sortByDesc('views')->values();
 
         // Recent inquiries
         $recentInquiries = Inquiry::whereIn('experience_id', $expIds)
@@ -119,10 +143,6 @@ class CenterDashboardController extends Controller
         // Profile completeness engine
         [$completenessScore, $missingFields] = $this->profileCompleteness($center, $centerId);
 
-        $currencySymbols = ['INR' => '₹', 'USD' => '$', 'EUR' => '€', 'GBP' => '£', 'AED' => 'AED ', 'SGD' => 'SGD '];
-        $primaryCurrency = $experiences->pluck('currency')->filter()->countBy()->sortDesc()->keys()->first() ?? 'INR';
-        $currencySymbol  = $currencySymbols[$primaryCurrency] ?? ($primaryCurrency . ' ');
-
         $data = [
             'center'                 => $center,
             'userName'               => Session::get('center_user_name'),
@@ -131,20 +151,21 @@ class CenterDashboardController extends Controller
             'activeExperiences'      => $activeExperiences,
             'totalBookings'          => $totalBookings,
             'totalInquiries'         => $totalInquiries,
-            'monthlyRevenue'         => $monthlyRevenue,
+            'totalConvertedValue'    => $totalConvertedValue,
+            'totalViews'             => $totalViews,
             'monthlyBookingsCount'   => $monthlyBookingsCount,
             'monthlyInquiriesCount'  => $monthlyInquiriesCount,
             'bookingsDelta'          => $bookingsDelta,
             'inquiriesDelta'         => $inquiriesDelta,
-            'revenueDelta'           => $revenueDelta,
             'pipelineFunnel'         => $pipelineFunnel,
             'maxStageCount'          => $maxStageCount,
             'retreatPerformance'     => $retreatPerformance->take(5),
+            'retreatViewsChart'      => $retreatViewsChart,
+            'viewsByCountry'         => $viewsByCountry,
             'topPerformer'           => $topPerformer,
             'recentInquiries'        => $recentInquiries,
             'completenessScore'      => $completenessScore,
             'missingFields'          => $missingFields,
-            'currencySymbol'         => $currencySymbol,
         ];
 
         return view('center_panel.dashboard', $data);
@@ -445,7 +466,7 @@ class CenterDashboardController extends Controller
         return [
             'retreatCategories' => Category::where('type', 0)->where('parent', 0)->orderBy('name')->get(),
             'destinations'      => Category::where('type', 1)->where('parent', 0)->orderBy('name')->get(),
-            'currencies'        => ['INR' => '₹ INR', 'USD' => '$ USD', 'EUR' => '€ EUR', 'GBP' => '£ GBP', 'AED' => 'AED', 'SGD' => 'SGD'],
+            'currencies'        => ['INR' => '₹ INR', 'USD' => '$ USD', 'EUR' => '€ EUR', 'GBP' => '£ GBP', 'AED' => 'AED', 'SGD' => 'SGD', 'THB' => '฿ THB', 'IDR' => 'Rp IDR'],
         ];
     }
 

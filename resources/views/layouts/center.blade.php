@@ -52,19 +52,19 @@
             <nav class="space-y-1 max-h-[72vh] overflow-y-auto pr-1">
                 <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-3 mb-1.5">Management Elements Matrix</p>
                 <a href="{{ route('center-panel.dashboard') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.dashboard') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
-                    <i class="fa-regular fa-chart-line text-sm w-4"></i>
+                    <i class="fa-solid fa-chart-line text-sm w-4"></i>
                     <span>Dashboard</span>
                 </a>
                 <a href="{{ route('center-panel.experiences') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.experiences') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
-                    <i class="fa-regular fa-spa text-sm w-4 text-purple-600"></i>
+                    <i class="fa-solid fa-spa text-sm w-4 text-purple-600"></i>
                     <span>Retreat Management</span>
                 </a>
                 <a href="{{ route('center-panel.accommodations') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.accommodations') || request()->routeIs('center-panel.accommodation.*') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
-                    <i class="fa-regular fa-bed text-sm w-4 text-purple-600"></i>
+                    <i class="fa-solid fa-bed text-sm w-4 text-purple-600"></i>
                     <span>Accommodations</span>
                 </a>
                 <a href="{{ route('center-panel.availability') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.availability') || request()->routeIs('center-panel.availability.*') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
-                    <i class="fa-regular fa-calendar-days text-sm w-4 text-purple-600"></i>
+                    <i class="fa-solid fa-calendar-days text-sm w-4 text-purple-600"></i>
                     <span>Availability & Pricing</span>
                 </a>
                 <a href="{{ route('center-panel.commission') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.commission') || request()->routeIs('center-panel.commission.*') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
@@ -72,15 +72,15 @@
                     <span>Commission Engine</span>
                 </a>
                 <a href="{{ route('center-panel.leads') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.leads') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
-                    <i class="fa-regular fa-inbox text-sm w-4 text-purple-600"></i>
+                    <i class="fa-solid fa-inbox text-sm w-4 text-purple-600"></i>
                     <span>Lead Pipeline</span>
                 </a>
                 <a href="{{ route('center-panel.bookings') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.bookings') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
-                    <i class="fa-regular fa-calendar-check text-sm w-4"></i>
+                    <i class="fa-solid fa-calendar-check text-sm w-4"></i>
                     <span>Bookings Ledger</span>
                 </a>
                 <a href="{{ route('center-panel.settings') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.settings') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
-                    <i class="fa-regular fa-user-gear text-sm w-4"></i>
+                    <i class="fa-solid fa-user-gear text-sm w-4"></i>
                     <span>Center Profile</span>
                 </a>
                 <a href="{{ route('center-panel.logout') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all">

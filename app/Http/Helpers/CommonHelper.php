@@ -93,7 +93,30 @@ class CommonHelper {
     }
 
     /**
-     * 
+     * Convert an amount between two explicit currencies (independent of session/site currency).
+     * Unlike get_currency_rate(), the target currency is always the one passed in, not the visitor's
+     * geo-detected site currency — needed for flows (like checkout) that must settle in a fixed currency.
+     *
+     * @return float
+     */
+    public static function convert_amount($amount = 0, $fromCurrency = 'USD', $toCurrency = 'USD') {
+        $fromCurrency = $fromCurrency ?: 'USD';
+        $toCurrency   = $toCurrency ?: 'USD';
+        $amount       = (float) $amount;
+
+        if ($fromCurrency === $toCurrency) {
+            return $amount;
+        }
+
+        $rates = \App\Currency::select('name', 'rate')->whereIn('name', [$fromCurrency, $toCurrency])->pluck('rate', 'name');
+        $fromRate = $rates[$fromCurrency] ?? 1;
+        $toRate   = $rates[$toCurrency] ?? 1;
+
+        return $amount * $toRate / $fromRate;
+    }
+
+    /**
+     *
      * @return Currency Symbol
      */
     public static function get_site_currency() {
@@ -267,6 +290,7 @@ class CommonHelper {
                 $ip_data = geoip()->getLocation($ip);
                 if ($ip_data && $ip_data->country != null) {
                     $result['country'] = $ip_data->iso_code;
+                    $result['country_name'] = $ip_data->country;
                     $result['city'] = $ip_data->city;
                     $result['symbol'] = $ip_data->currency;
                     $result['name'] = $ip_data->currency;
