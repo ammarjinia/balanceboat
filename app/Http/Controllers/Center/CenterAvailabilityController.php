@@ -16,14 +16,20 @@ use App\ExperienceDurationPrices;
 
 class CenterAvailabilityController extends Controller
 {
-    private const CURRENCIES = [
-        'INR' => '₹ INR', 'USD' => '$ USD', 'EUR' => '€ EUR',
-        'GBP' => '£ GBP', 'AED' => 'AED',   'SGD' => 'SGD',
-    ];
-
     public function __construct()
     {
         $this->middleware('center.auth');
+    }
+
+    /**
+     * Currency options for pricing dropdowns, sourced from the currency master table
+     * so this list always matches what's supported (and rated) site-wide.
+     */
+    private function currencyOptions(): array
+    {
+        return \App\Currency::orderBy('name')->get()->mapWithKeys(function ($currency) {
+            return [$currency->name => trim(html_entity_decode($currency->symbol) . ' ' . $currency->name)];
+        })->toArray();
     }
 
     // ── Pricing & Accommodation Configuration ─────────────────────────────────
@@ -101,7 +107,7 @@ class CenterAvailabilityController extends Controller
             'center', 'experience', 'centerAccommodations',
             'existingEA', 'existingPrices',
             'experienceDurations', 'existingDurationPrices'
-        ) + ['currencies' => self::CURRENCIES]);
+        ) + ['currencies' => $this->currencyOptions()]);
     }
 
     /**

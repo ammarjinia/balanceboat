@@ -18,8 +18,10 @@ use App\ExperienceCategory;
 use App\ExperienceImageGallery;
 use App\ExperienceDurationPrices;
 use App\Inquiry;
+use App\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
 use DB;
 
 class CenterDashboardController extends Controller
@@ -314,10 +316,16 @@ class CenterDashboardController extends Controller
             ->orderBy('id', 'asc')
             ->get();
 
+        // "Category" in the profile preview is the center_type FK (e.g. "Yoga Retreat"), not a raw number.
+        $centerTypeName = $center->center_type
+            ? \App\CenterTypes::where('id', $center->center_type)->value('name')
+            : null;
+
         return view('center_panel.settings', [
             'center'         => $center,
             'amenities'      => $amenities,
             'imageGalleries' => $imageGalleries,
+            'centerTypeName' => $centerTypeName,
         ]);
     }
 
@@ -444,6 +452,31 @@ class CenterDashboardController extends Controller
         }
     }
 
+    /**
+     * Change the logged-in center owner's account password.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function changePassword(Request $request)
+    {
+        $this->validate($request, [
+            'current_password' => 'required',
+            'new_password'     => 'required|min:8|confirmed',
+        ]);
+
+        $user = User::findOrFail(Session::get('center_user_id'));
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Current password is incorrect.'])->withInput();
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return back()->with('success', 'Password updated successfully.');
+    }
+
     public function deleteBannerImage(Request $request)
     {
         $centerId = Session::get('center_id');
@@ -466,7 +499,9 @@ class CenterDashboardController extends Controller
         return [
             'retreatCategories' => Category::where('type', 0)->where('parent', 0)->orderBy('name')->get(),
             'destinations'      => Category::where('type', 1)->where('parent', 0)->orderBy('name')->get(),
-            'currencies'        => ['INR' => '₹ INR', 'USD' => '$ USD', 'EUR' => '€ EUR', 'GBP' => '£ GBP', 'AED' => 'AED', 'SGD' => 'SGD', 'THB' => '฿ THB', 'IDR' => 'Rp IDR'],
+            'currencies'        => \App\Currency::orderBy('name')->get()->mapWithKeys(function ($currency) {
+                return [$currency->name => trim(html_entity_decode($currency->symbol) . ' ' . $currency->name)];
+            })->toArray(),
         ];
     }
 

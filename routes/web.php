@@ -434,6 +434,7 @@ Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\C
         Route::post('/settings/upload-gallery-image', 'CenterDashboardController@uploadGalleryImage')->name('center-panel.settings.upload_gallery_image');
         Route::post('/settings/delete-gallery-image', 'CenterDashboardController@deleteGalleryImage')->name('center-panel.settings.delete_gallery_image');
         Route::post('/settings/delete-banner-image', 'CenterDashboardController@deleteBannerImage')->name('center-panel.settings.delete_banner_image');
+        Route::post('/settings/change-password', 'CenterDashboardController@changePassword')->name('center-panel.settings.change_password');
 
         // API endpoints
         Route::get('/api/overview', 'CenterDashboardController@getOverviewData')->name('center-panel.api.overview');

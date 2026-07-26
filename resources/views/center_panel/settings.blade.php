@@ -751,7 +751,7 @@
                     </div>
                     <div class="bg-[#F8FAF8] rounded-2xl p-3 border border-[#2F6F57]/8">
                         <span class="text-[9px] text-[#64748B] uppercase tracking-wider font-semibold block">Category</span>
-                        <span class="text-xs font-semibold text-[#1A2421] mt-0.5 block truncate">{{ $center->center_type ?: '-' }}</span>
+                        <span class="text-xs font-semibold text-[#1A2421] mt-0.5 block truncate">{{ $centerTypeName ?: '-' }}</span>
                     </div>
                     <div class="bg-[#F8FAF8] rounded-2xl p-3 border border-[#2F6F57]/8">
                         <span class="text-[9px] text-[#64748B] uppercase tracking-wider font-semibold block">Location</span>
@@ -780,7 +780,8 @@
             </div>
 
             {{-- Account security --}}
-            <div class="glass-panel rounded-3xl p-5 space-y-3">
+            <div class="glass-panel rounded-3xl p-5 space-y-3"
+                 x-data="{ passwordModalOpen: {{ $errors->has('current_password') || $errors->has('new_password') ? 'true' : 'false' }} }">
                 <h3 class="text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Account & Security</h3>
                 <div class="space-y-2">
                     <div class="flex items-center justify-between p-3 bg-[#F8FAF8] rounded-2xl border border-[#2F6F57]/8">
@@ -788,14 +789,44 @@
                             <p class="text-xs font-semibold text-[#1A2421]">Change Password</p>
                             <p class="text-[11px] text-[#64748B] font-light mt-0.5">Update your login credentials</p>
                         </div>
-                        <button type="button" class="text-[11px] font-semibold text-[#2F6F57] hover:underline shrink-0">Change</button>
+                        <button type="button" @click="passwordModalOpen = true" class="text-[11px] font-semibold text-[#2F6F57] hover:underline shrink-0">Change</button>
                     </div>
-                    <div class="flex items-center justify-between p-3 bg-[#F8FAF8] rounded-2xl border border-[#2F6F57]/8">
-                        <div>
-                            <p class="text-xs font-semibold text-[#1A2421]">Two-Factor Auth</p>
-                            <p class="text-[11px] text-[#64748B] font-light mt-0.5">Add an extra layer of security</p>
+                </div>
+
+                {{-- Change Password modal --}}
+                <div x-show="passwordModalOpen" x-cloak
+                     class="fixed inset-0 z-50 flex items-center justify-center p-4"
+                     style="background: rgba(15,23,20,0.45)"
+                     @click.self="passwordModalOpen = false">
+                    <div x-show="passwordModalOpen"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         class="glass-panel rounded-3xl p-6 w-full max-w-sm space-y-4" style="background: #fff">
+                        <div class="flex items-center justify-between">
+                            <h3 class="bb-serif text-lg font-medium text-[#1A2421]">Change Password</h3>
+                            <button type="button" @click="passwordModalOpen = false" class="text-[#94A3B8] hover:text-[#1A2421]">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
                         </div>
-                        <button type="button" class="text-[11px] font-semibold text-[#2F6F57] hover:underline shrink-0">Enable</button>
+                        <form method="POST" action="{{ route('center-panel.settings.change_password') }}" class="space-y-3">
+                            @csrf
+                            <div>
+                                <label class="fl">Current Password</label>
+                                <input type="password" name="current_password" class="fi" required autocomplete="current-password">
+                            </div>
+                            <div>
+                                <label class="fl">New Password</label>
+                                <input type="password" name="new_password" class="fi" required minlength="8" autocomplete="new-password">
+                            </div>
+                            <div>
+                                <label class="fl">Confirm New Password</label>
+                                <input type="password" name="new_password_confirmation" class="fi" required minlength="8" autocomplete="new-password">
+                            </div>
+                            <button type="submit" class="w-full py-2.5 bg-[#2F6F57] text-white rounded-2xl text-sm font-semibold hover:bg-[#255a46] active:scale-95 transition-all">
+                                Update Password
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

@@ -55,6 +55,10 @@
                     <i class="fa-solid fa-chart-line text-sm w-4"></i>
                     <span>Dashboard</span>
                 </a>
+                <a href="{{ route('center-panel.settings') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.settings') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
+                    <i class="fa-solid fa-user-gear text-sm w-4"></i>
+                    <span>Center Profile</span>
+                </a>
                 <a href="{{ route('center-panel.experiences') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.experiences') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
                     <i class="fa-solid fa-spa text-sm w-4 text-purple-600"></i>
                     <span>Retreat Management</span>
@@ -78,10 +82,6 @@
                 <a href="{{ route('center-panel.bookings') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.bookings') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
                     <i class="fa-solid fa-calendar-check text-sm w-4"></i>
                     <span>Bookings Ledger</span>
-                </a>
-                <a href="{{ route('center-panel.settings') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs transition-all {{ request()->routeIs('center-panel.settings') ? 'bg-gradient-to-r from-purple-50 to-orange-50 text-purple-700 font-semibold border border-purple-100/60 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60' }}">
-                    <i class="fa-solid fa-user-gear text-sm w-4"></i>
-                    <span>Center Profile</span>
                 </a>
                 <a href="{{ route('center-panel.logout') }}" class="flex items-center space-x-3 px-3 py-2 rounded-2xl text-xs text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all">
                     <i class="fa-solid fa-right-from-bracket text-sm w-4"></i>
