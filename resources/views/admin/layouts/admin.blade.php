@@ -162,6 +162,7 @@
                                 </ul>
                             </li>
                             <li> <a class="waves-effect waves-dark" href="{{ url("bbadmin/commissions") }}"><i class="mdi mdi-creation"></i><span class="hide-menu">Commission </span></a></li>
+                            <li> <a class="waves-effect waves-dark" href="{{ url("bbadmin/settings") }}"><i class="mdi mdi-cog"></i><span class="hide-menu">Settings </span></a></li>
                             <li> 
                                 <a class="has-arrow waves-effect waves-dark" href="#"><i class="mdi mdi-creation"></i><span class="hide-menu">Experiences </span></a>
                                 <ul aria-expanded="false" class="collapse">

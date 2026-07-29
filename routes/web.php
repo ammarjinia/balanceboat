@@ -179,6 +179,10 @@ Route::group(['prefix' => 'bbadmin', 'middleware' => ['auth', 'isAdmin'], 'names
     Route::get('/users/invitation/{uid}', 'Admin\UserController@invitation');
     Route::post('/users/store', 'Admin\UserController@store');
 
+    // Settings
+    Route::get('/settings', 'Admin\SettingsController@index')->name('admin.settings');
+    Route::post('/settings', 'Admin\SettingsController@save')->name('admin.settings.save');
+
     // Category Management
     Route::get('/category', 'Admin\CategoryController@index');
     Route::get('/category/create', 'Admin\CategoryController@create');

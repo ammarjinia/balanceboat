@@ -497,11 +497,12 @@ class CenterDashboardController extends Controller
     private function experienceFormData(): array
     {
         return [
-            'retreatCategories' => Category::where('type', 0)->where('parent', 0)->orderBy('name')->get(),
-            'destinations'      => Category::where('type', 1)->where('parent', 0)->orderBy('name')->get(),
-            'currencies'        => \App\Currency::orderBy('name')->get()->mapWithKeys(function ($currency) {
+            'retreatCategories'    => Category::where('type', 0)->where('parent', 0)->orderBy('name')->get(),
+            'destinations'         => Category::where('type', 1)->where('parent', 0)->orderBy('name')->get(),
+            'currencies'           => \App\Currency::orderBy('name')->get()->mapWithKeys(function ($currency) {
                 return [$currency->name => trim(html_entity_decode($currency->symbol) . ' ' . $currency->name)];
             })->toArray(),
+            'depositAutoDiscount' => (float) \App\PlatformSetting::get('deposit_auto_discount_pct', 5),
         ];
     }
 
@@ -510,10 +511,16 @@ class CenterDashboardController extends Controller
         $centerId = Session::get('center_id');
         $center   = Centers::findOrFail($centerId);
 
+        // Pre-fill the schedule/highlights builders from the center's most recent
+        // retreat so most centers only need minimal changes for a new one.
+        $scheduleTemplate = Experiences::where('center_id', $centerId)->latest('id')->first();
+
         return view('center_panel.experience_form', array_merge($this->experienceFormData(), [
             'center'                   => $center,
             'userName'                 => Session::get('center_user_name'),
             'experience'               => null,
+            'scheduleTemplate'         => $scheduleTemplate,
+            'currentCommission'        => null,
             'experienceDurationPrices' => collect(),
             'pageTitle'                => 'Create New Retreat Program',
             'formAction'               => route('center-panel.experience.store'),
@@ -557,6 +564,8 @@ class CenterDashboardController extends Controller
             'center'                   => $center,
             'userName'                 => Session::get('center_user_name'),
             'experience'               => $experience,
+            'scheduleTemplate'         => null,
+            'currentCommission'        => $experience->commission !== null ? (float) $experience->commission : null,
             'experienceDurationPrices' => $experienceDurationPrices,
             'pageTitle'                => 'Edit Retreat Program',
             'formAction'               => route('center-panel.experience.update', $id),

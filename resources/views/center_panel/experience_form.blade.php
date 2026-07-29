@@ -152,13 +152,13 @@
 
                 <div>
                     <label class="wiz-label">Short Summary <span class="text-slate-400 font-normal">(shown in search results)</span></label>
-                    <textarea name="experience_summary" rows="3" class="wiz-input resize-none"
+                    <textarea name="experience_summary" rows="3" class="wiz-input tiny-editor resize-none"
                               placeholder="A concise 2–3 sentence description of the retreat experience...">{{ old('experience_summary', $experience?->experience_summary) }}</textarea>
                 </div>
 
                 <div>
                     <label class="wiz-label">Full Description / Overview</label>
-                    <textarea name="experience_overview" rows="5" class="wiz-input resize-y"
+                    <textarea name="experience_overview" rows="5" class="wiz-input tiny-editor resize-y"
                               placeholder="Describe the retreat in detail — the philosophy, the environment, the transformation guests can expect...">{{ old('experience_overview', $experience?->experience_overview) }}</textarea>
                 </div>
             </div>
@@ -475,6 +475,22 @@
                 <div>
                     <label class="wiz-label">Daily Schedule / Timetable</label>
                     <div x-data="scheduleBuilder()" x-init="init()" class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <button type="button" @click="showPasteBox = !showPasteBox"
+                                    class="text-xs font-semibold text-slate-500 hover:text-blue-600 flex items-center space-x-1.5 transition-all">
+                                <i class="fa-solid fa-paste"></i>
+                                <span>Paste from your website</span>
+                            </button>
+                        </div>
+                        <div x-show="showPasteBox" x-cloak class="space-y-2 bg-blue-50/50 border border-blue-100 rounded-2xl p-4">
+                            <p class="text-[10px] text-slate-500">Paste your existing itinerary text below — we'll do our best to convert it into schedule rows automatically. You can review and edit the rows afterward.</p>
+                            <textarea x-model="pasteText" rows="6" placeholder="Day 1&#10;7:00am Morning Yoga&#10;8:00 Breakfast&#10;..."
+                                      class="wiz-input text-xs font-mono resize-y"></textarea>
+                            <button type="button" @click="convertPastedSchedule()"
+                                    class="text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl px-4 py-2 transition-all">
+                                Convert to Schedule Rows
+                            </button>
+                        </div>
                         <div id="schedule-rows-container" class="space-y-2 border-l-4 border-blue-300 pl-4 ml-2 relative bg-white/40 p-4 rounded-2xl">
                             <template x-for="(entry, idx) in entries" :key="idx">
                                 <div class="relative bg-white p-3 border border-slate-100 rounded-xl shadow-sm flex items-center justify-between text-xs hover:border-blue-300 transition-all">
@@ -497,7 +513,7 @@
                             <i class="fa-solid fa-plus-circle"></i>
                             <span>Add Schedule Entry</span>
                         </button>
-                        <textarea name="experience_schedule" id="scheduleDataField" class="hidden" rows="1">{{ old('experience_schedule', $experience?->schedule ?? '') }}</textarea>
+                        <textarea name="experience_schedule" id="scheduleDataField" class="hidden" rows="1">{{ old('experience_schedule', $experience?->schedule ?? $scheduleTemplate?->schedule ?? '') }}</textarea>
                     </div>
                 </div>
 
@@ -525,13 +541,13 @@
                             <span>Add Highlight</span>
                         </button>
                         <p class="text-[10px] text-slate-400">Bullet points are added automatically.</p>
-                        <textarea name="experience_highlights" id="highlightsDataField" class="hidden" rows="1">{{ old('experience_highlights', $experience?->experience_highlights ?? '') }}</textarea>
+                        <textarea name="experience_highlights" id="highlightsDataField" class="hidden" rows="1">{{ old('experience_highlights', $experience?->experience_highlights ?? $scheduleTemplate?->experience_highlights ?? '') }}</textarea>
                     </div>
                 </div>
 
                 <div>
                     <label class="wiz-label">Full Program Details</label>
-                    <textarea name="experience_details" rows="5" class="wiz-input resize-y"
+                    <textarea name="experience_details" rows="5" class="wiz-input tiny-editor resize-y"
                               placeholder="Provide a detailed day-by-day breakdown, therapy descriptions, guest expectations...">{{ old('experience_details', $experience?->experience_details) }}</textarea>
                 </div>
             </div>
@@ -542,19 +558,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                         <label class="wiz-label text-emerald-700">✅ What's Included</label>
-                        <textarea name="what_is_included" rows="5" class="wiz-input resize-y"
+                        <textarea name="what_is_included" rows="5" class="wiz-input tiny-editor resize-y"
                                   placeholder="• Accommodation (7 nights)&#10;• All meals (breakfast, lunch, dinner)&#10;• Daily yoga classes&#10;• Ayurvedic consultations&#10;• Airport transfers">{{ old('what_is_included', $experience?->what_is_included) }}</textarea>
                     </div>
                     <div>
                         <label class="wiz-label text-red-600">❌ What's Not Included</label>
-                        <textarea name="what_is_not_included" rows="5" class="wiz-input resize-y"
+                        <textarea name="what_is_not_included" rows="5" class="wiz-input tiny-editor resize-y"
                                   placeholder="• International flights&#10;• Travel insurance&#10;• Personal expenses&#10;• Optional excursions">{{ old('what_is_not_included', $experience?->what_is_not_included) }}</textarea>
                     </div>
                 </div>
 
                 <div>
                     <label class="wiz-label">How to Get Here</label>
-                    <textarea name="how_to_get_here" rows="3" class="wiz-input resize-none"
+                    <textarea name="how_to_get_here" rows="3" class="wiz-input tiny-editor resize-none"
                               placeholder="Nearest airport, recommended transport options, distances, etc.">{{ old('how_to_get_here', $experience?->how_to_get_here) }}</textarea>
                 </div>
             </div>
@@ -695,7 +711,7 @@
                                 <input type="radio" name="deposit_policy" value="{{ $val }}"
                                        {{ (int)$depositPolicy === $val ? 'checked' : '' }}
                                        class="sr-only peer"
-                                       @change="depositPolicy = $event.target.value">
+                                       @change="depositPolicy = $event.target.value; applyDepositSuggestion()">
                                 <div class="p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl text-xs text-center font-medium text-slate-600 cursor-pointer transition-all peer-checked:border-purple-500 peer-checked:bg-purple-50 peer-checked:text-purple-700">
                                     {{ $label }}
                                 </div>
@@ -704,9 +720,12 @@
                     </div>
                     <div x-show="depositPolicy !== '1'" class="mt-2">
                         <label class="wiz-label">Deposit Amount / Percentage</label>
-                        <input type="number" name="deposit_amount" min="0"
+                        <input type="number" name="deposit_amount" id="deposit_amount_input" min="0"
                                value="{{ old('deposit_amount', $experience?->deposit_amount) }}"
                                class="wiz-input max-w-xs font-mono" placeholder="e.g., 5000 or 20">
+                        <p class="text-[10px] text-slate-400 mt-1" x-show="depositPolicy === '3' && commission !== null">
+                            Suggested: <span x-text="Math.max(0, commission - depositAutoDiscount)"></span>% (your commission of <span x-text="commission"></span>% minus the platform's <span x-text="depositAutoDiscount"></span>% auto-discount). You can override this.
+                        </p>
                     </div>
                 </div>
 
@@ -887,6 +906,9 @@ document.addEventListener('alpine:init', () => {
         currentStep: 1,
         depositPolicy: '{{ old('deposit_policy', $experience?->deposit_policy ?? 1) }}',
         cancelCondition: '{{ old('cancellation_policy_condition', $experience?->cancellation_policy_condition ?? 1) }}',
+        commission: {{ $currentCommission ?? 'null' }},
+        depositAutoDiscount: {{ $depositAutoDiscount ?? 5 }},
+        depositAmountAuto: null,
         errors: {},
 
         // Which fields are required in each step (field name → label)
@@ -896,11 +918,12 @@ document.addEventListener('alpine:init', () => {
 
         init() {
             document.querySelectorAll('input[name="deposit_policy"]').forEach(r => {
-                r.addEventListener('change', () => this.depositPolicy = r.value);
+                r.addEventListener('change', () => { this.depositPolicy = r.value; this.applyDepositSuggestion(); });
             });
             document.querySelectorAll('input[name="cancellation_policy_condition"]').forEach(r => {
                 r.addEventListener('change', () => this.cancelCondition = r.value);
             });
+            this.applyDepositSuggestion();
         },
 
         clearError(field) {
@@ -970,7 +993,23 @@ document.addEventListener('alpine:init', () => {
 
         submit() {
             if (this.validateAll()) {
+                if (typeof tinymce !== 'undefined') tinymce.triggerSave();
                 document.getElementById('experienceForm').submit();
+            }
+        },
+
+        // Suggests a booking/deposit % that is (commission % − admin-configured discount %)
+        // whenever "Percentage Deposit" is selected. Only fills the field if it's empty or
+        // still holds the value we last auto-computed — once the center types their own
+        // number, it stops overwriting it.
+        applyDepositSuggestion() {
+            if (this.depositPolicy !== '3' || this.commission === null) return;
+            const input = document.getElementById('deposit_amount_input');
+            if (!input) return;
+            const suggested = Math.max(0, this.commission - this.depositAutoDiscount);
+            if (!input.value || Number(input.value) === Number(this.depositAmountAuto)) {
+                input.value = suggested;
+                this.depositAmountAuto = suggested;
             }
         }
     }));
@@ -997,6 +1036,8 @@ function durationPkgs(initial) {
 function scheduleBuilder() {
     return {
         entries: [],
+        showPasteBox: false,
+        pasteText: '',
 
         init() {
             const dataField = document.getElementById('scheduleDataField');
@@ -1015,6 +1056,66 @@ function scheduleBuilder() {
                 }
                 return { time: '12:00', activity: line.trim() };
             });
+        },
+
+        // Heuristic parser for itinerary text pasted from a center's own website.
+        // Never drops a line — anything unrecognized still becomes a row, mirroring
+        // parseScheduleData()'s fallback behavior above.
+        parsePastedSchedule(text) {
+            const dayHeaderRe = /^day\s*\d+\s*[:.\-–]?\s*/i;
+            const timeColonRe = /^(\d{1,2}):(\d{2})\s*(am|pm)?/i;
+            const timeSimpleRe = /^(\d{1,2})\s*(am|pm)/i;
+
+            const to24h = (hour, minute, meridiem) => {
+                let h = parseInt(hour, 10);
+                const m = minute !== undefined ? parseInt(minute, 10) : 0;
+                if (meridiem) {
+                    const isPm = meridiem.toLowerCase() === 'pm';
+                    if (isPm && h < 12) h += 12;
+                    if (!isPm && h === 12) h = 0;
+                }
+                return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            };
+
+            return text.split('\n')
+                .filter(l => l.trim())
+                .map(rawLine => {
+                    let line = rawLine.trim();
+
+                    // Strip a leading "Day N" header; if nothing is left, keep the
+                    // header itself as its own row rather than discarding it.
+                    const dayMatch = line.match(dayHeaderRe);
+                    if (dayMatch) {
+                        const remainder = line.slice(dayMatch[0].length).trim();
+                        if (!remainder) {
+                            return { time: '', activity: line };
+                        }
+                        line = remainder;
+                    }
+
+                    let match = line.match(timeColonRe);
+                    if (match) {
+                        return { time: to24h(match[1], match[2], match[3]), activity: line.slice(match[0].length).trim().replace(/^[-–:.\s]+/, '') };
+                    }
+
+                    match = line.match(timeSimpleRe);
+                    if (match) {
+                        return { time: to24h(match[1], undefined, match[2]), activity: line.slice(match[0].length).trim().replace(/^[-–:.\s]+/, '') };
+                    }
+
+                    return { time: '12:00', activity: line };
+                });
+        },
+
+        convertPastedSchedule() {
+            if (!this.pasteText.trim()) return;
+            if (this.entries.length && !confirm('This will replace your current schedule rows with the converted result. Continue?')) {
+                return;
+            }
+            this.entries = this.parsePastedSchedule(this.pasteText);
+            this.pasteText = '';
+            this.showPasteBox = false;
+            this.$nextTick(() => this.syncScheduleData());
         },
 
         addScheduleRow() {
@@ -1149,4 +1250,22 @@ function removeGalleryImage(idx) {
 }
 </script>
 
+@endsection
+
+@section('scripts')
+<script src="{{ asset('admin/plugins/tinymce/tinymce.min.js') }}"></script>
+<script>
+tinymce.init({
+    selector: 'textarea.tiny-editor',
+    theme: 'modern',
+    height: 250,
+    skin_url: '/admin/plugins/tinymce/skins/lightgray',
+    plugins: ['advlist autolink link lists charmap searchreplace wordcount code paste textcolor'],
+    toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright | bullist numlist | link | forecolor | code',
+    content_style: 'body { font-family: Outfit, sans-serif; font-size: 13px; color: #1E2522; line-height: 1.7; }',
+    menubar: false,
+    statusbar: true,
+    branding: false
+});
+</script>
 @endsection
