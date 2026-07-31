@@ -567,6 +567,16 @@ class ExperienceController extends Controller {
             $experience = (@$experience[0]) ? @$experience[0] : array();
 
             foreach (@$experience_accomodations as $experience_accomodation) {
+                $availability = \App\ExperienceAccommodationAvailability::checkBookable(
+                    (int) $experience_id, (int) @$experience_accomodation->id, $exp_booking_start
+                );
+                $experience_accomodation->isBookable = $availability['bookable'];
+
+                if (!$availability['bookable']) {
+                    $experience_accomodation->htmlPrice = '<span class="text-danger">Sold out for these dates</span>';
+                    continue;
+                }
+
                 $discount = 0;
                 $experience_accomodation->htmlPrice = "";
                 $pay = @$experience_accomodation->room_price;
@@ -595,6 +605,10 @@ class ExperienceController extends Controller {
                             . '</del>';
                 }
                 $experience_accomodation->htmlPrice .= \App\Http\Helpers\CommonHelper::get_currency_rate(@$pay - $discount, @$experience_accomodation->currency);
+
+                if ($availability['status'] === 'few_left' && $availability['remaining'] !== null) {
+                    $experience_accomodation->htmlPrice .= ' <span class="text-warning">(Only ' . $availability['remaining'] . ' left)</span>';
+                }
             }
         }
         echo json_encode($experience_accomodations);
@@ -626,6 +640,17 @@ class ExperienceController extends Controller {
                 $arexp_booking_date = explode(" - ", @$exp_booking_date);
                 $exp_booking_start = @$arexp_booking_date[0];
                 $exp_booking_end = @$arexp_booking_date[1];
+
+                if ($exp_booking_start) {
+                    $normalizedStart = \Carbon\Carbon::parse($exp_booking_start)->format("Y-m-d");
+                    $availability = \App\ExperienceAccommodationAvailability::checkBookable(
+                        (int) $data['experience']->id, (int) $exp_accomodation_id, $normalizedStart
+                    );
+                    if (!$availability['bookable']) {
+                        return redirect()->back()->with('error', 'Sorry, this room type is no longer available for the selected dates.');
+                    }
+                }
+
                 $experience_accomodations = \App\Experiences::get_exp_acm_data($data['experience']->id, @$exp_accomodation_id, @$exp_booking_start);
                 $data['experience_accomodation'] = (!empty($experience_accomodations[0]) ? $experience_accomodations[0] : array());
 

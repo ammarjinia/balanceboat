@@ -114,7 +114,7 @@
                 <div class="text-[11px] text-[#64748B] font-medium mt-1">Per accommodation unit</div>
             </div>
             <div class="glass-premium p-5 rounded-2xl">
-                <span class="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block">Total Capacity</span>
+                <span class="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block">Collective Capacity Of All Rooms</span>
                 <strong class="bb-serif text-2xl font-semibold text-[#1E2522] block mt-1">{{ $totalCap ?: '—' }}</strong>
                 <div class="text-[11px] text-[#D4AF37] font-bold uppercase tracking-wide mt-1">✦ Combined Guest Limit</div>
             </div>

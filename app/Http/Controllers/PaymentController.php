@@ -278,6 +278,16 @@ class PaymentController extends Controller {
                 $exp_booking_start = @$arexp_booking_date[0];
                 $exp_booking_end = @$arexp_booking_date[1];
 
+                if ($exp_booking_start) {
+                    $normalizedStart = \Carbon\Carbon::parse($exp_booking_start)->format("Y-m-d");
+                    $availability = \App\ExperienceAccommodationAvailability::checkBookable(
+                        (int) $data['experience']->id, (int) $exp_accomodation_id, $normalizedStart
+                    );
+                    if (!$availability['bookable']) {
+                        return redirect()->back()->with('error', 'Sorry, this room type is no longer available for the selected dates.');
+                    }
+                }
+
                 $experience_accomodations = \App\Experiences::get_exp_acm_data($data['experience']->id, $exp_accomodation_id, @$exp_booking_start);
                 $data['experience_accomodations'] = (!empty($experience_accomodations[0]) ? $experience_accomodations[0] : array());
             }

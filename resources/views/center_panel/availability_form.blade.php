@@ -129,7 +129,7 @@
                     <div class="flex flex-wrap items-center gap-3">
                         <p class="text-xs font-bold text-[#1E2522] uppercase tracking-wide shrink-0">Pricing Dimensions:</p>
                         <span class="occupancy-badge bg-[#2F6F57]/10 text-[#2F6F57]">
-                            <i class="fa-solid fa-moon text-[8px]"></i> Duration (nights)
+                            <i class="fa-solid fa-moon text-[8px]"></i> Duration (days)
                         </span>
                         <span class="occupancy-badge bg-amber-50 text-amber-700">
                             <i class="fa-solid fa-person text-[8px]"></i> Single Room
@@ -143,7 +143,7 @@
                     </div>
                     <p class="text-[11px] text-[#64748B] font-light">
                         <strong class="text-[#1E2522]">Two layers:</strong>
-                        ① Add <em>duration tiers</em> (total package price per 7/14/21-night stay). ② Set seasonal single/double occupancy pricing for a date range, with optional promo pricing. The most specific rule wins.
+                        ① Add <em>duration tiers</em> (total package price per 7/14/21-day stay). ② Set seasonal single/double occupancy pricing for a date range, with optional promo pricing. The most specific rule wins.
                     </p>
                 </div>
 
@@ -247,14 +247,14 @@
                             <div>
                                 <h4 class="text-xs font-bold text-[#1E2522] uppercase tracking-wide">Duration-Based Package Pricing</h4>
                                 <p class="text-[11px] text-[#64748B] font-light mt-0.5">
-                                    Total room price for the complete stay. Overrides seasonal per-night pricing when a duration matches.
+                                    Total room price for the complete stay. Overrides seasonal per-day pricing when a duration matches.
                                 </p>
                             </div>
                             @if($experienceDurations->isEmpty())
                             <div class="rounded-2xl border border-dashed border-amber-200 bg-amber-50/60 py-4 px-4 text-center">
                                 <i class="fa-regular fa-clock text-amber-400 text-lg mb-1 block"></i>
                                 <p class="text-xs text-amber-700 font-semibold">No duration options defined</p>
-                                <p class="text-[11px] text-amber-600 font-light mt-0.5">Add duration options to this experience first (e.g. 7 nights, 14 nights).</p>
+                                <p class="text-[11px] text-amber-600 font-light mt-0.5">Add duration options to this experience first (e.g. 7 days, 14 days).</p>
                             </div>
                             @else
                             <div class="rounded-2xl border border-[#2F6F57]/12 overflow-hidden">
@@ -271,7 +271,7 @@
                                 @php $dp = $durPrices[$dur->duration] ?? null; @endphp
                                 <div class="grid grid-cols-3 gap-3 px-4 py-2.5 border-b border-[#2F6F57]/6 last:border-0 bg-white items-center">
                                     <div>
-                                        <span class="text-xs font-bold text-[#1E2522]">{{ $dur->duration }} nights</span>
+                                        <span class="text-xs font-bold text-[#1E2522]">{{ $dur->duration }} days</span>
                                         @if($dur->price) <span class="text-[10px] text-[#64748B] block font-light">base ₹{{ number_format($dur->price,0) }}</span> @endif
                                     </div>
                                     <div>
@@ -291,7 +291,7 @@
                             </div>
                             <p class="text-[10px] text-[#64748B] font-light">
                                 <i class="fa-solid fa-circle-info text-[#2F6F57]/50 mr-0.5"></i>
-                                Enter the <strong>total room price for the full stay</strong> (e.g. ₹25,000 for a 7-night single room booking). Leave blank to fall back to seasonal per-night pricing × nights.
+                                Enter the <strong>total room price for the full stay</strong> (e.g. ₹25,000 for a 7-day single room booking). Leave blank to fall back to seasonal per-day pricing × days.
                             </p>
                             @endif
                         </div>
@@ -354,7 +354,7 @@
                                                 <option value="">Any Duration</option>
                                                 @foreach($experienceDurations as $dur)
                                                 <option value="{{ $dur->duration }}" {{ $price->duration == $dur->duration ? 'selected' : '' }}>
-                                                    {{ $dur->duration }} nights
+                                                    {{ $dur->duration }} days
                                                 </option>
                                                 @endforeach
                                             </select>
@@ -442,7 +442,7 @@
                                                     name="accommodations[{{ $accom->id }}][ranges][__IDX__][duration]">
                                                 <option value="">Any Duration</option>
                                                 @foreach($experienceDurations as $dur)
-                                                <option value="{{ $dur->duration }}">{{ $dur->duration }} nights</option>
+                                                <option value="{{ $dur->duration }}">{{ $dur->duration }} days</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -585,7 +585,7 @@
                         <ul class="text-[11px] text-[#2F6F57]/80 space-y-2.5 leading-relaxed">
                             <li class="flex items-start gap-2">
                                 <span class="occupancy-badge bg-purple-50 text-purple-700 shrink-0 mt-0.5">① Duration</span>
-                                <span><strong>Total package price</strong> for a full stay (e.g. 7-night cottage ₹25,000). Overrides seasonal per-night pricing × nights when duration matches.</span>
+                                <span><strong>Total package price</strong> for a full stay (e.g. 7-day cottage ₹25,000). Overrides seasonal per-day pricing × days when duration matches.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <span class="occupancy-badge bg-rose-50 text-rose-600 shrink-0 mt-0.5">② Season</span>

@@ -336,6 +336,16 @@
                             Status auto-derived from inventory. Override above if needed.
                         </div>
 
+                        {{-- Apply to all room types --}}
+                        @if($accommodations->count() > 1)
+                        <label class="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 cursor-pointer">
+                            <input type="checkbox" x-model="applyToAll" class="rounded border-amber-300 text-amber-600 focus:ring-amber-400">
+                            <span class="text-[11px] font-semibold text-amber-700">
+                                Apply to all room types (<span x-text="accommodationsList.length"></span>)
+                            </span>
+                        </label>
+                        @endif
+
                         {{-- Apply button --}}
                         <button type="button"
                                 @click="applyToSelection()"
@@ -459,9 +469,10 @@
 function calendarApp() {
     return {
         /* ── State ──────────────────────────────────────── */
-        experienceId:    {{ $experience->id }},
-        accommodationId: {{ $selectedAccomId }},
-        data:            @json($availabilityData),
+        experienceId:      {{ $experience->id }},
+        accommodationId:   {{ $selectedAccomId }},
+        accommodationsList: @json($accommodations->map(fn($a) => ['id' => $a->id, 'name' => $a->name])->values()),
+        data:              @json($availabilityData),
 
         year:  new Date().getFullYear(),
         month: new Date().getMonth(),   // 0-based
@@ -470,6 +481,7 @@ function calendarApp() {
         selectedDates: [],
         rangeStart:    null,
         hoverDate:     null,
+        applyToAll:    false,
 
         form: { status: 'open', total: 0, booked: 0 },
         saving:      false,
@@ -656,42 +668,49 @@ function calendarApp() {
             this.saveError   = false;
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+            const targetAccomIds = this.applyToAll
+                ? this.accommodationsList.map(a => a.id)
+                : [this.accommodationId];
             let ok = 0, fail = 0;
 
             for (const dateStr of this.selectedDates) {
-                try {
-                    const res = await fetch('{{ route("center-panel.availability.schedule.update") }}', {
-                        method:  'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Content-Type': 'application/json',
-                            'Accept':       'application/json',
-                        },
-                        body: JSON.stringify({
-                            experience_id:    this.experienceId,
-                            accommodation_id: this.accommodationId,
-                            start_date:       dateStr,
-                            status:           this.form.status,
-                            total_rooms:      this.form.total  || 0,
-                            booked_rooms:     this.form.booked || 0,
-                        }),
-                    });
-                    if (res.ok) {
-                        const json = await res.json();
-                        this.data[dateStr] = {
-                            id:     json.id,
-                            status: json.status,
-                            total:  json.total,
-                            booked: json.booked,
-                        };
-                        ok++;
-                    } else { fail++; }
-                } catch (e) { fail++; }
+                for (const accomId of targetAccomIds) {
+                    try {
+                        const res = await fetch('{{ route("center-panel.availability.schedule.update") }}', {
+                            method:  'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Content-Type': 'application/json',
+                                'Accept':       'application/json',
+                            },
+                            body: JSON.stringify({
+                                experience_id:    this.experienceId,
+                                accommodation_id: accomId,
+                                start_date:       dateStr,
+                                status:           this.form.status,
+                                total_rooms:      this.form.total  || 0,
+                                booked_rooms:     this.form.booked || 0,
+                            }),
+                        });
+                        if (res.ok) {
+                            const json = await res.json();
+                            if (accomId === this.accommodationId) {
+                                this.data[dateStr] = {
+                                    id:     json.id,
+                                    status: json.status,
+                                    total:  json.total,
+                                    booked: json.booked,
+                                };
+                            }
+                            ok++;
+                        } else { fail++; }
+                    } catch (e) { fail++; }
+                }
             }
 
             this.saving = false;
             if (fail === 0) {
-                this.saveMessage = ok + ' date' + (ok > 1 ? 's' : '') + ' saved successfully.';
+                this.saveMessage = ok + ' schedule entr' + (ok > 1 ? 'ies' : 'y') + ' saved successfully.';
             } else {
                 this.saveError   = true;
                 this.saveMessage = ok + ' saved, ' + fail + ' failed. Please retry.';

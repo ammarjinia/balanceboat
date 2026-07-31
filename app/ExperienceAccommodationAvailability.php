@@ -54,4 +54,27 @@ class ExperienceAccommodationAvailability extends Model
         if ($remaining / $total <= 0.20) return 'few_left';
         return 'open';
     }
+
+    /**
+     * Whether a given accommodation is bookable for a given start date.
+     * A date with no explicit row is treated as open/bookable — the calendar
+     * only needs to be touched to close off or restrict specific dates.
+     */
+    public static function checkBookable(int $experienceId, int $accommodationId, string $date): array
+    {
+        $row = static::where('experience_id', $experienceId)
+            ->where('accommodation_id', $accommodationId)
+            ->where('start_date', $date)
+            ->first();
+
+        if (!$row) {
+            return ['bookable' => true, 'status' => 'open', 'remaining' => null];
+        }
+
+        return [
+            'bookable'  => !in_array($row->status, ['closed', 'full']),
+            'status'    => $row->status,
+            'remaining' => $row->remaining,
+        ];
+    }
 }
