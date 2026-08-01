@@ -456,6 +456,7 @@
                     @foreach (@$featured_experiences as $experience)
                     <div class="single_place">
                         <div class="thumb">
+                            @include('partials.commission-tier-badge')
                             <a href="{{ url("/experience/".$experience->slug) }}"><img data-src="{{ Storage::disk('s3')->url($experience->banner_image_url) }}" alt="{{ $experience->banner_image_title }}" style="box-sizing: content-box;" class="lazy" /></a>
                         </div>
                         <div class="place_info">

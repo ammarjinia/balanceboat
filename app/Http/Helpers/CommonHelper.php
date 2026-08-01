@@ -10,8 +10,49 @@ use Illuminate\Database\Eloquent\Collection;
 class CommonHelper {
 
     /**
+     * Canonical commission-tier trust labels, keyed by the commission tier
+     * percentages used by the Center Panel's Commission Engine. Tier 15 is the
+     * baseline tier and intentionally shows no public badge.
+     */
+    public const COMMISSION_TIER_LABELS = [
+        15 => null,
+        20 => '✓ Verified Retreat',
+        25 => '✨ Traveler Favorite',
+        30 => '👍 Highly Recommended',
+        35 => '💎 BalanceBoat Choice',
+        40 => '🔥 Top Tier Escape',
+        45 => '👑 Elite Handpicked Excellence',
+    ];
+
+    /**
+     * Snap a raw commission percentage to the nearest defined tier.
+     */
+    public static function nearestCommissionTier(?float $commission): ?int {
+        if ($commission === null) {
+            return null;
+        }
+        $tiers = array_keys(self::COMMISSION_TIER_LABELS);
+        $closest = $tiers[0];
+        foreach ($tiers as $pct) {
+            if (abs($pct - $commission) < abs($closest - $commission)) {
+                $closest = $pct;
+            }
+        }
+        return $closest;
+    }
+
+    /**
+     * Public-facing trust badge label for a retreat's commission value, or
+     * null if no commission is set or it snaps to the baseline (no-badge) tier.
+     */
+    public static function commissionTierLabel(?float $commission): ?string {
+        $tier = self::nearestCommissionTier($commission);
+        return $tier !== null ? self::COMMISSION_TIER_LABELS[$tier] : null;
+    }
+
+    /**
      * @param null
-     * 
+     *
      * @return Currency Array
      */
     public static function get_currency() {

@@ -63,14 +63,14 @@
             <div id="alert-banner" class="hidden items-center gap-3 bg-rose-50 border border-rose-200/60 rounded-2xl px-4 py-3 my-3">
                 <span class="text-lg">🚨</span>
                 <div class="text-[12.5px] font-medium text-rose-800 flex-1">
-                    <strong>Attention Required:</strong> <span id="banner-pending-count">0</span> incoming lead inquiries need an immediate response.
+                    <strong>Attention Required:</strong> <span id="banner-pending-count">0</span> incoming lead inquiries need an immediate response — don't forget to update their Pipeline Stage as things progress.
                 </div>
             </div>
 
             {{-- KPI GRID --}}
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 py-3">
                 <div class="bg-white/70 border border-neutral-200/50 rounded-2xl p-3.5 shadow-2xs">
-                    <span class="text-[9px] font-mono uppercase tracking-wider text-neutral-400 font-bold flex items-center gap-1">👥 Total Live Leads</span>
+                    <span class="text-[9px] font-mono uppercase tracking-wider text-neutral-400 font-bold flex items-center gap-1">👥 Total Leads Received</span>
                     <div id="kpi-leads-count" class="text-xl font-bold text-neutral-900 mt-1">0</div>
                 </div>
                 <div class="bg-white/70 border border-neutral-200/50 rounded-2xl p-3.5 shadow-2xs">
@@ -78,11 +78,11 @@
                     <div id="kpi-pipe-value" class="text-xl font-bold text-emerald-600 mt-1">—</div>
                 </div>
                 <div class="bg-white/70 border border-neutral-200/50 rounded-2xl p-3.5 shadow-2xs">
-                    <span class="text-[9px] font-mono uppercase tracking-wider text-neutral-400 font-bold flex items-center gap-1">🏆 Closed Won Value</span>
+                    <span class="text-[9px] font-mono uppercase tracking-wider text-neutral-400 font-bold flex items-center gap-1">🏆 Leads Won</span>
                     <div id="kpi-won-value" class="text-xl font-bold text-violet-600 mt-1">—</div>
                 </div>
                 <div class="bg-white/70 border border-neutral-200/50 rounded-2xl p-3.5 shadow-2xs">
-                    <span class="text-[9px] font-mono uppercase tracking-wider text-neutral-400 font-bold flex items-center gap-1">⏱️ Avg Response Speed</span>
+                    <span class="text-[9px] font-mono uppercase tracking-wider text-neutral-400 font-bold flex items-center gap-1">📭 Leads Not Answered</span>
                     <div id="kpi-response-speed" class="text-xl font-bold text-neutral-900 mt-1">—</div>
                 </div>
                 <div class="bg-white/70 border border-neutral-200/50 rounded-2xl p-3.5 shadow-2xs">
@@ -90,6 +90,7 @@
                     <div id="kpi-external-count" class="text-xl font-bold text-cyan-600 mt-1">0</div>
                 </div>
             </div>
+            <p class="text-[11px] text-neutral-400 -mt-1 mb-1">💡 Weighted Pipeline and Leads Won are driven by each lead's Pipeline Stage — keep it current.</p>
 
             {{-- SEARCH & FILTERS --}}
             <div class="grid grid-cols-1 md:grid-cols-12 gap-3 py-2 items-center">
@@ -364,24 +365,17 @@
     function recomputeLeadMetrics(dataset) {
         const totalLeads = dataset.length;
         const openPipeline = dataset.filter(d => d.stage !== 'won' && d.stage !== 'lost').reduce((s, d) => s + Number(d.dealValue), 0);
-        const wonValue = dataset.filter(d => d.stage === 'won').reduce((s, d) => s + Number(d.dealValue), 0);
+        const wonCount = dataset.filter(d => d.stage === 'won').length;
         const externalCount = dataset.filter(d => d.sourceTag === 'External').length;
         const pendingCount = dataset.filter(d => d.stage === 'new').length;
-
-        const responded = dataset.filter(d => d.responseMinutes !== null && d.responseMinutes !== undefined);
-        let responseLabel = '—';
-        if (responded.length > 0) {
-            const avgMin = responded.reduce((s, d) => s + Number(d.responseMinutes), 0) / responded.length;
-            responseLabel = avgMin >= 60 ? `${(avgMin / 60).toFixed(1)} hrs` : `${Math.round(avgMin)} mins`;
-        }
 
         const withPhone = dataset.filter(d => d.phone && d.phone.length > 0).length;
         const accuracy = totalLeads > 0 ? Math.round((withPhone / totalLeads) * 100) : 0;
 
         document.getElementById('kpi-leads-count').innerText = totalLeads;
         document.getElementById('kpi-pipe-value').innerText = `${currencySymbol}${openPipeline.toLocaleString()}`;
-        document.getElementById('kpi-won-value').innerText = `${currencySymbol}${wonValue.toLocaleString()}`;
-        document.getElementById('kpi-response-speed').innerText = responseLabel;
+        document.getElementById('kpi-won-value').innerText = wonCount;
+        document.getElementById('kpi-response-speed').innerText = pendingCount;
         document.getElementById('kpi-external-count').innerText = externalCount;
         document.getElementById('quality-accuracy').innerText = `${accuracy}%`;
 

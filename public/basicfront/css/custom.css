@@ -744,6 +744,33 @@ a#phone,a#email_footer {
     top: 0;
 }
 .badge_save {right: 10px;}
+.thumb {position: relative;}
+.img_list .tier-badge,
+.thumb .tier-badge {
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    background: rgba(20, 20, 20, 0.78);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+h1 + .tier-badge {
+    position: static;
+    display: inline-block;
+    margin: 6px 0 0;
+    background: #2F6F57;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
 .form_title h3 strong {
     top: -7px;
 }

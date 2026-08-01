@@ -5,16 +5,16 @@
 @section('content')
 
     @php
-        $tierLabels = [
-            15 => ['name' => 'Baseline Discovery', 'color' => 'bg-neutral-100 text-neutral-600'],
-            20 => ['name' => 'Trust & Validation', 'color' => 'bg-cyan-50 text-cyan-700'],
-            25 => ['name' => 'Community Acceleration', 'color' => 'bg-emerald-50 text-emerald-700'],
-            30 => ['name' => 'Amplified Footprint', 'color' => 'bg-indigo-50 text-indigo-700'],
-            35 => ['name' => 'Ecosystem Integration', 'color' => 'bg-violet-50 text-violet-700'],
-            40 => ['name' => 'Absolute Market Canopy', 'color' => 'bg-pink-50 text-pink-700'],
-            45 => ['name' => 'Sovereign Legacy', 'color' => 'bg-orange-50 text-orange-700'],
+        $tierColors = [
+            15 => 'bg-neutral-100 text-neutral-600',
+            20 => 'bg-cyan-50 text-cyan-700',
+            25 => 'bg-emerald-50 text-emerald-700',
+            30 => 'bg-indigo-50 text-indigo-700',
+            35 => 'bg-violet-50 text-violet-700',
+            40 => 'bg-pink-50 text-pink-700',
+            45 => 'bg-orange-50 text-orange-700',
         ];
-        $tierKeys = array_keys($tierLabels);
+        $tierNames = \App\Http\Helpers\CommonHelper::COMMISSION_TIER_LABELS;
     @endphp
 
     {{-- Page Header --}}
@@ -58,14 +58,11 @@
             @foreach($experiences as $experience)
             @php
                 $rawCommission = $experience->commission ? (float) $experience->commission : null;
-                $closest = null;
-                if ($rawCommission !== null) {
-                    $closest = $tierKeys[0];
-                    foreach ($tierKeys as $pct) {
-                        if (abs($pct - $rawCommission) < abs($closest - $rawCommission)) $closest = $pct;
-                    }
-                }
-                $tier = $closest ? $tierLabels[$closest] : null;
+                $closest = \App\Http\Helpers\CommonHelper::nearestCommissionTier($rawCommission);
+                $tier = $closest ? [
+                    'name'  => $tierNames[$closest] ?? 'Baseline Discovery',
+                    'color' => $tierColors[$closest] ?? 'bg-neutral-100 text-neutral-600',
+                ] : null;
             @endphp
             <div class="glass rounded-3xl overflow-hidden shadow-sm card-hover flex flex-col">
 

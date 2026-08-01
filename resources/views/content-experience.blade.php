@@ -3,8 +3,9 @@
         <div class="col-lg-4 col-md-4 col-sm-4">
             @if($experience->thumbnail_image_url || $experience->banner_image_url)
             <div class="img_list">
+                @include('partials.commission-tier-badge')
                 <a href="{{ url("/experience/".$experience->slug) }}">
-                    <img data-src="{{ ($experience->thumbnail_image_url) ? Storage::disk('s3')->url(rawurlencode($experience->thumbnail_image_url)) : Storage::disk('s3')->url(rawurlencode($experience->banner_image_url)) }}" alt="{{ $experience->banner_image_title }}" class="img-responsive lazy" /> 
+                    <img data-src="{{ ($experience->thumbnail_image_url) ? Storage::disk('s3')->url(rawurlencode($experience->thumbnail_image_url)) : Storage::disk('s3')->url(rawurlencode($experience->banner_image_url)) }}" alt="{{ $experience->banner_image_title }}" class="img-responsive lazy" />
                 </a>
             </div>
             @endif

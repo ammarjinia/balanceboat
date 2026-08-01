@@ -262,7 +262,7 @@
         },
         20: {
             badge: "Trust & Validation Layer",
-            label: "✓ Verified Sanctuary",
+            label: "✓ Verified Retreat",
             labelStyle: "bg-cyan-50 text-cyan-700 border-cyan-200/80 font-bold shadow-sm",
             hopeTitle: "Forging deep validation",
             hopeDesc: "Eradicate initial digital reservation barriers seamlessly. Instill an unshakeable sense of certified authenticity the split-second a seeking traveler encounters your listing configuration.",

@@ -412,6 +412,20 @@ class PaymentController extends Controller {
             $objBookingUserInfo->message = @session('reservation_info')['message'];
             $objBookingUserInfo->save();
             session(['booking_id' => $bookingId]);
+
+            // Best-effort: auto-advance the originating lead (if any) to Won now that
+            // a real booking has completed for the same retreat + email.
+            if (!empty($objBookingUserInfo->email) && !empty($data['experience']->id)) {
+                $matchedLead = \App\Inquiry::where('experience_id', $data['experience']->id)
+                    ->whereRaw('LOWER(email) = ?', [strtolower($objBookingUserInfo->email)])
+                    ->whereNotIn('stage', ['won', 'lost'])
+                    ->orderByDesc('created_at')
+                    ->first();
+                if ($matchedLead) {
+                    $matchedLead->stage = 'won';
+                    $matchedLead->save();
+                }
+            }
         
             if($data['experience']->center_id != 2293 && $data['experience']->is_bookable == 1) {
                 //$this->response($payment_id,$bookingId);

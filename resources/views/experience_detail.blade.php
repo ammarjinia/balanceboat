@@ -64,6 +64,7 @@ foreach ($experience_destination as $edest) {
         <div class="row">
             <div class="col-9">
                 <h1>{{ @$experience->name }}</h1>
+                @include('partials.commission-tier-badge')
             </div>
             <?php
             $discount = $razorPayAmount = 0;
