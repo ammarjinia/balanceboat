@@ -390,11 +390,15 @@ class Experiences extends Model {
                                     AND (eap.start_date <= '$startdate' AND eap.end_date >= '$startdate')
                             WHERE
                                 ea.experience_id = $expId " . ((!empty($acmId)) ? " and ea.title = $acmId " : "");exit;*/
-            $resExpAcm = DB::select("SELECT 
+            $resExpAcm = DB::select("SELECT
                                 a.*,
                                 ea.id as experience_accomodations_id,
                                 ea.currency,
                                 ea.accomodation_default,
+                                ea.about as ea_about,
+                                ea.max_guest_in_room as ea_max_guest_in_room,
+                                ea.single_occupancy_price,
+                                ea.double_occupancy_price,
                                 eap.start_date,
                                 eap.end_date,
                                 eap.price_per_night_per_guest,

@@ -425,6 +425,26 @@ foreach ($experience_destination as $edest) {
                                                             <span class="me-2"><?php echo \App\Experiences::get_state_country($experience->id); ?></span>
                                                         </small>
                                                     </div>
+                                                    <div class="c-medium fs-16 mt-1">
+                                                        @php
+                                                            $roomCapacity = @$experience_accomodation->ea_max_guest_in_room ?: @$experience_accomodation->max_guest_in_room;
+                                                            $nextAvail = @$experience_availability_next[$experience_accomodation->id] ?? null;
+                                                        @endphp
+                                                        @if($roomCapacity)
+                                                        <small class="d-inline-flex align-items-center me-3">
+                                                            <span class="c-brand icon-user me-1"></span>
+                                                            Sleeps up to {{ $roomCapacity }}
+                                                        </small>
+                                                        @endif
+                                                        @if($nextAvail)
+                                                        <small class="d-inline-flex align-items-center badge {{ $nextAvail->status == 'open' ? 'bg-green-lt' : ($nextAvail->status == 'few_left' ? 'bg-yellow-lt' : 'bg-red-lt') }}">
+                                                            {{ \App\ExperienceAccommodationAvailability::statusLabel($nextAvail->status) }}
+                                                            @if(in_array($nextAvail->status, ['open', 'few_left']))
+                                                            &middot; {{ $nextAvail->remaining }} left from {{ \Carbon\Carbon::parse($nextAvail->start_date)->format('d M Y') }}
+                                                            @endif
+                                                        </small>
+                                                        @endif
+                                                    </div>
                                                     <div class="head-price mb-1">
                                                         <h3>
                                                             <a href="javascipt:void(0);" class="c-pointer popup-large more-info-deal">{{ $experience_accomodation->name }}</a>
@@ -441,6 +461,44 @@ foreach ($experience_destination as $edest) {
                                                     <ul class="list">
                                                         {!! html_entity_decode(\App\Http\Helpers\CommonHelper::excerpt(strip_tags(@$experience_accomodation->description))) !!}
                                                     </ul>
+
+                                                    @if(@$experience_accomodation->ea_about)
+                                                    <p class="c-medium fs-14">{!! html_entity_decode(\App\Http\Helpers\CommonHelper::excerpt(strip_tags(@$experience_accomodation->ea_about), 200)) !!}</p>
+                                                    @endif
+
+                                                    @php
+                                                        $durPrices = @$experience_accommodation_duration_prices[$experience_accomodation->id] ?? collect();
+                                                    @endphp
+                                                    @if(@$experience_accomodation->single_occupancy_price || @$experience_accomodation->double_occupancy_price || $durPrices->count())
+                                                    <div class="occupancy-price-table mt-2 mb-2">
+                                                        <table class="table table-sm mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Duration</th>
+                                                                    <th>Single Occupancy</th>
+                                                                    <th>Double Occupancy (pp)</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @if($durPrices->count())
+                                                                    @foreach($durPrices as $dp)
+                                                                    <tr>
+                                                                        <td>{{ $dp->duration_days }} Days</td>
+                                                                        <td>{{ $dp->single_price ? \App\Http\Helpers\CommonHelper::get_currency_rate($dp->single_price, $dp->currency ?: @$experience_accomodation->currency) : '-' }}</td>
+                                                                        <td>{{ $dp->double_price ? \App\Http\Helpers\CommonHelper::get_currency_rate($dp->double_price, $dp->currency ?: @$experience_accomodation->currency) : '-' }}</td>
+                                                                    </tr>
+                                                                    @endforeach
+                                                                @else
+                                                                <tr>
+                                                                    <td>{{ @$experience_accomodation->duration ? @$experience_accomodation->duration.' Days' : 'Standard' }}</td>
+                                                                    <td>{{ @$experience_accomodation->single_occupancy_price ? \App\Http\Helpers\CommonHelper::get_currency_rate(@$experience_accomodation->single_occupancy_price, @$experience_accomodation->currency) : '-' }}</td>
+                                                                    <td>{{ @$experience_accomodation->double_occupancy_price ? \App\Http\Helpers\CommonHelper::get_currency_rate(@$experience_accomodation->double_occupancy_price, @$experience_accomodation->currency) : '-' }}</td>
+                                                                </tr>
+                                                                @endif
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    @endif
 
                                                     <div class="c-medium fs-16">
                                                         <small class="d-flex-center">
@@ -504,6 +562,74 @@ foreach ($experience_destination as $edest) {
                                 </div>
                                 @endforeach
                             </div>
+
+                            @if(@$experience_durations && sizeof(@$experience_durations) > 0)
+                            <div class="bg-box mb-4 bg-white" id="price-options">
+                                <div class="mb-4">
+                                    <h2 class="ellipsis">Price Options</h2>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Duration</th>
+                                                <th>Price</th>
+                                                <th>Promo Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach(@$experience_durations as $ed)
+                                            <tr>
+                                                <td>{{ $ed->duration }} Days</td>
+                                                <td>{{ $ed->price ? \App\Http\Helpers\CommonHelper::get_currency_rate($ed->price, $ed->currency) : '-' }}</td>
+                                                <td>{{ $ed->promo_price ? \App\Http\Helpers\CommonHelper::get_currency_rate($ed->promo_price, $ed->currency) : '-' }}</td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            @endif
+
+                            @if(@$experience_upcoming_availability && sizeof(@$experience_upcoming_availability) > 0)
+                            <div class="bg-box mb-4 bg-white" id="availability">
+                                <div class="mb-4">
+                                    <h2 class="ellipsis">Upcoming Availability</h2>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Start Date</th>
+                                                <th>Accommodation</th>
+                                                <th>Status</th>
+                                                <th>Rooms Remaining</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach(@$experience_upcoming_availability as $avail)
+                                            <?php
+                                                $avAcm = null;
+                                                foreach (@$experience_accomodations as $ea_lookup) {
+                                                    if ($ea_lookup->id == $avail->accommodation_id) { $avAcm = $ea_lookup; break; }
+                                                }
+                                            ?>
+                                            <tr>
+                                                <td>{{ \Carbon\Carbon::parse($avail->start_date)->format('d M Y') }}</td>
+                                                <td>{{ $avAcm ? $avAcm->name : '-' }}</td>
+                                                <td>
+                                                    <span class="badge {{ $avail->status == 'open' ? 'bg-green-lt' : ($avail->status == 'few_left' ? 'bg-yellow-lt' : 'bg-red-lt') }}">
+                                                        {{ \App\ExperienceAccommodationAvailability::statusLabel($avail->status) }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ in_array($avail->status, ['open', 'few_left']) ? $avail->remaining : '-' }}</td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            @endif
 
                             @if(@$experience->experience_summary)
                             <div class="bg-box mb-4 bg-white">
@@ -577,6 +703,105 @@ foreach ($experience_destination as $edest) {
                                     </span>
                                 </div>
                                 {!! @$center->about_center !!}
+
+                                <div class="row mt-3">
+                                    @if(@$center->year_of_foundation)
+                                    <div class="col-md-6 mb-2"><strong>Founded:</strong> {{ @$center->year_of_foundation }}</div>
+                                    @endif
+                                    @if(@$center->founders)
+                                    <div class="col-md-6 mb-2"><strong>Founders:</strong> {{ @$center->founders }}</div>
+                                    @endif
+                                </div>
+
+                                @if(@$center->our_mission)
+                                <div class="mt-3">
+                                    <h4 class="fs-16">Our Mission</h4>
+                                    {!! @$center->our_mission !!}
+                                </div>
+                                @endif
+
+                                @if(@$center->our_philosophy)
+                                <div class="mt-3">
+                                    <h4 class="fs-16">Our Philosophy</h4>
+                                    {!! @$center->our_philosophy !!}
+                                </div>
+                                @endif
+
+                                @if(@$center->what_sets_us_apart)
+                                <div class="mt-3">
+                                    <h4 class="fs-16">What Sets Us Apart</h4>
+                                    {!! @$center->what_sets_us_apart !!}
+                                </div>
+                                @endif
+
+                                @if(@$center->center_highlights)
+                                <div class="mt-3">
+                                    <h4 class="fs-16">Highlights</h4>
+                                    {!! @$center->center_highlights !!}
+                                </div>
+                                @endif
+
+                                @if(@$center->center_features)
+                                <div class="mt-3">
+                                    <h4 class="fs-16">Features</h4>
+                                    {!! @$center->center_features !!}
+                                </div>
+                                @endif
+
+                                @if(@$center->awards)
+                                <div class="mt-3">
+                                    <h4 class="fs-16">Awards</h4>
+                                    {!! @$center->awards !!}
+                                </div>
+                                @endif
+
+                                @if(sizeof((array)@$amenities) > 0)
+                                <div class="mt-3">
+                                    <h4 class="fs-16">Amenities</h4>
+                                    <ul class="bg-list-icon list-unstyled d-flex flex-wrap">
+                                        @foreach(@$amenities as $amenity)
+                                        <li class="me-3 mb-2">
+                                            @if(@$amenity->image_url)
+                                            <img class="lazy" width="20" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode($amenity->image_url)),'?') }}" alt="{{ $amenity->name }}" />
+                                            @endif
+                                            {{ $amenity->name }}
+                                        </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                                @endif
+
+                                @if(sizeof((array)@$center_locations) > 0)
+                                <div class="mt-3">
+                                    <h4 class="fs-16">Nearby Locations</h4>
+                                    <ul class="bg-list-icon list-unstyled d-flex flex-wrap">
+                                        @foreach(@$center_locations as $center_location)
+                                        <li class="me-3 mb-2">{{ $center_location->name }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                                @endif
+
+                                <div class="row mt-3">
+                                    @if(@$center->email_address)
+                                    <div class="col-md-4 mb-2"><span class="c-brand icon-mail me-1"></span> {{ @$center->email_address }}</div>
+                                    @endif
+                                    @if(@$center->contact_number)
+                                    <div class="col-md-4 mb-2"><span class="c-brand icon-phone me-1"></span> {{ @$center->contact_number }}</div>
+                                    @endif
+                                    @if(@$center->whatsapp_number)
+                                    <div class="col-md-4 mb-2"><span class="c-brand icon-whatsapp me-1"></span> {{ @$center->whatsapp_number }}</div>
+                                    @endif
+                                    @if(@$center->website)
+                                    <div class="col-md-4 mb-2"><span class="c-brand icon-globe me-1"></span> <a target="_blank" href="{{ @$center->website }}">{{ @$center->website }}</a></div>
+                                    @endif
+                                    @if(@$center->facebook_url)
+                                    <div class="col-md-4 mb-2"><a target="_blank" href="{{ @$center->facebook_url }}"><span class="icon-facebook me-1"></span> Facebook</a></div>
+                                    @endif
+                                    @if(@$center->instagram_url)
+                                    <div class="col-md-4 mb-2"><a target="_blank" href="{{ @$center->instagram_url }}"><span class="icon-instagram me-1"></span> Instagram</a></div>
+                                    @endif
+                                </div>
                             </div>
                             @endif
                             <?php /*
@@ -759,13 +984,32 @@ foreach ($experience_destination as $edest) {
                             </div>
                             @endif
                             
-                            @if(@$center->how_to_get_there)
+                            @if(@$center->how_to_get_there || @$center->airport_name || @$center->pickup_drop_cost)
                             <div id="howtoreach" class="bg-box mb-4 bg-white">
                                 <div class="mb-4">
                                     <h2 class="ellipsis">How to reach <span>{{ @$center->name }}</span></h2>
-                                </div>  
+                                </div>
                                 <div>
                                     {!! @$center->how_to_get_there !!}
+                                </div>
+                                <div class="row mt-3">
+                                    @if(@$center->airport_name)
+                                    <div class="col-md-6 mb-2"><strong>Nearest Airport:</strong> {{ @$center->airport_name }}</div>
+                                    @endif
+                                    @if(@$center->pickup_drop_cost)
+                                    <div class="col-md-6 mb-2"><strong>Pickup / Drop Cost:</strong> {{ \App\Http\Helpers\CommonHelper::get_currency_rate(@$center->pickup_drop_cost, $site_currency) }}</div>
+                                    @endif
+                                </div>
+                            </div>
+                            @endif
+
+                            @if(@$center->things_to_do_around_the_center)
+                            <div id="things-to-do" class="bg-box mb-4 bg-white">
+                                <div class="mb-4">
+                                    <h2 class="ellipsis">Things to Do Around {{ @$center->name }}</h2>
+                                </div>
+                                <div>
+                                    {!! @$center->things_to_do_around_the_center !!}
                                 </div>
                             </div>
                             @endif
@@ -778,6 +1022,37 @@ foreach ($experience_destination as $edest) {
                                 <div>
                                     {!! @$experience->booking_info !!}
                                 </div>
+                            </div>
+                            @endif
+
+                            @php
+                                $depositPolicy = @$experience->deposit_policy ?: @$center_commission->deposit_policy;
+                                $depositAmount = @$experience->deposit_amount ?: @$center_commission->deposit_amount;
+                                $cancelCondition = @$experience->cancellation_policy_condition ?: @$center_commission->cancellation_policy_condition;
+                                $cancelDays = @$experience->cancellation_policy_days ?: @$center_commission->cancellation_policy_days;
+                                $restOfPayment = @$experience->rest_of_payment ?: @$center_commission->rest_of_payment;
+                                $restOfPaymentDays = @$experience->rest_of_payment_days ?: @$center_commission->rest_of_payment_days;
+                                $taxInfo = @$experience->tax ?: @$center_commission->tax;
+                            @endphp
+                            @if($depositPolicy || $cancelCondition || $restOfPayment || $taxInfo)
+                            <div class="bg-box mb-4 bg-white" id="payment-terms">
+                                <div class="mb-4">
+                                    <h2 class="ellipsis">Payment &amp; Cancellation Terms</h2>
+                                </div>
+                                <ul class="bg-list-icon">
+                                    @if($depositPolicy && $depositAmount)
+                                    <li>A deposit of {{ \App\Http\Helpers\CommonHelper::get_currency_rate($depositAmount, $site_currency) }} is required to confirm booking.</li>
+                                    @endif
+                                    @if($restOfPayment && $restOfPaymentDays)
+                                    <li>Balance payment is due {{ $restOfPaymentDays }} days before the retreat start date.</li>
+                                    @endif
+                                    @if($cancelCondition && $cancelDays)
+                                    <li>Cancellations must be made at least {{ $cancelDays }} days in advance as per the cancellation policy.</li>
+                                    @endif
+                                    @if($taxInfo)
+                                    <li>Applicable Tax: {{ $taxInfo }}</li>
+                                    @endif
+                                </ul>
                             </div>
                             @endif
 

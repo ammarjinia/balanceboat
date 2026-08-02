@@ -130,6 +130,25 @@ class ExperienceController extends Controller {
                                 ->where("experience_id", $data['experience']->id)->get();
                                 
                 $data['experience_durations'] = \App\ExperienceDurationPrices::where("experience_id", $data['experience']->id)->get();
+
+                // Center-level cancellation / deposit / payment-schedule policy (commission % itself is internal-only, not exposed here)
+                $data['center_commission'] = \App\CenterCommissions::where("center_id", $data['experience']->center_id)->first();
+
+                // Per-accommodation duration-based single/double occupancy pricing, keyed by accommodation id
+                $data['experience_accommodation_duration_prices'] = \App\ExperienceAccommodationDurationPrice::where("experience_id", $data['experience']->id)
+                                ->orderBy("duration_days")->get()->groupBy("accommodation_id");
+
+                // Nearest upcoming availability status per accommodation, for an at-a-glance badge
+                $data['experience_availability_next'] = \App\ExperienceAccommodationAvailability::where("experience_id", $data['experience']->id)
+                                ->where("start_date", ">=", now()->toDateString())
+                                ->orderBy("start_date")->get()->groupBy("accommodation_id")
+                                ->map(function ($rows) { return $rows->first(); });
+
+                // Upcoming start dates across all accommodations, for a combined availability table
+                $data['experience_upcoming_availability'] = \App\ExperienceAccommodationAvailability::where("experience_id", $data['experience']->id)
+                                ->where("start_date", ">=", now()->toDateString())
+                                ->orderBy("start_date")->take(20)->get();
+
                 $data['site_currency'] = \App\Http\Helpers\CommonHelper::get_site_currency();
                 if (!isset($_GET['test']) or ( $_GET['test'] != 1)) {
                 return view('experience_detail', $data);
