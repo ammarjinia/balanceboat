@@ -101,8 +101,27 @@ class DealController extends Controller
                 return redirect("/");
             }
         } else {
-            $objDeals = \App\Deals::where("status", 0)->orderBy("id", "DESC")->get();
-            return view('deals', compact('objDeals'));
+            $q = trim((string) $request->input('q'));
+
+            $dealQuery = \App\Deals::where("status", 0);
+            if ($q !== '') {
+                $dealQuery->where(function ($sub) use ($q) {
+                    $sub->where('name', 'like', '%' . $q . '%')
+                        ->orWhere('description', 'like', '%' . $q . '%');
+                });
+            }
+            $objDeals = $dealQuery->orderBy("id", "DESC")->get();
+
+            $dealExperienceCounts = DB::table('deal_experience')
+                ->select('deal_id', DB::raw('COUNT(*) as cnt'))
+                ->whereIn('deal_id', $objDeals->pluck('id'))
+                ->groupBy('deal_id')
+                ->pluck('cnt', 'deal_id');
+
+            $data['locations'] = \App\Http\Helpers\CommonHelper::get_site_destinations();
+            $data['categories'] = \App\Http\Helpers\CommonHelper::get_site_categories();
+
+            return view('deals', compact('objDeals', 'dealExperienceCounts', 'q') + $data);
         }
     }
 }
