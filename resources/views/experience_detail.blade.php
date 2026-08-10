@@ -68,6 +68,12 @@ foreach ($experience_destination as $edest) {
         --xd-shadow-colored: 0 8px 20px rgba(255, 51, 102, 0.18);
     }
 
+    /* Content width — matches the reference layout's own container instead of the site's narrower Bootstrap .container */
+    .xd-container { max-width: 1440px; width: 100%; margin: 0 auto; padding: 0 40px; }
+    @media (max-width: 768px) {
+        .xd-container { padding: 0 16px; }
+    }
+
     /* Gallery grid cosmetic upgrade (structure/JS unchanged) */
     .xd-gallery.bg-listing-gallery { border-radius: var(--xd-radius-xl); overflow: hidden; box-shadow: var(--xd-shadow-card); }
 
@@ -227,6 +233,33 @@ foreach ($experience_destination as $edest) {
         border-radius: var(--xd-radius-md); font-size: 14px; color: var(--xd-text-main);
     }
     .xd-select:focus, .xd-input:focus { outline: none; border-color: var(--xd-brand); }
+
+    /* Duration pills */
+    .xd-pill-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .xd-pill-btn {
+        flex: 1; min-width: 64px; padding: 7px 6px; background: var(--xd-subtle); border: 1px solid var(--xd-border);
+        border-radius: var(--xd-radius-md); font-size: 12px; color: var(--xd-text-body); cursor: pointer;
+    }
+    .xd-pill-btn:hover { border-color: var(--xd-brand); color: var(--xd-brand); }
+    .xd-pill-btn.active {
+        background: linear-gradient(135deg, var(--xd-brand) 0%, var(--xd-brand-dark) 100%); color: #fff; border-color: transparent;
+        font-weight: bold; box-shadow: 0 2px 8px var(--xd-brand-glow);
+    }
+
+    /* Room picker list */
+    .xd-room-picker-list { display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto; }
+    .xd-room-picker-item {
+        display: flex; align-items: center; padding: 7px 10px; background: var(--xd-subtle); border: 1px solid var(--xd-border);
+        border-radius: var(--xd-radius-md); cursor: pointer;
+    }
+    .xd-room-picker-item:hover { border-color: var(--xd-brand); }
+    .xd-room-picker-item.active { border-color: var(--xd-brand); background: var(--xd-brand-light); }
+    .xd-room-picker-thumb { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; margin-right: 10px; flex-shrink: 0; }
+    .xd-room-picker-details { display: flex; flex-direction: column; min-width: 0; }
+    .xd-room-picker-name { font-size: 12.5px; color: var(--xd-text-main); font-weight: bold; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .xd-room-picker-price { font-size: 12px; color: var(--xd-brand); font-weight: bold; }
+    .xd-room-picker-price del { color: var(--xd-text-muted); font-weight: normal; margin-right: 4px; font-size: 11px; }
+
     .xd-calc-box { background: var(--xd-subtle); border-radius: var(--xd-radius-md); padding: 10px 14px; margin: 12px 0; border: 1px solid var(--xd-border); }
     .xd-calc-row { display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--xd-text-body); font-size: 13px; }
     .xd-calc-row.total { border-top: 1px solid var(--xd-border); padding-top: 6px; margin-bottom: 0; font-size: 15px; color: var(--xd-text-main); font-weight: bold; }
@@ -294,7 +327,7 @@ foreach ($experience_destination as $edest) {
 
     <!-- Hero -->
     <section class="pt-2">
-        <div class="container">
+        <div class="xd-container">
             <div class="xd-hero-banner">
                 @if(@$experience->banner_image_url)
                 <div class="xd-hero-bg" style="background-image:url('{{ strtok(Storage::disk('s3')->url(rawurlencode(@$experience->banner_image_url)),'?') }}');"></div>
@@ -356,7 +389,7 @@ foreach ($experience_destination as $edest) {
 
     <!-- Gallery -->
     <section class="pt-4">
-        <div class="container">
+        <div class="xd-container">
             <div class="bg-listing-gallery main xd-gallery">
                 <?php $i = 0;?>
                 @if(@$experience->banner_image_url)
@@ -395,7 +428,7 @@ foreach ($experience_destination as $edest) {
     </section>
 
     <section class="pt-5 mb-5">
-        <div class="container">
+        <div class="xd-container">
             <div class="xd-layout-grid">
                 <main id="package" class="xd-main-col">
 
@@ -465,6 +498,64 @@ foreach ($experience_destination as $edest) {
                         @endif
 
                         {{-- Sanctuaries / Accommodations --}}
+                        <?php
+                        // Precomputed once so the room cards below and the sidebar/mobile room-picker
+                        // (which needs the same price + thumbnail per room) never fall out of sync.
+                        $roomPricing = array();
+                        foreach (@$experience_accomodations as $racm) {
+                            $rDiscount = 0;
+                            $rPay = @$racm->room_price;
+                            if ((!empty(@$experience->eirly_bird_before_days)) && (!empty(@$experience->eirly_bird_discount)) && (@$experience->eirly_bird_discount > 0)) {
+                                if (@$experience->eirly_bird_discount_type == "amt") {
+                                    $rDiscount += @$experience->eirly_bird_discount;
+                                } else {
+                                    $rDiscount = (@$rPay * @$experience->eirly_bird_discount) / 100;
+                                }
+                            }
+                            if ((!empty(@$experience->offer_start_date)) && (!empty(@$experience->offer_discount)) && (@$experience->offer_discount > 0)) {
+                                $rNow = \Carbon\Carbon::parse(date("Y-m-d"))->format("Y-m-d");
+                                if ((\Carbon\Carbon::parse(@$experience->offer_start_date)->format("Y-m-d") <= $rNow) && (\Carbon\Carbon::parse(@$experience->offer_end_date)->format("Y-m-d") >= $rNow)) {
+                                    if (@$experience->offer_discount_type == "amt") {
+                                        $rDiscount += @$experience->offer_discount;
+                                    } else {
+                                        $rDiscount += (@$rPay * @$experience->offer_discount) / 100;
+                                    }
+                                }
+                            }
+                            $rHasFlat = !empty($rPay) && $rPay > 0;
+                            $rFallback = null;
+                            if (!$rHasFlat) {
+                                $occCandidates = array();
+                                if (!empty(@$racm->single_occupancy_price)) { $occCandidates[] = @$racm->single_occupancy_price; }
+                                if (!empty(@$racm->double_occupancy_price)) { $occCandidates[] = @$racm->double_occupancy_price; }
+                                $durP = @$experience_accommodation_duration_prices[$racm->id] ?? collect();
+                                foreach ($durP as $dp) {
+                                    if (!empty($dp->single_price)) { $occCandidates[] = $dp->single_price; }
+                                    if (!empty($dp->double_price)) { $occCandidates[] = $dp->double_price; }
+                                }
+                                if (sizeof($occCandidates) > 0) {
+                                    $rFallback = min($occCandidates);
+                                }
+                            }
+                            $rThumb = null;
+                            if (@$accomodationimagegalleries) {
+                                foreach (@$accomodationimagegalleries as $rimg) {
+                                    if ($rimg->accomodation_id == $racm->id && $rimg->image_url) {
+                                        $rThumb = $rimg->image_url;
+                                        break;
+                                    }
+                                }
+                            }
+                            $roomPricing[$racm->id] = array(
+                                'hasFlat' => $rHasFlat,
+                                'pay' => $rPay,
+                                'discount' => $rDiscount,
+                                'fallback' => $rFallback,
+                                'currency' => @$racm->currency,
+                                'thumb' => $rThumb,
+                            );
+                        }
+                        ?>
                         @if(sizeof(@$experience_accomodations) > 0)
                         <div class="xd-card" id="accomodation-rooms">
                             <span class="xd-tag">The Residences</span>
@@ -577,62 +668,23 @@ foreach ($experience_destination as $edest) {
                                         </div>
                                         @endif
 
-                                        <?php
-                                        $discount = 0;
-                                        $pay = @$experience_accomodation->room_price;
-                                        if ((!empty(@$experience->eirly_bird_before_days)) && (!empty(@$experience->eirly_bird_discount)) && (@$experience->eirly_bird_discount > 0)) {
-                                            if (@$experience->eirly_bird_discount_type == "amt") {
-                                                $discount += @$experience->eirly_bird_discount;
-                                            } else {
-                                                $discount = (@$pay * @$experience->eirly_bird_discount) / 100;
-                                            }
-                                        }
-                                        if ((!empty(@$experience->offer_start_date)) && (!empty(@$experience->offer_discount)) && (@$experience->offer_discount > 0)) {
-                                            $now = \Carbon\Carbon::parse(date("Y-m-d"))->format("Y-m-d");
-                                            if ((\Carbon\Carbon::parse(@$experience->offer_start_date)->format("Y-m-d") <= $now) && (\Carbon\Carbon::parse(@$experience->offer_end_date)->format("Y-m-d") >= $now)) {
-                                                if (@$experience->offer_discount_type == "amt") {
-                                                    $discount += @$experience->offer_discount;
-                                                } else {
-                                                    $discount += (@$pay * @$experience->offer_discount) / 100;
-                                                }
-                                            }
-                                        }
-
-                                        // Not every accommodation has a flat room_price set — many are priced purely
-                                        // via single/double occupancy instead, so fall back to the lowest of those.
-                                        $hasFlatPrice = !empty($pay) && $pay > 0;
-                                        $fallbackFromPrice = null;
-                                        if (!$hasFlatPrice) {
-                                            $occCandidates = array();
-                                            if (!empty(@$experience_accomodation->single_occupancy_price)) { $occCandidates[] = @$experience_accomodation->single_occupancy_price; }
-                                            if (!empty(@$experience_accomodation->double_occupancy_price)) { $occCandidates[] = @$experience_accomodation->double_occupancy_price; }
-                                            if ($durPrices->count()) {
-                                                foreach ($durPrices as $dp) {
-                                                    if (!empty($dp->single_price)) { $occCandidates[] = $dp->single_price; }
-                                                    if (!empty($dp->double_price)) { $occCandidates[] = $dp->double_price; }
-                                                }
-                                            }
-                                            if (sizeof($occCandidates) > 0) {
-                                                $fallbackFromPrice = min($occCandidates);
-                                            }
-                                        }
-                                        ?>
+                                        <?php $rp = $roomPricing[$experience_accomodation->id]; ?>
                                         <div class="xd-room-bottom">
-                                            @if($hasFlatPrice)
+                                            @if($rp['hasFlat'])
                                             <div class="xd-room-price-block">
                                                 <small>Total for {{ @$experience_accomodation->duration }}</small>
                                                 <div class="xd-room-price">
-                                                    @if(!empty($discount))
-                                                    <del>{{ \App\Http\Helpers\CommonHelper::get_currency_rate((@$pay), @$experience_accomodation->currency) }}</del>
+                                                    @if(!empty($rp['discount']))
+                                                    <del>{{ \App\Http\Helpers\CommonHelper::get_currency_rate($rp['pay'], $rp['currency']) }}</del>
                                                     @endif
-                                                    <span>{{ \App\Http\Helpers\CommonHelper::get_currency_rate(@$pay - $discount, @$experience_accomodation->currency) }}</span>
+                                                    <span>{{ \App\Http\Helpers\CommonHelper::get_currency_rate($rp['pay'] - $rp['discount'], $rp['currency']) }}</span>
                                                 </div>
                                             </div>
-                                            @elseif($fallbackFromPrice)
+                                            @elseif($rp['fallback'])
                                             <div class="xd-room-price-block">
                                                 <small>Starting from</small>
                                                 <div class="xd-room-price">
-                                                    <span>{{ \App\Http\Helpers\CommonHelper::get_currency_rate($fallbackFromPrice, @$experience_accomodation->currency) }}</span>
+                                                    <span>{{ \App\Http\Helpers\CommonHelper::get_currency_rate($rp['fallback'], $rp['currency']) }}</span>
                                                 </div>
                                             </div>
                                             @else
@@ -1156,19 +1208,7 @@ foreach ($experience_destination as $edest) {
                             {{ csrf_field() }}
                             <input type="hidden" name="hdn_experience_id" class="qb-exp-id" value="{{ @$experience->id }}" />
 
-                            <div class="xd-form-group">
-                                <label class="xd-form-label">Duration</label>
-                                <select name="durations" class="xd-select qb-durations">
-                                    <option value="">Select</option>
-                                </select>
-                            </div>
-
-                            <div class="xd-form-group">
-                                <label class="xd-form-label">Accommodation</label>
-                                <select name="exp_accomodation_id" class="xd-select qb-accomodation">
-                                    <option value="">Please Select Accommodation</option>
-                                </select>
-                            </div>
+                            @include('partials.experience-booking-fields')
 
                             <div class="xd-form-group">
                                 <label class="xd-form-label">Start Date</label>
@@ -1231,19 +1271,7 @@ foreach ($experience_destination as $edest) {
                 {{ csrf_field() }}
                 <input type="hidden" name="hdn_experience_id" class="qb-exp-id" value="{{ @$experience->id }}" />
 
-                <div class="xd-form-group">
-                    <label class="xd-form-label">Duration</label>
-                    <select name="durations" class="xd-select qb-durations">
-                        <option value="">Select</option>
-                    </select>
-                </div>
-
-                <div class="xd-form-group">
-                    <label class="xd-form-label">Accommodation</label>
-                    <select name="exp_accomodation_id" class="xd-select qb-accomodation">
-                        <option value="">Please Select Accommodation</option>
-                    </select>
-                </div>
+                @include('partials.experience-booking-fields')
 
                 <div class="xd-form-group">
                     <label class="xd-form-label">Start Date</label>
@@ -1331,8 +1359,8 @@ foreach ($experience_destination as $edest) {
         });
 
         function xdInitQuickBooking($form) {
-            var $durations = $form.find('.qb-durations');
-            var $accom = $form.find('.qb-accomodation');
+            var $durations = $form.find('.qb-durations-value');
+            var $accom = $form.find('.qb-accomodation-value');
             var $date = $form.find('.qb-date');
             var $reserveBtn = $form.find('.qb-reserve-btn');
             var $price = $form.find('.qb-price');
@@ -1361,32 +1389,21 @@ foreach ($experience_destination as $edest) {
                 });
             }
 
-            function loadFilters() {
-                $.ajax({
-                    url: APP_URL + '/get_ajax_filter_values',
-                    type: "post",
-                    data: {'exp_id': expId}
-                }).done(function(data) {
-                    data = JSON.parse(data);
-                    if (data) {
-                        if (data.experience_durations) {
-                            $durations.append(data.experience_durations);
-                        }
-                        if (data.experience_accomodations_options) {
-                            $accom.append(data.experience_accomodations_options);
-                        }
-                        if ($durations.find('option').length === 2) {
-                            $durations.val($durations.find('option:eq(1)').val());
-                        }
-                    }
-                });
-            }
+            $form.find('.qb-duration-pills').on('click', '.xd-pill-btn', function() {
+                $form.find('.qb-duration-pills .xd-pill-btn').removeClass('active');
+                $(this).addClass('active');
+                $durations.val($(this).data('value'));
+                calculatePrice();
+            });
+
+            $form.find('.qb-room-picker-list').on('click', '.xd-room-picker-item', function() {
+                $form.find('.qb-room-picker-list .xd-room-picker-item').removeClass('active');
+                $(this).addClass('active');
+                $accom.val($(this).data('value'));
+                calculatePrice();
+            });
 
             $date.on('change', calculatePrice);
-            $accom.on('change', calculatePrice);
-            $durations.on('change', calculatePrice);
-
-            loadFilters();
         }
 
         $('form.quick-booking').each(function() {
@@ -1408,30 +1425,12 @@ foreach ($experience_destination as $edest) {
     }
 
     function xdSelectRoom(accomId) {
-        function applyTo($form) {
-            var $accom = $form.find('.qb-accomodation');
-            function apply() {
-                if ($accom.find('option[value="' + accomId + '"]').length) {
-                    $accom.val(String(accomId)).trigger('change');
-                    return true;
-                }
-                return false;
-            }
-            if (!apply()) {
-                // Accommodation options are appended via AJAX and may not have
-                // loaded yet, so retry briefly instead of failing silently.
-                var attempts = 0;
-                var retry = setInterval(function() {
-                    attempts++;
-                    if (apply() || attempts > 20) {
-                        clearInterval(retry);
-                    }
-                }, 250);
-            }
-        }
-
         $('form.quick-booking').each(function() {
-            applyTo($(this));
+            var $form = $(this);
+            var $item = $form.find('.qb-room-picker-list .xd-room-picker-item[data-value="' + accomId + '"]');
+            if ($item.length) {
+                $item.trigger('click');
+            }
         });
 
         var sidebar = document.querySelector('.xd-sidebar');
