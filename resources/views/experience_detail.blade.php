@@ -306,6 +306,60 @@ foreach ($experience_destination as $edest) {
     .xd-drawer-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
     .xd-modal-close { background: none; border: none; font-size: 16px; cursor: pointer; color: var(--xd-text-muted); }
 
+    /* ===== New class families (Task 2 scaffolding — additive only, no existing rule above is modified) ===== */
+
+    /* In-page tab navigation (reference: Overview/Accommodation/Food/Pricing/Availability/Terms/Center/Reviews) */
+    .xd-nav-tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--xd-border); margin: 20px 0 8px; }
+    .xd-nav-tab {
+        flex-shrink: 0; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--xd-text-muted);
+        text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap;
+    }
+    .xd-nav-tab:hover { color: var(--xd-text-main); }
+    .xd-nav-tab.active { color: var(--xd-brand); border-bottom-color: var(--xd-brand); }
+
+    /* Header area additions (rating, badges row) */
+    .xd-header-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 6px; }
+    .xd-header-rating { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: var(--xd-text-main); font-size: 13px; }
+    .xd-header-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .xd-header-badge {
+        display: inline-flex; align-items: center; gap: 4px; background: var(--xd-subtle); color: var(--xd-text-body);
+        border: 1px solid var(--xd-border); padding: 4px 10px; border-radius: var(--xd-radius-pill); font-size: 11px; font-weight: 600;
+    }
+
+    /* Pricing/package section grouping wrapper (stacked cards, no tabs — see design.md) */
+    .xd-pkg-group { display: flex; flex-direction: column; gap: 24px; }
+    .xd-pkg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* Price-breakdown note line, extends existing .xd-calc-box/.xd-calc-row rather than duplicating them */
+    .xd-breakdown-note { font-size: 12px; color: var(--xd-text-muted); margin-top: 6px; line-height: 1.4; }
+
+    /* Availability/calendar section */
+    .xd-avail-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .xd-avail-day {
+        display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: var(--xd-radius-md);
+        font-size: 12px; color: var(--xd-text-body); background: var(--xd-subtle); border: 1px solid var(--xd-border);
+    }
+    .xd-avail-day.is-open { background: #dcfce7; color: #16a34a; border-color: transparent; }
+    .xd-avail-day.is-few { background: #fef9c3; color: #a16207; border-color: transparent; }
+    .xd-avail-day.is-full, .xd-avail-day.is-closed { background: #fee2e2; color: #dc2626; border-color: transparent; }
+    .xd-avail-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; font-size: 12px; color: var(--xd-text-muted); }
+    .xd-avail-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .xd-avail-legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .xd-avail-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+    /* Sidebar quick-date pills (reuses .xd-pill-btn interaction pattern for the sidebar's upcoming-start-date picker) */
+    .xd-avail-pill-group { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    /* Need Help? / support section */
+    .xd-help-card { display: flex; align-items: flex-start; gap: 14px; padding: 16px; background: var(--xd-subtle); border: 1px solid var(--xd-border); border-radius: var(--xd-radius-lg); }
+    .xd-help-contact-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .xd-help-contact-item {
+        display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--xd-surface);
+        border: 1px solid var(--xd-border); border-radius: var(--xd-radius-pill); font-size: 13px; color: var(--xd-text-main); text-decoration: none;
+    }
+
+    /* Reviews container restyle (iframe src/embed mechanism untouched — wrapper styling only) */
+    .xd-reviews-wrap { border-radius: var(--xd-radius-xl); overflow: hidden; border: 1px solid var(--xd-border); }
+
     @media (max-width: 1024px) {
         .xd-layout-grid { grid-template-columns: 1fr; }
         .xd-sidebar { display: none; }
@@ -325,107 +379,30 @@ foreach ($experience_destination as $edest) {
 @section('content')
 <div class="xd-page">
 
-    <!-- Hero -->
-    <section class="pt-2">
-        <div class="xd-container">
-            <div class="xd-hero-banner">
-                @if(@$experience->banner_image_url)
-                <div class="xd-hero-bg" style="background-image:url('{{ strtok(Storage::disk('s3')->url(rawurlencode(@$experience->banner_image_url)),'?') }}');"></div>
-                @endif
-                <div class="xd-hero-overlay"></div>
-                <div class="xd-hero-top">
-                    <div class="d-flex align-items-center" style="gap:8px; flex-wrap:wrap;">
-                        @if($category)
-                        <span class="xd-hero-tag">{{ $category }}</span>
-                        @endif
-                        @include('partials.commission-tier-badge')
-                    </div>
-                    <div class="xd-hero-actions">
-                        <div class="bg-menu-list">
-                            <span class="xd-hero-icon-btn"><span class="icon-share"></span></span>
-                            <ul class="bg-box horiz">
-                                <li><a target="_blank" href="https://www.facebook.com/balanceboat"><span class="icon-facebook"></span></a></li>
-                                <li><a target="_blank" href="https://www.pinterest.com/balanceboat"><span class="icon-pinterest"></span></a></li>
-                            </ul>
-                        </div>
-                        <a href="#booking-card" class="xd-hero-icon-btn"><span class="icon-compass"></span></a>
-                    </div>
-                </div>
-                <div class="xd-hero-bottom">
-                    <h1 class="xd-hero-title">{{ @$experience->name }}</h1>
-                    <div class="xd-hero-meta">
-                        @if(@$center->address_of_center || @$experience->location)
-                        <span><span class="icon-location"></span>{{ @$center->address_of_center }} {{ @$experience->location }}</span>
-                        @endif
-                        <?php $discount = $razorPayAmount = 0; ?>
-                        @if(@$experienceList->min_duration_price)
-                        <?php
-                        $pay = @$experienceList->min_promo_price ? @$experienceList->min_promo_price : @$experienceList->min_duration_price;
-                        if ((!empty(@$experienceList->offer_start_date)) && (!empty(@$experienceList->offer_discount)) && (@$experienceList->offer_discount > 0)) {
-                            $now = \Carbon\Carbon::parse(date("Y-m-d"))->format("Y-m-d");
-                            if ((\Carbon\Carbon::parse(@$experienceList->offer_start_date)->format("Y-m-d") <= $now) && (\Carbon\Carbon::parse(@$experienceList->offer_end_date)->format("Y-m-d") >= $now)) {
-                                if (@$experienceList->offer_discount_type == "amt") {
-                                    $discount += @$experienceList->offer_discount;
-                                } else {
-                                    $discount += (@$pay * @$experienceList->offer_discount) / 100;
-                                }
-                            }
-                        }
-                        $razorPayAmount = \App\Http\Helpers\CommonHelper::get_currency_rate(@$pay - $discount, $site_currency, false);
-                        ?>
-                        <span class="xd-hero-price">
-                            From
-                            @if(!empty($discount))
-                            <del>{{ \App\Http\Helpers\CommonHelper::get_currency_rate((@$pay), $site_currency) }}</del>
-                            @endif
-                            <strong>{{ \App\Http\Helpers\CommonHelper::get_currency_rate(@$pay - $discount, $site_currency) }}</strong>
-                        </span>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- Hero / Header (display markup extracted to partials/experience-header.blade.php — Task 3).
+         $discount/$pay/$razorPayAmount stay computed here, not in the partial, because $razorPayAmount is
+         read again later in the footer Razorpay-widget script and @include does not leak child-set vars back out. -->
+    <?php $discount = $razorPayAmount = 0; ?>
+    @if(@$experienceList->min_duration_price)
+    <?php
+    $pay = @$experienceList->min_promo_price ? @$experienceList->min_promo_price : @$experienceList->min_duration_price;
+    if ((!empty(@$experienceList->offer_start_date)) && (!empty(@$experienceList->offer_discount)) && (@$experienceList->offer_discount > 0)) {
+        $now = \Carbon\Carbon::parse(date("Y-m-d"))->format("Y-m-d");
+        if ((\Carbon\Carbon::parse(@$experienceList->offer_start_date)->format("Y-m-d") <= $now) && (\Carbon\Carbon::parse(@$experienceList->offer_end_date)->format("Y-m-d") >= $now)) {
+            if (@$experienceList->offer_discount_type == "amt") {
+                $discount += @$experienceList->offer_discount;
+            } else {
+                $discount += (@$pay * @$experienceList->offer_discount) / 100;
+            }
+        }
+    }
+    $razorPayAmount = \App\Http\Helpers\CommonHelper::get_currency_rate(@$pay - $discount, $site_currency, false);
+    ?>
+    @endif
+    @include('partials.experience-header')
 
-    <!-- Gallery -->
-    <section class="pt-4">
-        <div class="xd-container">
-            <div class="bg-listing-gallery main xd-gallery">
-                <?php $i = 0;?>
-                @if(@$experience->banner_image_url)
-                <div class="bg-listing-gallery-items one">
-                    <img class="lazy" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode(@$experience->banner_image_url)),'?') }}" alt="{!! $experience->banner_image_url !!}" />
-                </div>
-                @else
-                    <?php $i = -1;?>
-                @endif
-                <?php
-                if ($i == -1) {
-                    $gi = array("one","two", "three", "four", "five");
-                } else {
-                    $gi = array("two", "three", "four", "five");
-                }?>
-                @foreach(@$imagegalleries as $gallery)
-                <?php if ($i < 4) {
-                    $i++;
-                    ?>
-                    <div class="bg-listing-gallery-items <?php echo ($gi[$i - 1]) ?? ''; ?>">
-                        @if(@$gallery->image_url)
-                        @if($gallery->bg_exp_id)
-                        <img class="lazy" data-src="{{ strtok(Storage::disk('azure_bg')->url(rawurlencode($gallery->image_url)),'?') }}" alt="{{ $gallery->image_title }}" />
-                        @else
-                        <img class="lazy" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode($gallery->image_url)),'?') }}" alt="{{ $gallery->image_title }}" />
-                        @endif
-                        @endif
-                    </div>
-                <?php } ?>
-                @endforeach
-                <span id="bg-gallery-all" class="show-all-btn">
-                    <span class="icon-arrows1 me-2"></span> Show All
-                </span>
-            </div>
-        </div>
-    </section>
+    <!-- Gallery (extracted to partials/experience-gallery.blade.php — Task 4) -->
+    @include('partials.experience-gallery')
 
     <section class="pt-5 mb-5">
         <div class="xd-container">
@@ -556,219 +533,14 @@ foreach ($experience_destination as $edest) {
                             );
                         }
                         ?>
-                        @if(sizeof(@$experience_accomodations) > 0)
-                        <div class="xd-card" id="accomodation-rooms">
-                            <span class="xd-tag">The Residences</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#127968;</span> Choose Your Room</h2>
-                            <div class="xd-room-list">
-                                @foreach(@$experience_accomodations as $experience_accomodation)
-                                <?php
-                                $roomImgs = array();
-                                if (@$accomodationimagegalleries) {
-                                    foreach (@$accomodationimagegalleries as $ex_img) {
-                                        if ($ex_img->accomodation_id == $experience_accomodation->id && $ex_img->image_url) {
-                                            $roomImgs[] = $ex_img;
-                                        }
-                                    }
-                                }
-                                $roomMainId = 'xd-room-main-'.$experience_accomodation->id;
-                                ?>
-                                <div class="xd-room-card">
-                                    <div class="xd-room-gallery">
-                                        @if(sizeof($roomImgs) > 0)
-                                        <img class="lazy xd-room-main-img" id="{{ $roomMainId }}" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode($roomImgs[0]->image_url)),'?') }}" alt="{{ $experience_accomodation->name }}" />
-                                        @if(sizeof($roomImgs) > 1)
-                                        <div class="xd-room-thumbs">
-                                            @foreach($roomImgs as $ri)
-                                            <img class="lazy xd-room-thumb" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode($ri->image_url)),'?') }}" onclick="xdSwapRoomImage('{{ $roomMainId }}', this)" alt="{{ $ri->image_title }}" />
-                                            @endforeach
-                                        </div>
-                                        @endif
-                                        @else
-                                        <div class="xd-room-main-img" id="{{ $roomMainId }}"></div>
-                                        @endif
-                                    </div>
-                                    <div class="xd-room-info">
-                                        <span class="xd-room-badge">{{ $experience_accomodation->name }}</span>
-                                        <div class="xd-room-loc">
-                                            <span class="icon-location"></span><?php echo \App\Experiences::get_state_country($experience->id); ?>
-                                        </div>
-                                        @php
-                                            $roomCapacity = @$experience_accomodation->ea_max_guest_in_room ?: @$experience_accomodation->max_guest_in_room;
-                                            $nextAvail = @$experience_availability_next[$experience_accomodation->id] ?? null;
-                                        @endphp
-                                        <div class="xd-room-tags">
-                                            @if($roomCapacity)
-                                            <span class="xd-room-tag"><span class="icon-user"></span> Sleeps up to {{ $roomCapacity }}</span>
-                                            @endif
-                                            @if(@$experience_accomodation->duration)
-                                            <span class="xd-room-tag">{{ @$experience_accomodation->duration }} Days</span>
-                                            @endif
-                                            @if($nextAvail)
-                                            <span class="xd-badge {{ $nextAvail->status == 'open' ? 'xd-badge-open' : ($nextAvail->status == 'few_left' ? 'xd-badge-warn' : 'xd-badge-danger') }}">
-                                                {{ \App\ExperienceAccommodationAvailability::statusLabel($nextAvail->status) }}
-                                                @if(in_array($nextAvail->status, ['open', 'few_left']))
-                                                &middot; {{ $nextAvail->remaining }} left from {{ \Carbon\Carbon::parse($nextAvail->start_date)->format('d M Y') }}
-                                                @endif
-                                            </span>
-                                            @endif
-                                        </div>
+                        {{-- Pricing/Package sections (Choose Your Room + Price Options) extracted to
+                             partials/experience-pricing-packages.blade.php — Task 7. $roomPricing computed
+                             above stays in this parent scope because partials/experience-booking-fields.blade.php
+                             (shared booking form, further down this file) also reads it. --}}
+                        @include('partials.experience-pricing-packages')
 
-                                        <h3 class="xd-room-title">
-                                            <a href="javascript:void(0);" class="c-pointer popup-large more-info-deal">{{ $experience_accomodation->name }}</a>
-                                        </h3>
-
-                                        <h4 class="xd-room-avail-note">
-                                            @if(@$experience_accomodation->recurring_type == "Daily")
-                                            Available all year round
-                                            @else
-                                            {{ @$experience_accomodation->available_month }}
-                                            @endif
-                                        </h4>
-
-                                        <ul class="bg-list-icon xd-room-desc-list">
-                                            {!! html_entity_decode(\App\Http\Helpers\CommonHelper::excerpt(strip_tags(@$experience_accomodation->description))) !!}
-                                        </ul>
-
-                                        @if(@$experience_accomodation->ea_about)
-                                        <p class="xd-room-about">{!! html_entity_decode(\App\Http\Helpers\CommonHelper::excerpt(strip_tags(@$experience_accomodation->ea_about), 200)) !!}</p>
-                                        @endif
-
-                                        @php
-                                            $durPrices = @$experience_accommodation_duration_prices[$experience_accomodation->id] ?? collect();
-                                        @endphp
-                                        @if(@$experience_accomodation->single_occupancy_price || @$experience_accomodation->double_occupancy_price || $durPrices->count())
-                                        <div class="xd-occ-table">
-                                            <table class="table table-sm mb-0">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Duration</th>
-                                                        <th>Single Occupancy</th>
-                                                        <th>Double Occupancy (pp)</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @if($durPrices->count())
-                                                        @foreach($durPrices as $dp)
-                                                        <tr>
-                                                            <td>{{ $dp->duration_days }} Days</td>
-                                                            <td>{{ $dp->single_price ? \App\Http\Helpers\CommonHelper::get_currency_rate($dp->single_price, $dp->currency ?: @$experience_accomodation->currency) : '-' }}</td>
-                                                            <td>{{ $dp->double_price ? \App\Http\Helpers\CommonHelper::get_currency_rate($dp->double_price, $dp->currency ?: @$experience_accomodation->currency) : '-' }}</td>
-                                                        </tr>
-                                                        @endforeach
-                                                    @else
-                                                    <tr>
-                                                        <td>{{ @$experience_accomodation->duration ? @$experience_accomodation->duration.' Days' : 'Standard' }}</td>
-                                                        <td>{{ @$experience_accomodation->single_occupancy_price ? \App\Http\Helpers\CommonHelper::get_currency_rate(@$experience_accomodation->single_occupancy_price, @$experience_accomodation->currency) : '-' }}</td>
-                                                        <td>{{ @$experience_accomodation->double_occupancy_price ? \App\Http\Helpers\CommonHelper::get_currency_rate(@$experience_accomodation->double_occupancy_price, @$experience_accomodation->currency) : '-' }}</td>
-                                                    </tr>
-                                                    @endif
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        @endif
-
-                                        <?php $rp = $roomPricing[$experience_accomodation->id]; ?>
-                                        <div class="xd-room-bottom">
-                                            @if($rp['hasFlat'])
-                                            <div class="xd-room-price-block">
-                                                <small>Total for {{ @$experience_accomodation->duration }}</small>
-                                                <div class="xd-room-price">
-                                                    @if(!empty($rp['discount']))
-                                                    <del>{{ \App\Http\Helpers\CommonHelper::get_currency_rate($rp['pay'], $rp['currency']) }}</del>
-                                                    @endif
-                                                    <span>{{ \App\Http\Helpers\CommonHelper::get_currency_rate($rp['pay'] - $rp['discount'], $rp['currency']) }}</span>
-                                                </div>
-                                            </div>
-                                            @elseif($rp['fallback'])
-                                            <div class="xd-room-price-block">
-                                                <small>Starting from</small>
-                                                <div class="xd-room-price">
-                                                    <span>{{ \App\Http\Helpers\CommonHelper::get_currency_rate($rp['fallback'], $rp['currency']) }}</span>
-                                                </div>
-                                            </div>
-                                            @else
-                                            <div class="xd-room-price-block"></div>
-                                            @endif
-                                            <div class="xd-room-cta">
-                                                <button type="button" class="xd-btn-gradient xd-btn-sm" onclick="xdSelectRoom('{{ $experience_accomodation->id }}')">Select Room</button>
-                                                <button type="button" data-popup="requstcallPopup" class="show-bg-modal xd-btn-outline xd-btn-sm">Send Inquiry</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
-
-                        {{-- Price Options --}}
-                        @if(@$experience_durations && sizeof(@$experience_durations) > 0)
-                        <div class="xd-card" id="price-options">
-                            <span class="xd-tag">Flexible Stays</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#128176;</span> Price Options</h2>
-                            <div class="table-responsive">
-                                <table class="table table-sm mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Duration</th>
-                                            <th>Price</th>
-                                            <th>Promo Price</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach(@$experience_durations as $ed)
-                                        <tr>
-                                            <td>{{ $ed->duration }} Days</td>
-                                            <td>{{ $ed->price ? \App\Http\Helpers\CommonHelper::get_currency_rate($ed->price, $ed->currency) : '-' }}</td>
-                                            <td>{{ $ed->promo_price ? \App\Http\Helpers\CommonHelper::get_currency_rate($ed->promo_price, $ed->currency) : '-' }}</td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        @endif
-
-                        {{-- Upcoming Availability --}}
-                        @if(@$experience_upcoming_availability && sizeof(@$experience_upcoming_availability) > 0)
-                        <div class="xd-card" id="availability">
-                            <span class="xd-tag">Plan Ahead</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#128197;</span> Upcoming Availability</h2>
-                            <div class="table-responsive">
-                                <table class="table table-sm mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Start Date</th>
-                                            <th>Accommodation</th>
-                                            <th>Status</th>
-                                            <th>Rooms Remaining</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach(@$experience_upcoming_availability as $avail)
-                                        <?php
-                                            $avAcm = null;
-                                            foreach (@$experience_accomodations as $ea_lookup) {
-                                                if ($ea_lookup->id == $avail->accommodation_id) { $avAcm = $ea_lookup; break; }
-                                            }
-                                        ?>
-                                        <tr>
-                                            <td>{{ \Carbon\Carbon::parse($avail->start_date)->format('d M Y') }}</td>
-                                            <td>{{ $avAcm ? $avAcm->name : '-' }}</td>
-                                            <td>
-                                                <span class="xd-badge {{ $avail->status == 'open' ? 'xd-badge-open' : ($avail->status == 'few_left' ? 'xd-badge-warn' : 'xd-badge-danger') }}">
-                                                    {{ \App\ExperienceAccommodationAvailability::statusLabel($avail->status) }}
-                                                </span>
-                                            </td>
-                                            <td>{{ in_array($avail->status, ['open', 'few_left']) ? $avail->remaining : '-' }}</td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        @endif
+                        {{-- Upcoming Availability (extracted to partials/experience-availability.blade.php — Task 9) --}}
+                        @include('partials.experience-availability')
 
                         {{-- Daily Routine --}}
                         <?php $routineItems = (@$experience_schedules && sizeof(@$experience_schedules) > 0) ? $experience_schedules->sortBy('schedule_start_time') : collect(); ?>
@@ -989,56 +761,8 @@ foreach ($experience_destination as $edest) {
                         </div>
                         @endif
 
-                        {{-- Food Overview --}}
-                        @if((sizeof(@$foodimagegalleries->toArray())>0) OR (@$experience->food_banner_image_url) OR (@$experience->food_overview))
-                        <div id="food-overview" class="xd-card deal-gallery">
-                            <span class="xd-tag">Conscious Dining</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#129367;</span> Farm-to-Table Culinary Art</h2>
-                            <?php
-                            $foodImgs = array();
-                            if (@$experience->food_banner_image_url) { $foodImgs[] = (object) array('image_url' => $experience->food_banner_image_url, 'image_title' => ''); }
-                            if (sizeof(@$foodimagegalleries->toArray()) > 0) {
-                                foreach (@$foodimagegalleries as $fg) { $foodImgs[] = $fg; }
-                            }
-                            $foodCount = sizeof($foodImgs);
-                            ?>
-                            @if($foodCount > 0 && $foodCount <= 2)
-                            <div class="xd-culinary-grid">
-                                @foreach($foodImgs as $fi)
-                                @if(@$fi->image_url)
-                                <img class="lazy xd-culinary-img" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode($fi->image_url)),'?') }}" alt="{{ @$fi->image_title }}" />
-                                @endif
-                                @endforeach
-                            </div>
-                            @elseif($foodCount > 2)
-                            <div class="article-items">
-                                <div class="left w-100">
-                                    <div class="container-fluid p-0">
-                                        <div class="slideshow-container">
-                                            @foreach($foodImgs as $fi)
-                                            @if(@$fi->image_url)
-                                            <div class="mySlides fade"><img class="lazy" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode($fi->image_url)),'?') }}" /></div>
-                                            @endif
-                                            @endforeach
-                                            <a class="prev">&#10094;</a>
-                                            <a class="next">&#10095;</a>
-                                            <div class="thumnnails">
-                                                @foreach($foodImgs as $fi)
-                                                @if(@$fi->image_url)
-                                                <span class="dot"><img class="lazy" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode($fi->image_url)),'?') }}" /></span>
-                                                @endif
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-                            @if(@$experience->food_overview)
-                            <div class="mt-3">{!! @$experience->food_overview !!}</div>
-                            @endif
-                        </div>
-                        @endif
+                        {{-- Food & Drink (extracted to partials/experience-food.blade.php — Task 8) --}}
+                        @include('partials.experience-food')
 
                         {{-- Inclusions & Exclusions --}}
                         @if(@$experience->what_is_included || @$experience->what_is_not_included)
