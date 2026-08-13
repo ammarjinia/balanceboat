@@ -1,3 +1,34 @@
+{{--
+    Final top-to-bottom section order (Task 10 — authoritative, supersedes design.md's earlier proposed order).
+    Scope note: only the placement of About Center / Amenities / How to Reach / Things to Do / Booking Info
+    (plus Certification and the center-level Accomodation Overview gallery, folded in for the same reason)
+    was reconciled against the reference image in this task. All other sections' relative order below reflects
+    the page's existing structure as of this task and was not reshuffled — reordering those was outside Task 10's
+    scope (see the code comments at the old and new locations of the moved cluster for the specific reasoning).
+
+     1. Header/title                        — partials/experience-header.blade.php
+     2. Gallery                              — partials/experience-gallery.blade.php
+     3. Overview                             — inline
+     4. Highlights                           — inline
+     5. Experience Summary                   — inline
+     6. Choose Your Room + Price Options      — partials/experience-pricing-packages.blade.php
+     7. Upcoming Availability                — partials/experience-availability.blade.php
+     8. Daily Routine                        — inline
+     9. Experience Details (experience_details field) — inline
+    10. Food & Drink                         — partials/experience-food.blade.php
+    11. Inclusions & Exclusions              — inline
+    12. Style                                — inline
+    13. Languages                            — inline
+    14. Payment & Cancellation Terms         — inline
+    15. Cancellation Policy                  — inline
+    16. About the Center (consolidated, Task 10 placement):
+        About Center -> Amenities -> Certification -> Accomodation Overview (gallery)
+        -> How to Reach -> Things to Do -> Booking Info               — inline
+    17. Need Help? (new section, Task 12)    — partials/experience-need-help.blade.php
+    18. Reviews (iframe restyle only, per Requirement 16)             — inline
+    19. Sidebar: booking card                — desktop, sticky, parallel to main column throughout
+    20. Mobile bottom bar + drawer            — mobile, fixed, throughout
+--}}
 @extends('layouts.experience_details')
 @section('title', @$experience->name)
 
@@ -580,7 +611,92 @@ foreach ($experience_destination as $edest) {
                         </div>
                         @endif
 
-                        {{-- About Center --}}
+                        {{-- Placement: About Center, Amenities, Certification, and Accomodation Overview moved
+                             (Task 10) to a consolidated "About the Center" cluster after Payment & Cancellation
+                             Terms / Cancellation Policy, before Reviews — matches the reference image's single
+                             "About [Center]" section (founder story + highlights + amenities + nearby + contact)
+                             in that position. See the consolidated block below Cancellation Policy. --}}
+
+                        {{-- Food & Drink (extracted to partials/experience-food.blade.php — Task 8) --}}
+                        @include('partials.experience-food')
+
+                        {{-- Inclusions & Exclusions --}}
+                        @if(@$experience->what_is_included || @$experience->what_is_not_included)
+                        <div class="xd-card" id="what-is-included">
+                            <span class="xd-tag">Full Clarity</span>
+                            <h2 class="xd-title"><span class="xd-title-icon">&#9878;&#65039;</span> Inclusions &amp; Exclusions</h2>
+                            <div class="xd-inc-exc-grid">
+                                @if(@$experience->what_is_included)
+                                <div class="xd-inc-card">
+                                    <div class="xd-inc-head included">&#10003; What's Included</div>
+                                    <div class="xd-inc-list bg-list-icon">{!! @$experience->what_is_included !!}</div>
+                                </div>
+                                @endif
+                                @if(@$experience->what_is_not_included)
+                                <div class="xd-inc-card" id="what-is-not-included">
+                                    <div class="xd-inc-head excluded">&#10005; What's Excluded</div>
+                                    <div class="xd-inc-list bg-list-icon">{!! @$experience->what_is_not_included !!}</div>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
+
+                        {{-- Style --}}
+                        @if(@$experience->styles_taught)
+                        <div class="xd-card" id="style">
+                            <span class="xd-tag">Practice</span>
+                            <h2 class="xd-title"><span class="xd-title-icon">&#129496;</span> Style</h2>
+                            <ul class="bg-list-icon">
+                                <?php
+                                foreach (explode(",", @$experience->styles_taught) as $styles_taught) {
+                                ?>
+                                    <li>{{ $styles_taught }}</li>
+                                <?php
+                                }
+                                ?>
+                            </ul>
+                        </div>
+                        @endif
+
+                        {{-- Languages --}}
+                        @if(@$experience->language_spoken)
+                        <div class="xd-card" id="languages">
+                            <span class="xd-tag">Communication</span>
+                            <h2 class="xd-title"><span class="xd-title-icon">&#128172;</span> Languages</h2>
+                            <ul class="bg-list-icon">
+                                <?php
+                                foreach (explode("||", @$experience->language_spoken) as $language) {
+                                ?>
+                                    <li>{{ @$language }}</li>
+                                <?php
+                                }
+                                ?>
+                            </ul>
+                        </div>
+                        @endif
+
+                        {{-- Placement: How to Reach, Things to Do, and Booking Info moved (Task 10) into the
+                             same consolidated "About the Center" cluster after Payment & Cancellation Terms /
+                             Cancellation Policy — How to Reach maps to the reference's "Nearby"/logistics content
+                             inside its "About [Center]" section; Things to Do and Booking Info have no explicit
+                             slot in the reference, so per the no-removal rule they are preserved in the same
+                             cluster rather than dropped. --}}
+
+                        {{-- Payment & Cancellation Terms + Cancellation Policy (extracted, merged — partials/experience-payment-terms.blade.php — Task 11) --}}
+                        @include('partials.experience-payment-terms')
+
+                        {{-- ===== Consolidated "About the Center" cluster (Task 10) =====
+                             Placement decision: the reference image shows ONE "About [Center]" section
+                             (founder story + highlights + amenities + nearby/logistics + contact) positioned
+                             after Payment & Cancellation Terms, before Reviews. That single reference section
+                             absorbs what this app models as five separate fields: About Center, Amenities,
+                             How to Reach, Things to Do, and Booking Info — plus Certification and the
+                             center-level Accomodation Overview gallery, which sat alongside them before this
+                             move and are kept adjacent rather than orphaned. None are removed; all are
+                             preserved here per the no-removal rule. --}}
+
+                        {{-- Placement: matches reference's "About [Center]" founder-story block --}}
                         @if(@$center->about_center)
                         <div id="about" class="xd-card">
                             <span id="centre-overview" class="xd-tag">The Host</span>
@@ -676,7 +792,7 @@ foreach ($experience_destination as $edest) {
                         </div>
                         @endif
 
-                        {{-- Amenities (standalone, decoupled from about_center) --}}
+                        {{-- Placement: matches reference's amenities sub-block inside "About [Center]" --}}
                         @if(sizeof((array)@$amenities) > 0)
                         <div class="xd-card">
                             <span class="xd-tag">Resort Comforts</span>
@@ -694,7 +810,7 @@ foreach ($experience_destination as $edest) {
                         </div>
                         @endif
 
-                        {{-- Certification --}}
+                        {{-- Placement: kept adjacent to About Center (was already neighboring it before this move; not one of the five, preserved rather than orphaned) --}}
                         @if($experience->experience_certification_id)
                         <div class="xd-card">
                             <span class="xd-tag">Recognised</span>
@@ -712,7 +828,7 @@ foreach ($experience_destination as $edest) {
                         </div>
                         @endif
 
-                        {{-- Accomodation Overview (center-level gallery) --}}
+                        {{-- Placement: kept adjacent to About Center (center-level property gallery; was already neighboring it before this move; not one of the five, preserved rather than orphaned) --}}
                         @if((sizeof((array)@$accomodationimagegalleries)>0) OR (@$center->accomodation_banner_image_url) OR (@$center->accomodation_overview))
                         <div id="accomodation" class="xd-card deal-gallery">
                             <span class="xd-tag">The Space</span>
@@ -761,66 +877,7 @@ foreach ($experience_destination as $edest) {
                         </div>
                         @endif
 
-                        {{-- Food & Drink (extracted to partials/experience-food.blade.php — Task 8) --}}
-                        @include('partials.experience-food')
-
-                        {{-- Inclusions & Exclusions --}}
-                        @if(@$experience->what_is_included || @$experience->what_is_not_included)
-                        <div class="xd-card" id="what-is-included">
-                            <span class="xd-tag">Full Clarity</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#9878;&#65039;</span> Inclusions &amp; Exclusions</h2>
-                            <div class="xd-inc-exc-grid">
-                                @if(@$experience->what_is_included)
-                                <div class="xd-inc-card">
-                                    <div class="xd-inc-head included">&#10003; What's Included</div>
-                                    <div class="xd-inc-list bg-list-icon">{!! @$experience->what_is_included !!}</div>
-                                </div>
-                                @endif
-                                @if(@$experience->what_is_not_included)
-                                <div class="xd-inc-card" id="what-is-not-included">
-                                    <div class="xd-inc-head excluded">&#10005; What's Excluded</div>
-                                    <div class="xd-inc-list bg-list-icon">{!! @$experience->what_is_not_included !!}</div>
-                                </div>
-                                @endif
-                            </div>
-                        </div>
-                        @endif
-
-                        {{-- Style --}}
-                        @if(@$experience->styles_taught)
-                        <div class="xd-card" id="style">
-                            <span class="xd-tag">Practice</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#129496;</span> Style</h2>
-                            <ul class="bg-list-icon">
-                                <?php
-                                foreach (explode(",", @$experience->styles_taught) as $styles_taught) {
-                                ?>
-                                    <li>{{ $styles_taught }}</li>
-                                <?php
-                                }
-                                ?>
-                            </ul>
-                        </div>
-                        @endif
-
-                        {{-- Languages --}}
-                        @if(@$experience->language_spoken)
-                        <div class="xd-card" id="languages">
-                            <span class="xd-tag">Communication</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#128172;</span> Languages</h2>
-                            <ul class="bg-list-icon">
-                                <?php
-                                foreach (explode("||", @$experience->language_spoken) as $language) {
-                                ?>
-                                    <li>{{ @$language }}</li>
-                                <?php
-                                }
-                                ?>
-                            </ul>
-                        </div>
-                        @endif
-
-                        {{-- How to Reach --}}
+                        {{-- Placement: matches reference's "Nearby"/logistics content inside "About [Center]" --}}
                         @if(@$center->how_to_get_there || @$center->airport_name || @$center->pickup_drop_cost)
                         <div id="howtoreach" class="xd-card">
                             <span class="xd-tag">Getting There</span>
@@ -837,7 +894,7 @@ foreach ($experience_destination as $edest) {
                         </div>
                         @endif
 
-                        {{-- Things to do --}}
+                        {{-- Placement: no explicit slot in the reference; fallback — preserved in this cluster rather than dropped --}}
                         @if(@$center->things_to_do_around_the_center)
                         <div id="things-to-do" class="xd-card">
                             <span class="xd-tag">Explore</span>
@@ -846,7 +903,7 @@ foreach ($experience_destination as $edest) {
                         </div>
                         @endif
 
-                        {{-- Booking Info --}}
+                        {{-- Placement: no explicit slot in the reference; fallback — preserved in this cluster rather than dropped --}}
                         @if(@$experience->booking_info)
                         <div class="xd-card" id="booking_info">
                             <span class="xd-tag">Good to Know</span>
@@ -854,173 +911,46 @@ foreach ($experience_destination as $edest) {
                             <div>{!! @$experience->booking_info !!}</div>
                         </div>
                         @endif
+                        {{-- ===== End consolidated cluster ===== --}}
 
-                        {{-- Payment & Cancellation Terms --}}
-                        @php
-                            $depositPolicy = @$experience->deposit_policy ?: @$center_commission->deposit_policy;
-                            $depositAmount = @$experience->deposit_amount ?: @$center_commission->deposit_amount;
-                            $cancelCondition = @$experience->cancellation_policy_condition ?: @$center_commission->cancellation_policy_condition;
-                            $cancelDays = @$experience->cancellation_policy_days ?: @$center_commission->cancellation_policy_days;
-                            $restOfPayment = @$experience->rest_of_payment ?: @$center_commission->rest_of_payment;
-                            $restOfPaymentDays = @$experience->rest_of_payment_days ?: @$center_commission->rest_of_payment_days;
-                            $taxInfo = @$experience->tax ?: @$center_commission->tax;
-                        @endphp
-                        @if($depositPolicy || $cancelCondition || $restOfPayment || $taxInfo)
-                        <div class="xd-card" id="payment-terms">
-                            <span class="xd-tag">Fine Print</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#128179;</span> Payment &amp; Cancellation Terms</h2>
-                            <ul class="bg-list-icon">
-                                @if($depositPolicy && $depositAmount)
-                                <li>A deposit of {{ \App\Http\Helpers\CommonHelper::get_currency_rate($depositAmount, $site_currency) }} is required to confirm booking.</li>
-                                @endif
-                                @if($restOfPayment && $restOfPaymentDays)
-                                <li>Balance payment is due {{ $restOfPaymentDays }} days before the retreat start date.</li>
-                                @endif
-                                @if($cancelCondition && $cancelDays)
-                                <li>Cancellations must be made at least {{ $cancelDays }} days in advance as per the cancellation policy.</li>
-                                @endif
-                                @if($taxInfo)
-                                <li>Applicable Tax: {{ $taxInfo }}</li>
-                                @endif
-                            </ul>
-                        </div>
-                        @endif
+                        {{-- Need Help? (new section — partials/experience-need-help.blade.php — Task 12) --}}
+                        @include('partials.experience-need-help')
 
-                        {{-- Cancellation Policy --}}
-                        @if(@$experience->cancellation_policy)
-                        <div class="xd-card" id="cancellation">
-                            <span class="xd-tag">Please Note</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#128220;</span> Cancellation Policy</h2>
-                            <div>{!! @$experience->cancellation_policy !!}</div>
-                        </div>
-                        @endif
-
-                        {{-- Reviews --}}
+                        {{-- Reviews (container restyle only, Task 13 — iframe src/embed mechanism and @if guard untouched, per Requirement 16) --}}
                         @if(@$center->bg_id)
                         <div class="xd-card">
                             <span class="xd-tag">Guest Experiences</span>
                             <h2 class="xd-title"><span class="xd-title-icon">&#128172;</span> Reviews</h2>
-                            <iframe src="https://balancegurus.com/embed/reviews?listing_id=<?php echo @$center->bg_id;?>" target="_blank" width="100%" height="600" style="border:none;"></iframe>
+                            <div class="xd-reviews-wrap">
+                                <iframe src="https://balancegurus.com/embed/reviews?listing_id=<?php echo @$center->bg_id;?>" target="_blank" width="100%" height="600" style="border:none;"></iframe>
+                            </div>
                         </div>
                         @endif
 
                     </div>
                 </main>
 
-                <!-- Desktop Sticky Booking Sidebar -->
-                <aside class="xd-sidebar">
-                    <div class="xd-booking-card" id="booking-card">
-                        <div class="xd-booking-header">
-                            <?php
-                            $offerActive = false;
-                            if ((!empty(@$experience->offer_start_date)) && (!empty(@$experience->offer_discount)) && (@$experience->offer_discount > 0)) {
-                                $nowD = \Carbon\Carbon::parse(date("Y-m-d"))->format("Y-m-d");
-                                if ((\Carbon\Carbon::parse(@$experience->offer_start_date)->format("Y-m-d") <= $nowD) && (\Carbon\Carbon::parse(@$experience->offer_end_date)->format("Y-m-d") >= $nowD)) {
-                                    $offerActive = true;
-                                }
-                            }
-                            ?>
-                            @if($offerActive)
-                            <span class="xd-discount-tag">
-                                &#128293; {{ @$experience->offer_discount_type == 'amt' ? \App\Http\Helpers\CommonHelper::get_currency_rate(@$experience->offer_discount, $site_currency) : @$experience->offer_discount.'%' }} OFF &middot; Ends {{ \Carbon\Carbon::parse($experience->offer_end_date)->format('d M') }}
-                            </span>
-                            @endif
-                            <h3 class="xd-booking-title">Reserve This Retreat</h3>
-                        </div>
-
-                        <form id="frmBookingDesktop" name="frmBookingDesktop" action="{{ url('/reservation') }}" method="POST" novalidate="novalidate" class="quick-booking">
-                            {{ csrf_field() }}
-                            <input type="hidden" name="hdn_experience_id" class="qb-exp-id" value="{{ @$experience->id }}" />
-
-                            @include('partials.experience-booking-fields')
-
-                            <div class="xd-form-group">
-                                <label class="xd-form-label">Start Date</label>
-                                <input type="text" class="xd-input qb-date bkdate" name="booking_date" value="" min="<?php echo date("Y-m-d");?>" onfocus="(this.type = 'date')" placeholder="Select a date" />
-                            </div>
-
-                            <div class="xd-calc-box">
-                                <div class="xd-calc-row">
-                                    <span>Price</span>
-                                    <span class="qb-price">-</span>
-                                </div>
-                                <div class="xd-calc-row total">
-                                    <span>Booking Amount</span>
-                                    <span class="qb-booking-amount">-</span>
-                                </div>
-                            </div>
-
-                            <button type="button" class="xd-btn-outline show-bg-modal" data-popup="checkAvailability">
-                                Check Dates &amp; Availability
-                            </button>
-
-                            @if(@$experience->is_draft == 0 && @$experience->is_bookable == 1)
-                            <button type="submit" class="xd-btn-gradient qb-reserve-btn" disabled="disabled">
-                                Book Now
-                            </button>
-                            @endif
-                        </form>
-
-                        <div id="razorpay-affordability-widget" class="mt-3" style="margin:auto; text-align:center;"></div>
-                    </div>
-                </aside>
+                <!-- Desktop Sticky Booking Sidebar (display markup extracted to
+                     partials/experience-booking-sidebar.blade.php — Task 14). $offerActive stays computed
+                     here, not in the partial, because the mobile bottom bar further down also reads it and
+                     @include does not leak child-set vars back out (same pattern as Tasks 3/7). -->
+                <?php
+                $offerActive = false;
+                if ((!empty(@$experience->offer_start_date)) && (!empty(@$experience->offer_discount)) && (@$experience->offer_discount > 0)) {
+                    $nowD = \Carbon\Carbon::parse(date("Y-m-d"))->format("Y-m-d");
+                    if ((\Carbon\Carbon::parse(@$experience->offer_start_date)->format("Y-m-d") <= $nowD) && (\Carbon\Carbon::parse(@$experience->offer_end_date)->format("Y-m-d") >= $nowD)) {
+                        $offerActive = true;
+                    }
+                }
+                ?>
+                @include('partials.experience-booking-sidebar')
             </div>
         </div>
     </section>
 
-    <!-- Mobile persistent booking bar -->
-    <div class="xd-mobile-bar">
-        <div class="xd-mobile-bar-top">
-            @if($offerActive)
-            <span class="xd-mobile-discount-tag">&#128293; Limited-Time Offer Available</span>
-            @else
-            <span class="xd-mobile-discount-tag xd-mobile-discount-tag--plain">Flexible Dates Available</span>
-            @endif
-        </div>
-        <div class="xd-mobile-bar-bottom">
-            <button type="button" class="xd-btn-mobile-outline show-bg-modal" data-popup="checkAvailability">Check Dates</button>
-            <button type="button" class="xd-btn-mobile-gradient" onclick="xdOpenDrawer()">Reserve Now</button>
-        </div>
-    </div>
-
-    <!-- Mobile full booking drawer -->
-    <div class="xd-mobile-drawer-overlay" id="xd-mobile-drawer-overlay">
-        <div class="xd-mobile-drawer">
-            <div class="xd-drawer-header">
-                <h3 class="xd-booking-title" style="justify-content:flex-start;">Reserve This Retreat</h3>
-                <button type="button" class="xd-modal-close" onclick="xdCloseDrawer()">&#10005;</button>
-            </div>
-
-            <form id="frmBookingMobile" name="frmBookingMobile" action="{{ url('/reservation') }}" method="POST" novalidate="novalidate" class="quick-booking">
-                {{ csrf_field() }}
-                <input type="hidden" name="hdn_experience_id" class="qb-exp-id" value="{{ @$experience->id }}" />
-
-                @include('partials.experience-booking-fields')
-
-                <div class="xd-form-group">
-                    <label class="xd-form-label">Start Date</label>
-                    <input type="text" class="xd-input qb-date bkdate" name="booking_date" value="" min="<?php echo date("Y-m-d");?>" onfocus="(this.type = 'date')" placeholder="Select a date" />
-                </div>
-
-                <div class="xd-calc-box">
-                    <div class="xd-calc-row">
-                        <span>Price</span>
-                        <span class="qb-price">-</span>
-                    </div>
-                    <div class="xd-calc-row total">
-                        <span>Booking Amount</span>
-                        <span class="qb-booking-amount">-</span>
-                    </div>
-                </div>
-
-                @if(@$experience->is_draft == 0 && @$experience->is_bookable == 1)
-                <button type="submit" class="xd-btn-gradient qb-reserve-btn" disabled="disabled">
-                    Book Now
-                </button>
-                @endif
-            </form>
-        </div>
-    </div>
+    <!-- Mobile persistent booking bar + drawer (extracted to
+         partials/experience-mobile-booking.blade.php — Task 15) -->
+    @include('partials.experience-mobile-booking')
 
 </div>
 
