@@ -78,6 +78,9 @@ foreach ($experience_destination as $edest) {
 <?php } ?>
 <!-- Meta Info End -->
 @section('head')
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style type="text/css">
     .xd-page {
         --xd-brand: var(--brand-color, #ff3366);
@@ -97,16 +100,25 @@ foreach ($experience_destination as $edest) {
         --xd-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05);
         --xd-shadow-float: 0 15px 35px rgba(0, 0, 0, 0.08);
         --xd-shadow-colored: 0 8px 20px rgba(255, 51, 102, 0.18);
+        /* Visual-parity pass, corrected against the actual reference image at full resolution:
+           reference typography is compact (Inter, ~14-15px body), not loosely spaced. */
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 15px;
+        line-height: 1.55;
+        color: var(--xd-text-body);
     }
+    .xd-page, .xd-page * { font-family: inherit; }
+    .xd-page p { line-height: 1.6; margin-bottom: 1em; }
 
     /* Content width — matches the reference layout's own container instead of the site's narrower Bootstrap .container */
-    .xd-container { max-width: 1440px; width: 100%; margin: 0 auto; padding: 0 40px; }
+    .xd-container { max-width: 1200px; width: 100%; margin: 0 auto; padding: 0 24px; }
     @media (max-width: 768px) {
         .xd-container { padding: 0 16px; }
     }
 
-    /* Gallery grid cosmetic upgrade (structure/JS unchanged) */
-    .xd-gallery.bg-listing-gallery { border-radius: var(--xd-radius-xl); overflow: hidden; box-shadow: var(--xd-shadow-card); }
+    /* Gallery grid cosmetic upgrade (structure/JS unchanged), enlarged to match reference proportions */
+    .xd-gallery.bg-listing-gallery { border-radius: var(--xd-radius-xl); overflow: hidden; box-shadow: var(--xd-shadow-card); min-height: 420px; }
+    .xd-gallery.bg-listing-gallery .bg-listing-gallery-items img { height: 100%; }
 
     /* Hero */
     .xd-hero-banner {
@@ -135,84 +147,84 @@ foreach ($experience_destination as $edest) {
         display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%;
         background: rgba(255,255,255,0.18); color: #fff; cursor: pointer; text-decoration: none;
     }
-    .xd-hero-title { font-size: 30px; color: #fff; line-height: 1.15; font-weight: 600; margin-bottom: 10px; }
-    .xd-hero-meta { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; color: rgba(255,255,255,0.92); font-size: 14px; }
+    .xd-hero-title { font-size: 28px; color: #fff; line-height: 1.2; font-weight: 700; margin-bottom: 8px; }
+    .xd-hero-meta { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; color: rgba(255,255,255,0.92); font-size: 15px; }
     .xd-hero-meta .icon-location { margin-right: 4px; }
     .xd-hero-price { display: inline-flex; align-items: center; gap: 8px; }
     .xd-hero-price del { color: rgba(255,255,255,0.65); font-weight: normal; }
-    .xd-hero-price strong { color: #fff; font-size: 16px; }
+    .xd-hero-price strong { color: #fff; font-size: 18px; }
     .xd-hero-banner .tier-badge { position: relative; }
 
     /* Layout grid */
-    .xd-layout-grid { display: grid; grid-template-columns: 1fr 360px; gap: 32px; align-items: start; margin-top: 8px; }
+    .xd-layout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 40px; align-items: start; margin-top: 8px; }
     .xd-main-col { min-width: 0; }
 
-    /* Cards */
+    /* Cards — corrected against the reference: sections are NOT heavy bordered/shadowed boxes there.
+       They flow directly on the page, separated by a thin bottom divider and generous spacing. */
     .xd-card {
-        background: var(--xd-surface);
-        border: 1px solid var(--xd-border);
-        border-radius: var(--xd-radius-xl);
-        padding: 32px;
-        margin-bottom: 28px;
-        box-shadow: var(--xd-shadow-card);
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--xd-border);
+        border-radius: 0;
+        padding: 32px 0;
+        margin-bottom: 0;
+        box-shadow: none;
+        scroll-margin-top: 150px; /* clears the sticky 80px site header + the sticky xd-nav-tabs bar */
     }
-    .xd-tag {
-        display: inline-block; background: var(--xd-brand-light); color: var(--xd-brand);
-        border: 1px solid rgba(255,51,102,0.2); padding: 4px 12px; border-radius: var(--xd-radius-pill);
-        font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
-    }
-    .xd-title { font-size: 20px; color: var(--xd-text-main); font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
-    .xd-title-icon {
-        display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 12px;
-        background: var(--xd-brand-light); font-size: 18px; line-height: 1; flex-shrink: 0;
-    }
+    .xd-card:last-child { border-bottom: none; }
+    /* The reference's section headings are plain bold text — no icon badge, no eyebrow pill above them.
+       Hidden via CSS (not deleted from markup) so the underlying data-driven structure is untouched and
+       this is trivially reversible if a future design wants them back. */
+    .xd-tag { display: none; }
+    .xd-title-icon { display: none; }
+    .xd-title { font-size: 20px; color: var(--xd-text-main) !important; font-weight: 700; margin-bottom: 16px; }
     .xd-card table { width: 100%; border-collapse: collapse; }
-    .xd-card table th, .xd-card table td { padding: 8px 10px; border-bottom: 1px solid var(--xd-border); text-align: left; font-size: 14px; }
+    .xd-card table th, .xd-card table td { padding: 10px 12px; border-bottom: 1px solid var(--xd-border); text-align: left; font-size: 14px; }
     .xd-card table th { color: var(--xd-text-muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
 
     /* Highlights grid */
-    .xd-audience-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .xd-audience-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
     .xd-audience-item {
-        display: flex; align-items: flex-start; gap: 14px; background: var(--xd-subtle); padding: 18px;
+        display: flex; align-items: flex-start; gap: 16px; background: var(--xd-subtle); padding: 20px;
         border-radius: var(--xd-radius-md); border: 1px solid var(--xd-border);
     }
-    .xd-audience-icon { color: var(--xd-brand); font-size: 15px; line-height: 1.4; }
+    .xd-audience-icon { color: var(--xd-brand); font-size: 16px; line-height: 1.5; }
 
     /* Room cards */
-    .xd-room-list { display: flex; flex-direction: column; gap: 26px; }
+    .xd-room-list { display: flex; flex-direction: column; gap: 28px; }
     .xd-room-card {
-        display: grid; grid-template-columns: 260px 1fr; background: var(--xd-subtle); border-radius: var(--xd-radius-lg);
+        display: grid; grid-template-columns: 280px 1fr; background: var(--xd-subtle); border-radius: var(--xd-radius-lg);
         overflow: hidden; border: 1px solid var(--xd-border);
     }
     .xd-room-gallery { display: flex; flex-direction: column; padding: 12px; gap: 8px; background: var(--xd-surface); }
-    .xd-room-main-img { width: 100%; height: 170px; object-fit: cover; border-radius: var(--xd-radius-md); background: var(--xd-subtle); }
-    .xd-room-thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .xd-room-thumb { width: 100%; height: 44px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid transparent; opacity: 0.8; }
+    .xd-room-main-img { width: 100%; height: 190px; object-fit: cover; border-radius: var(--xd-radius-md); background: var(--xd-subtle); }
+    .xd-room-thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .xd-room-thumb { width: 100%; height: 58px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; opacity: 0.8; }
     .xd-room-thumb:hover { opacity: 1; border-color: var(--xd-brand); }
-    .xd-room-info { padding: 22px; }
-    .xd-room-badge { display: inline-block; background: var(--xd-brand); color: #fff; padding: 5px 12px; border-radius: 10px; font-size: 12px; font-weight: bold; }
-    .xd-room-loc { color: var(--xd-text-muted); font-size: 13px; margin-top: 8px; }
+    .xd-room-info { padding: 28px; }
+    .xd-room-badge { display: inline-block; background: var(--xd-brand); color: #fff; padding: 6px 14px; border-radius: 10px; font-size: 13px; font-weight: bold; }
+    .xd-room-loc { color: var(--xd-text-muted); font-size: 14px; margin-top: 10px; }
     .xd-room-loc .icon-location { color: var(--xd-brand); margin-right: 4px; }
-    .xd-room-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+    .xd-room-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
     .xd-room-tag {
         background: var(--xd-surface); color: var(--xd-text-body); border: 1px solid var(--xd-border);
-        padding: 3px 10px; border-radius: var(--xd-radius-pill); font-size: 12px;
+        padding: 4px 12px; border-radius: var(--xd-radius-pill); font-size: 13px;
     }
-    .xd-badge { padding: 3px 10px; border-radius: var(--xd-radius-pill); font-size: 11px; font-weight: 600; }
+    .xd-badge { padding: 4px 12px; border-radius: var(--xd-radius-pill); font-size: 12px; font-weight: 600; }
     .xd-badge-open { background: #dcfce7; color: #16a34a; }
     .xd-badge-warn { background: #fef9c3; color: #a16207; }
     .xd-badge-danger { background: #fee2e2; color: #dc2626; }
-    .xd-room-title { font-size: 17px; color: var(--xd-text-main); font-weight: 600; margin: 6px 0; }
+    .xd-room-title { font-size: 19px; color: var(--xd-text-main); font-weight: 700; margin: 8px 0; }
     .xd-room-title a { color: inherit; text-decoration: none; }
-    .xd-room-avail-note { font-size: 13px; color: var(--xd-text-muted); font-weight: normal; margin-bottom: 8px; }
-    .xd-room-desc-list { margin: 8px 0; }
-    .xd-room-about { font-size: 13px; color: var(--xd-text-body); }
-    .xd-occ-table { margin: 12px 0; overflow-x: auto; }
-    .xd-room-bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
-    .xd-room-price-block small { color: var(--xd-text-muted); font-size: 12px; }
-    .xd-room-price { font-size: 17px; font-weight: bold; color: var(--xd-brand); display: flex; align-items: center; gap: 8px; }
-    .xd-room-price del { color: var(--xd-text-muted); font-weight: normal; font-size: 13px; }
-    .xd-room-cta { display: flex; gap: 8px; }
+    .xd-room-avail-note { font-size: 14px; color: var(--xd-text-muted); font-weight: normal; margin-bottom: 10px; }
+    .xd-room-desc-list { margin: 10px 0; }
+    .xd-room-about { font-size: 14px; color: var(--xd-text-body); }
+    .xd-occ-table { margin: 14px 0; overflow-x: auto; }
+    .xd-room-bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 18px; flex-wrap: wrap; }
+    .xd-room-price-block small { color: var(--xd-text-muted); font-size: 13px; }
+    .xd-room-price { font-size: 19px; font-weight: bold; color: var(--xd-brand); display: flex; align-items: center; gap: 8px; }
+    .xd-room-price del { color: var(--xd-text-muted); font-weight: normal; font-size: 14px; }
+    .xd-room-cta { display: flex; gap: 10px; }
 
     /* Daily routine */
     .xd-routine-list { display: flex; flex-direction: column; gap: 12px; }
@@ -225,20 +237,20 @@ foreach ($experience_destination as $edest) {
     .xd-routine-desc p { margin: 0; color: var(--xd-text-body); font-size: 14px; }
 
     /* Amenities */
-    .xd-amenities-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .xd-amenities-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
     .xd-amenity-card {
-        display: flex; align-items: center; gap: 10px; padding: 14px; background: var(--xd-subtle);
-        border: 1px solid var(--xd-border); border-radius: var(--xd-radius-md); color: var(--xd-text-main); font-weight: 600; font-size: 14px;
+        display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--xd-subtle);
+        border: 1px solid var(--xd-border); border-radius: var(--xd-radius-md); color: var(--xd-text-main); font-weight: 600; font-size: 15px;
     }
 
     /* Culinary */
-    .xd-culinary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    .xd-culinary-img { width: 100%; height: 190px; object-fit: cover; border-radius: var(--xd-radius-lg); border: 1px solid var(--xd-border); }
+    .xd-culinary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .xd-culinary-img { width: 100%; height: 240px; object-fit: cover; border-radius: var(--xd-radius-lg); border: 1px solid var(--xd-border); }
 
     /* Inclusions/Exclusions */
-    .xd-inc-exc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .xd-inc-card { padding: 20px; border-radius: var(--xd-radius-lg); border: 1px solid var(--xd-border); background: var(--xd-subtle); }
-    .xd-inc-head { font-size: 15px; font-weight: bold; margin-bottom: 10px; }
+    .xd-inc-exc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .xd-inc-card { padding: 22px; border-radius: var(--xd-radius-lg); border: 1px solid var(--xd-border); background: var(--xd-subtle); }
+    .xd-inc-head { font-size: 16px; font-weight: bold; margin-bottom: 12px; }
     .xd-inc-head.included { color: #16a34a; }
     .xd-inc-head.excluded { color: #dc2626; }
     .xd-inc-list ul { margin: 0; padding-left: 18px; }
@@ -248,28 +260,28 @@ foreach ($experience_destination as $edest) {
     .xd-sidebar { position: sticky; top: 90px; align-self: start; }
     .xd-booking-card {
         background: var(--xd-surface); border: 1px solid var(--xd-border); border-radius: var(--xd-radius-xl);
-        padding: 22px; box-shadow: var(--xd-shadow-float);
+        padding: 20px; box-shadow: var(--xd-shadow-float);
     }
     .xd-booking-header { text-align: center; margin-bottom: 14px; }
     .xd-discount-tag {
         display: inline-flex; align-items: center; gap: 4px; background: rgba(220,38,38,0.08); color: #dc2626;
-        border: 1px solid rgba(220,38,38,0.2); font-size: 10px; font-weight: bold; text-transform: uppercase;
-        letter-spacing: 0.5px; padding: 3px 10px; border-radius: var(--xd-radius-pill); margin-bottom: 8px;
+        border: 1px solid rgba(220,38,38,0.2); font-size: 11px; font-weight: bold; text-transform: uppercase;
+        letter-spacing: 0.5px; padding: 4px 12px; border-radius: var(--xd-radius-pill); margin-bottom: 10px;
     }
-    .xd-booking-title { font-size: 16px; color: var(--xd-text-main); margin-bottom: 4px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .xd-form-group { margin-bottom: 12px; }
-    .xd-form-label { display: block; font-size: 11px; font-weight: bold; color: var(--xd-text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .xd-booking-title { font-size: 18px; color: var(--xd-text-main); margin-bottom: 4px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .xd-form-group { margin-bottom: 16px; }
+    .xd-form-label { display: block; font-size: 12px; font-weight: bold; color: var(--xd-text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
     .xd-select, .xd-input {
-        width: 100%; padding: 9px 12px; background: var(--xd-subtle); border: 1px solid var(--xd-border);
-        border-radius: var(--xd-radius-md); font-size: 14px; color: var(--xd-text-main);
+        width: 100%; padding: 11px 14px; background: var(--xd-subtle); border: 1px solid var(--xd-border);
+        border-radius: var(--xd-radius-md); font-size: 15px; color: var(--xd-text-main);
     }
     .xd-select:focus, .xd-input:focus { outline: none; border-color: var(--xd-brand); }
 
     /* Duration pills */
-    .xd-pill-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .xd-pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
     .xd-pill-btn {
-        flex: 1; min-width: 64px; padding: 7px 6px; background: var(--xd-subtle); border: 1px solid var(--xd-border);
-        border-radius: var(--xd-radius-md); font-size: 12px; color: var(--xd-text-body); cursor: pointer;
+        flex: 1; min-width: 64px; padding: 9px 8px; background: var(--xd-subtle); border: 1px solid var(--xd-border);
+        border-radius: var(--xd-radius-md); font-size: 13px; color: var(--xd-text-body); cursor: pointer;
     }
     .xd-pill-btn:hover { border-color: var(--xd-brand); color: var(--xd-brand); }
     .xd-pill-btn.active {
@@ -278,34 +290,34 @@ foreach ($experience_destination as $edest) {
     }
 
     /* Room picker list */
-    .xd-room-picker-list { display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto; }
+    .xd-room-picker-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
     .xd-room-picker-item {
-        display: flex; align-items: center; padding: 7px 10px; background: var(--xd-subtle); border: 1px solid var(--xd-border);
+        display: flex; align-items: center; padding: 9px 12px; background: var(--xd-subtle); border: 1px solid var(--xd-border);
         border-radius: var(--xd-radius-md); cursor: pointer;
     }
     .xd-room-picker-item:hover { border-color: var(--xd-brand); }
     .xd-room-picker-item.active { border-color: var(--xd-brand); background: var(--xd-brand-light); }
-    .xd-room-picker-thumb { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; margin-right: 10px; flex-shrink: 0; }
+    .xd-room-picker-thumb { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; margin-right: 12px; flex-shrink: 0; }
     .xd-room-picker-details { display: flex; flex-direction: column; min-width: 0; }
-    .xd-room-picker-name { font-size: 12.5px; color: var(--xd-text-main); font-weight: bold; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .xd-room-picker-price { font-size: 12px; color: var(--xd-brand); font-weight: bold; }
-    .xd-room-picker-price del { color: var(--xd-text-muted); font-weight: normal; margin-right: 4px; font-size: 11px; }
+    .xd-room-picker-name { font-size: 13.5px; color: var(--xd-text-main); font-weight: bold; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .xd-room-picker-price { font-size: 13px; color: var(--xd-brand); font-weight: bold; }
+    .xd-room-picker-price del { color: var(--xd-text-muted); font-weight: normal; margin-right: 4px; font-size: 12px; }
 
-    .xd-calc-box { background: var(--xd-subtle); border-radius: var(--xd-radius-md); padding: 10px 14px; margin: 12px 0; border: 1px solid var(--xd-border); }
-    .xd-calc-row { display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--xd-text-body); font-size: 13px; }
-    .xd-calc-row.total { border-top: 1px solid var(--xd-border); padding-top: 6px; margin-bottom: 0; font-size: 15px; color: var(--xd-text-main); font-weight: bold; }
+    .xd-calc-box { background: var(--xd-subtle); border-radius: var(--xd-radius-md); padding: 14px 16px; margin: 16px 0; border: 1px solid var(--xd-border); }
+    .xd-calc-row { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--xd-text-body); font-size: 14px; }
+    .xd-calc-row.total { border-top: 1px solid var(--xd-border); padding-top: 8px; margin-bottom: 0; font-size: 16px; color: var(--xd-text-main); font-weight: bold; }
     .xd-btn-gradient {
         width: 100%; background: linear-gradient(135deg, var(--xd-brand) 0%, var(--xd-brand-dark) 100%); color: #fff; border: none;
-        padding: 12px; border-radius: var(--xd-radius-pill); font-size: 14px; font-weight: bold; cursor: pointer;
+        padding: 14px; border-radius: var(--xd-radius-pill); font-size: 15px; font-weight: bold; cursor: pointer;
         box-shadow: var(--xd-shadow-colored); text-align: center; text-decoration: none; display: inline-block;
     }
     .xd-btn-gradient:disabled { opacity: 0.55; cursor: not-allowed; }
     .xd-btn-outline {
         width: 100%; background: transparent; color: var(--xd-text-main); border: 1px solid var(--xd-border);
-        padding: 9px; border-radius: var(--xd-radius-pill); font-size: 13px; font-weight: bold; cursor: pointer; margin-bottom: 8px;
+        padding: 11px; border-radius: var(--xd-radius-pill); font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
     }
     .xd-btn-outline:hover { border-color: var(--xd-brand); color: var(--xd-brand); }
-    .xd-btn-sm { width: auto; padding: 7px 16px; font-size: 12px; }
+    .xd-btn-sm { width: auto; padding: 8px 18px; font-size: 13px; }
 
     /* Mobile bottom bar + drawer */
     .xd-mobile-bar {
@@ -339,22 +351,47 @@ foreach ($experience_destination as $edest) {
 
     /* ===== New class families (Task 2 scaffolding — additive only, no existing rule above is modified) ===== */
 
-    /* In-page tab navigation (reference: Overview/Accommodation/Food/Pricing/Availability/Terms/Center/Reviews) */
-    .xd-nav-tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--xd-border); margin: 20px 0 8px; }
+    /* In-page tab navigation (reference: Overview/Accommodation/Food/Pricing/Availability/Terms/Center/Reviews).
+       Sticky just below the site's own sticky 80px header so it stays visible while scrolling. */
+    .xd-nav-tabs-wrap { position: sticky; top: 80px; z-index: 40; background: var(--xd-surface); margin-top: 20px; }
+    .xd-nav-tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--xd-border); }
     .xd-nav-tab {
-        flex-shrink: 0; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--xd-text-muted);
+        flex-shrink: 0; padding: 14px 18px; font-size: 14px; font-weight: 600; color: var(--xd-text-muted);
         text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap;
     }
     .xd-nav-tab:hover { color: var(--xd-text-main); }
     .xd-nav-tab.active { color: var(--xd-brand); border-bottom-color: var(--xd-brand); }
 
-    /* Header area additions (rating, badges row) */
-    .xd-header-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 6px; }
+    /* Header (rebuilt, visual-parity pass): plain text on the page background, not a photo-overlay hero.
+       Order matches the reference: title -> meta -> badges. */
+    .xd-header-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 20px; }
+    .xd-header-title { font-size: 28px; color: var(--xd-text-main); font-weight: 700; line-height: 1.25; margin: 0; }
+    .xd-header-actions { display: flex; align-items: center; gap: 16px; flex-shrink: 0; padding-top: 4px; }
+    .xd-header-action-btn {
+        display: inline-flex; align-items: center; gap: 6px; color: var(--xd-text-body); font-size: 13px; font-weight: 600;
+        cursor: pointer; text-decoration: none; white-space: nowrap;
+    }
+    .xd-header-action-btn:hover { color: var(--xd-brand); }
+    .xd-header-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; color: var(--xd-text-body); font-size: 14px; margin: 10px 0 14px; }
+    .xd-header-meta .icon-location { color: var(--xd-brand); margin-right: 2px; }
+    .xd-header-price del { color: var(--xd-text-muted); font-weight: normal; margin-right: 4px; }
+    .xd-header-price strong { color: var(--xd-text-main); }
     .xd-header-rating { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: var(--xd-text-main); font-size: 13px; }
-    .xd-header-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .xd-plain-tag {
+        display: inline-block; background: var(--xd-brand-light); color: var(--xd-brand);
+        padding: 4px 12px; border-radius: var(--xd-radius-pill); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .xd-header-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 20px; }
     .xd-header-badge {
         display: inline-flex; align-items: center; gap: 4px; background: var(--xd-subtle); color: var(--xd-text-body);
         border: 1px solid var(--xd-border); padding: 4px 10px; border-radius: var(--xd-radius-pill); font-size: 11px; font-weight: 600;
+    }
+    /* .tier-badge (from partials/commission-tier-badge.blade.php) only has legacy CSS for photo-overlay
+       (.img_list/.thumb, position:absolute) or h1+sibling (position:static) contexts — neither matches this
+       header's markup structure, so it's scoped and styled explicitly here rather than relying on those. */
+    .xd-header-badges .tier-badge {
+        position: static; display: inline-block; background: #2F6F57; color: #fff;
+        font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: var(--xd-radius-pill);
     }
 
     /* Pricing/package section grouping wrapper (stacked cards, no tabs — see design.md) */
@@ -365,20 +402,30 @@ foreach ($experience_destination as $edest) {
     .xd-breakdown-note { font-size: 12px; color: var(--xd-text-muted); margin-top: 6px; line-height: 1.4; }
 
     /* Availability/calendar section */
-    .xd-avail-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .xd-avail-weekdays {
+        display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 8px;
+        font-size: 12px; font-weight: 700; color: var(--xd-text-muted); text-transform: uppercase; letter-spacing: 0.5px; text-align: center;
+    }
+    .xd-avail-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
     .xd-avail-day {
         display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: var(--xd-radius-md);
-        font-size: 12px; color: var(--xd-text-body); background: var(--xd-subtle); border: 1px solid var(--xd-border);
+        font-size: 14px; color: var(--xd-text-body); background: var(--xd-subtle); border: 1px solid var(--xd-border);
     }
-    .xd-avail-day.is-open { background: #dcfce7; color: #16a34a; border-color: transparent; }
-    .xd-avail-day.is-few { background: #fef9c3; color: #a16207; border-color: transparent; }
-    .xd-avail-day.is-full, .xd-avail-day.is-closed { background: #fee2e2; color: #dc2626; border-color: transparent; }
-    .xd-avail-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; font-size: 12px; color: var(--xd-text-muted); }
+    .xd-avail-day--blank { background: transparent; border-color: transparent; }
+    .xd-avail-day.is-open { background: #dcfce7; color: #16a34a; border-color: transparent; font-weight: 700; }
+    .xd-avail-day.is-few { background: #fef9c3; color: #a16207; border-color: transparent; font-weight: 700; }
+    .xd-avail-day.is-full { background: #fee2e2; color: #dc2626; border-color: transparent; font-weight: 700; }
+    .xd-avail-legend { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 18px; font-size: 13px; color: var(--xd-text-muted); }
     .xd-avail-legend-item { display: inline-flex; align-items: center; gap: 6px; }
     .xd-avail-legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-    .xd-avail-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+    .xd-avail-other-heading { font-size: 15px; font-weight: 700; color: var(--xd-text-main); margin: 24px 0 12px; }
+    .xd-avail-list { display: flex; flex-direction: column; gap: 8px; }
     /* Sidebar quick-date pills (reuses .xd-pill-btn interaction pattern for the sidebar's upcoming-start-date picker) */
     .xd-avail-pill-group { display: flex; flex-wrap: wrap; gap: 6px; }
+    @media (max-width: 480px) {
+        .xd-avail-weekdays, .xd-avail-grid { gap: 4px; }
+        .xd-avail-day { font-size: 12px; }
+    }
 
     /* Need Help? / support section */
     .xd-help-card { display: flex; align-items: flex-start; gap: 14px; padding: 16px; background: var(--xd-subtle); border: 1px solid var(--xd-border); border-radius: var(--xd-radius-lg); }
@@ -391,6 +438,9 @@ foreach ($experience_destination as $edest) {
     /* Reviews container restyle (iframe src/embed mechanism untouched — wrapper styling only) */
     .xd-reviews-wrap { border-radius: var(--xd-radius-xl); overflow: hidden; border: 1px solid var(--xd-border); }
 
+    /* About Center subsection headings (visual-parity pass) */
+    .xd-about-subhead { font-size: 16px; font-weight: 700; color: var(--xd-text-main); margin-bottom: 10px; }
+
     @media (max-width: 1024px) {
         .xd-layout-grid { grid-template-columns: 1fr; }
         .xd-sidebar { display: none; }
@@ -401,7 +451,7 @@ foreach ($experience_destination as $edest) {
         .xd-hero-banner { padding: 22px 18px; min-height: 280px; }
         .xd-room-card, .xd-audience-grid, .xd-amenities-grid, .xd-culinary-grid, .xd-inc-exc-grid { grid-template-columns: 1fr; }
         .xd-routine-item { grid-template-columns: 1fr; border-left: none; border-top: 3px solid var(--xd-brand); border-radius: 0 0 var(--xd-radius-md) var(--xd-radius-md); }
-        .xd-card { padding: 20px; }
+        .xd-card { padding: 24px 0; }
         .xd-hero-title { font-size: 24px; }
     }
 </style>
@@ -412,7 +462,8 @@ foreach ($experience_destination as $edest) {
 
     <!-- Hero / Header (display markup extracted to partials/experience-header.blade.php — Task 3).
          $discount/$pay/$razorPayAmount stay computed here, not in the partial, because $razorPayAmount is
-         read again later in the footer Razorpay-widget script and @include does not leak child-set vars back out. -->
+         read again later in the footer Razorpay-widget script and Blade's include mechanism does not leak
+         child-set vars back out. -->
     <?php $discount = $razorPayAmount = 0; ?>
     @if(@$experienceList->min_duration_price)
     <?php
@@ -434,6 +485,25 @@ foreach ($experience_destination as $edest) {
 
     <!-- Gallery (extracted to partials/experience-gallery.blade.php — Task 4) -->
     @include('partials.experience-gallery')
+
+    <!-- In-page tab navigation (new, visual-parity pass — reference shows Overview/Accommodation/Food/Pricing/
+         Availability/Terms/Center/Reviews tabs under the gallery). Pure anchor links + scroll-spy; reuses
+         existing section ids, no new backend/data. Each tab is omitted if its target section has no data,
+         so the nav never links to an empty/missing section. -->
+    <div class="xd-container">
+        <div class="xd-nav-tabs-wrap">
+            <nav class="xd-nav-tabs" id="xd-page-nav">
+                <a href="#package" class="xd-nav-tab active">Overview</a>
+                @if(sizeof(@$experience_accomodations) > 0)<a href="#accomodation-rooms" class="xd-nav-tab">Accommodation</a>@endif
+                @if((sizeof(@$foodimagegalleries->toArray())>0) OR (@$experience->food_banner_image_url) OR (@$experience->food_overview))<a href="#food-overview" class="xd-nav-tab">Food</a>@endif
+                @if(@$experience_durations && sizeof(@$experience_durations) > 0)<a href="#price-options" class="xd-nav-tab">Pricing</a>@endif
+                @if(@$experience_upcoming_availability && sizeof(@$experience_upcoming_availability) > 0)<a href="#availability" class="xd-nav-tab">Availability</a>@endif
+                <a href="#payment-terms" class="xd-nav-tab">Terms</a>
+                @if(@$center->about_center)<a href="#about" class="xd-nav-tab">Center</a>@endif
+                @if(@$center->bg_id)<a href="#reviews" class="xd-nav-tab">Reviews</a>@endif
+            </nav>
+        </div>
+    </div>
 
     <section class="pt-5 mb-5">
         <div class="xd-container">
@@ -707,86 +777,88 @@ foreach ($experience_destination as $edest) {
                             </span>
                             {!! @$center->about_center !!}
 
-                            <div class="row mt-3">
+                            @if(@$center->year_of_foundation || @$center->founders)
+                            <div class="xd-inc-exc-grid" style="margin-top:20px;">
                                 @if(@$center->year_of_foundation)
-                                <div class="col-md-6 mb-2"><strong>Founded:</strong> {{ @$center->year_of_foundation }}</div>
+                                <div class="xd-inc-card"><div class="xd-inc-head" style="color:var(--xd-text-main);">Founded</div>{{ @$center->year_of_foundation }}</div>
                                 @endif
                                 @if(@$center->founders)
-                                <div class="col-md-6 mb-2"><strong>Founders:</strong> {{ @$center->founders }}</div>
+                                <div class="xd-inc-card"><div class="xd-inc-head" style="color:var(--xd-text-main);">Founders</div>{{ @$center->founders }}</div>
                                 @endif
                             </div>
+                            @endif
 
                             @if(@$center->our_mission)
-                            <div class="mt-3">
-                                <h4 class="fs-16">Our Mission</h4>
+                            <div style="margin-top:24px;">
+                                <h4 class="xd-about-subhead">Our Mission</h4>
                                 {!! @$center->our_mission !!}
                             </div>
                             @endif
 
                             @if(@$center->our_philosophy)
-                            <div class="mt-3">
-                                <h4 class="fs-16">Our Philosophy</h4>
+                            <div style="margin-top:24px;">
+                                <h4 class="xd-about-subhead">Our Philosophy</h4>
                                 {!! @$center->our_philosophy !!}
                             </div>
                             @endif
 
                             @if(@$center->what_sets_us_apart)
-                            <div class="mt-3">
-                                <h4 class="fs-16">What Sets Us Apart</h4>
+                            <div style="margin-top:24px;">
+                                <h4 class="xd-about-subhead">What Sets Us Apart</h4>
                                 {!! @$center->what_sets_us_apart !!}
                             </div>
                             @endif
 
                             @if(@$center->center_highlights)
-                            <div class="mt-3">
-                                <h4 class="fs-16">Highlights</h4>
+                            <div style="margin-top:24px;">
+                                <h4 class="xd-about-subhead">Highlights</h4>
                                 {!! @$center->center_highlights !!}
                             </div>
                             @endif
 
                             @if(@$center->center_features)
-                            <div class="mt-3">
-                                <h4 class="fs-16">Features</h4>
+                            <div style="margin-top:24px;">
+                                <h4 class="xd-about-subhead">Features</h4>
                                 {!! @$center->center_features !!}
                             </div>
                             @endif
 
                             @if(@$center->awards)
-                            <div class="mt-3">
-                                <h4 class="fs-16">Awards</h4>
+                            <div style="margin-top:24px;">
+                                <h4 class="xd-about-subhead">Awards</h4>
                                 {!! @$center->awards !!}
                             </div>
                             @endif
 
                             @if(sizeof((array)@$center_locations) > 0)
-                            <div class="mt-3">
-                                <h4 class="fs-16">Nearby Locations</h4>
-                                <ul class="bg-list-icon list-unstyled d-flex flex-wrap">
+                            <div style="margin-top:24px;">
+                                <h4 class="xd-about-subhead">Nearby Locations</h4>
+                                <div class="xd-room-tags">
                                     @foreach(@$center_locations as $center_location)
-                                    <li class="me-3 mb-2">{{ $center_location->name }}</li>
+                                    <span class="xd-room-tag">{{ $center_location->name }}</span>
                                     @endforeach
-                                </ul>
+                                </div>
                             </div>
                             @endif
 
-                            <div class="row mt-3">
+                            <div class="xd-help-contact-row" style="margin-top:24px;">
                                 @if(@$center->email_address)
-                                <div class="col-md-4 mb-2"><span class="c-brand icon-mail me-1"></span> {{ @$center->email_address }}</div>
+                                <span class="xd-help-contact-item"><span class="c-brand icon-mail me-1"></span> {{ @$center->email_address }}</span>
                                 @endif
                                 @if(@$center->contact_number)
-                                <div class="col-md-4 mb-2"><span class="c-brand icon-phone me-1"></span> {{ @$center->contact_number }}</div>
+                                <span class="xd-help-contact-item"><span class="c-brand icon-phone me-1"></span> {{ @$center->contact_number }}</span>
                                 @endif
                                 @if(@$center->whatsapp_number)
-                                <div class="col-md-4 mb-2"><span class="c-brand icon-whatsapp me-1"></span> {{ @$center->whatsapp_number }}</div>
+                                <span class="xd-help-contact-item"><span class="c-brand icon-whatsapp me-1"></span> {{ @$center->whatsapp_number }}</span>
                                 @endif
                                 @if(@$center->website)
-                                <div class="col-md-4 mb-2"><span class="c-brand icon-globe me-1"></span> <a target="_blank" href="{{ @$center->website }}">{{ @$center->website }}</a></div>
+                                <a class="xd-help-contact-item" target="_blank" href="{{ @$center->website }}"><span class="c-brand icon-globe me-1"></span> Website</a>
                                 @endif
                                 @if(@$center->facebook_url)
-                                <div class="col-md-4 mb-2"><a target="_blank" href="{{ @$center->facebook_url }}"><span class="icon-facebook me-1"></span> Facebook</a></div>
+                                <a class="xd-help-contact-item" target="_blank" href="{{ @$center->facebook_url }}"><span class="icon-facebook me-1"></span> Facebook</a>
                                 @endif
                                 @if(@$center->instagram_url)
-                                <div class="col-md-4 mb-2"><a target="_blank" href="{{ @$center->instagram_url }}"><span class="icon-instagram me-1"></span> Instagram</a></div>
+                                <a class="xd-help-contact-item" target="_blank" href="{{ @$center->instagram_url }}"><span class="icon-instagram me-1"></span> Instagram</a>
                                 @endif
                             </div>
                         </div>
@@ -918,7 +990,7 @@ foreach ($experience_destination as $edest) {
 
                         {{-- Reviews (container restyle only, Task 13 — iframe src/embed mechanism and @if guard untouched, per Requirement 16) --}}
                         @if(@$center->bg_id)
-                        <div class="xd-card">
+                        <div class="xd-card" id="reviews">
                             <span class="xd-tag">Guest Experiences</span>
                             <h2 class="xd-title"><span class="xd-title-icon">&#128172;</span> Reviews</h2>
                             <div class="xd-reviews-wrap">
@@ -933,7 +1005,7 @@ foreach ($experience_destination as $edest) {
                 <!-- Desktop Sticky Booking Sidebar (display markup extracted to
                      partials/experience-booking-sidebar.blade.php — Task 14). $offerActive stays computed
                      here, not in the partial, because the mobile bottom bar further down also reads it and
-                     @include does not leak child-set vars back out (same pattern as Tasks 3/7). -->
+                     Blade's include mechanism does not leak child-set vars back out (same pattern as Tasks 3/7). -->
                 <?php
                 $offerActive = false;
                 if ((!empty(@$experience->offer_start_date)) && (!empty(@$experience->offer_discount)) && (@$experience->offer_discount > 0)) {
@@ -1105,6 +1177,38 @@ foreach ($experience_destination as $edest) {
             if (e.target === this) xdCloseDrawer();
         });
     });
+
+    // Additive-only (new section, visual-parity pass): scroll-spy for the in-page tab nav.
+    // Pure UI highlight, does not touch /get_booking_price, /reservation, or /store-inquiry.
+    function xdInitPageNavScrollSpy() {
+        var nav = document.getElementById('xd-page-nav');
+        if (!nav) return;
+        var tabs = Array.prototype.slice.call(nav.querySelectorAll('.xd-nav-tab'));
+        var targets = tabs.map(function(tab) {
+            var id = tab.getAttribute('href').slice(1);
+            return document.getElementById(id);
+        });
+        function setActiveOnScroll() {
+            var pos = window.scrollY + 160;
+            var activeIndex = 0;
+            for (var i = 0; i < targets.length; i++) {
+                if (targets[i] && targets[i].offsetTop <= pos) activeIndex = i;
+            }
+            tabs.forEach(function(tab, i) {
+                tab.classList.toggle('active', i === activeIndex);
+            });
+        }
+        window.addEventListener('scroll', setActiveOnScroll, { passive: true });
+        // Re-run after 'load' and again just past the 3000ms mark: script.js keeps the whole
+        // content column hidden behind .d-none until a hardcoded setTimeout(...,3000) reveals
+        // it (see public/basicfront/js/script.js), so every section's offsetTop still reads ~0
+        // at DOMContentLoaded/'load' time — the loop below then marches through every tab and
+        // leaves the LAST one active instead of the first.
+        window.addEventListener('load', setActiveOnScroll);
+        setTimeout(setActiveOnScroll, 3200);
+        setActiveOnScroll();
+    }
+    document.addEventListener('DOMContentLoaded', xdInitPageNavScrollSpy);
 
     <?php
     if (!empty($razorPayAmount)) {

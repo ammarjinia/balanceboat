@@ -116,7 +116,7 @@
         </div>
       </div>
     </div>
-    <div class="middle">
+    <?php /*<div class="middle">
       <div class="container d-flex align-items-center justify-content-between">
         <ul class="no-decoration">
           <li><a href="#package">Package</a></li>
@@ -138,7 +138,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div>*/?>
   </header>
   @yield('banner')
   @yield('content')
