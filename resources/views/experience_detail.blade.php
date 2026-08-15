@@ -1,33 +1,19 @@
 {{--
-    Final top-to-bottom section order (Task 10 — authoritative, supersedes design.md's earlier proposed order).
-    Scope note: only the placement of About Center / Amenities / How to Reach / Things to Do / Booking Info
-    (plus Certification and the center-level Accomodation Overview gallery, folded in for the same reason)
-    was reconciled against the reference image in this task. All other sections' relative order below reflects
-    the page's existing structure as of this task and was not reshuffled — reordering those was outside Task 10's
-    scope (see the code comments at the old and new locations of the moved cluster for the specific reasoning).
+    Retreat Detail Page — artifact-matched layout (design ref: Claude Artifact "Retreat Detail Page —
+    Full Booking Layout Concept").
 
-     1. Header/title                        — partials/experience-header.blade.php
-     2. Gallery                              — partials/experience-gallery.blade.php
-     3. Overview                             — inline
-     4. Highlights                           — inline
-     5. Experience Summary                   — inline
-     6. Choose Your Room + Price Options      — partials/experience-pricing-packages.blade.php
-     7. Upcoming Availability                — partials/experience-availability.blade.php
-     8. Daily Routine                        — inline
-     9. Experience Details (experience_details field) — inline
-    10. Food & Drink                         — partials/experience-food.blade.php
-    11. Inclusions & Exclusions              — inline
-    12. Style                                — inline
-    13. Languages                            — inline
-    14. Payment & Cancellation Terms         — inline
-    15. Cancellation Policy                  — inline
-    16. About the Center (consolidated, Task 10 placement):
-        About Center -> Amenities -> Certification -> Accomodation Overview (gallery)
-        -> How to Reach -> Things to Do -> Booking Info               — inline
-    17. Need Help? (new section, Task 12)    — partials/experience-need-help.blade.php
-    18. Reviews (iframe restyle only, per Requirement 16)             — inline
-    19. Sidebar: booking card                — desktop, sticky, parallel to main column throughout
-    20. Mobile bottom bar + drawer            — mobile, fixed, throughout
+    Reuses real data exactly as prepared by ExperienceController@index and reuses four existing
+    partials unchanged for their PHP logic/JS hooks — only their CSS is re-skinned here, under the
+    .rd-page scope, to match the artifact:
+      - partials.experience-booking-fields   (duration pills + room picker, qb-* JS hooks)
+      - partials.experience-booking-sidebar  (desktop sticky booking form, quick-booking JS)
+      - partials.experience-availability     (real calendar generation from $experience_upcoming_availability)
+      - partials.experience-mobile-booking   (mobile bottom bar + drawer, same form)
+    Everything else (header/gallery/overview/accommodation/food/pricing/terms/center/reviews) is fresh
+    markup matching the artifact's own class names (room-card, cal-card, terms-grid, etc. — prefixed rd-
+    here to avoid colliding with the site's Bootstrap/global CSS), wired to the same real fields the
+    page uses. No field is fabricated: sections/chips with no backing data are simply omitted, matching
+    the "no fabricated data" precedent already set in partials.experience-food's comments.
 --}}
 @extends('layouts.experience_details')
 @section('title', @$experience->name)
@@ -56,7 +42,6 @@ foreach ($experience_destination as $edest) {
 }
 ?>
 
-
 <!-- Meta Info Start-->
 <?php if (!empty(@$experience->meta_title)) { ?>
     @section('meta_title', @$experience->meta_title)
@@ -77,953 +62,933 @@ foreach ($experience_destination as $edest) {
     @section('image', Storage::disk('s3')->url(rawurlencode(@$experience->banner_image_url)))
 <?php } ?>
 <!-- Meta Info End -->
+
 @section('head')
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style type="text/css">
-    .xd-page {
-        --xd-brand: var(--brand-color, #ff3366);
-        --xd-brand-dark: var(--brand-color-dark, #e62050);
-        --xd-brand-glow: rgba(255, 51, 102, 0.2);
-        --xd-brand-light: rgba(255, 51, 102, 0.06);
-        --xd-text-main: var(--primary-color, #111827);
-        --xd-text-body: #4b5563;
-        --xd-text-muted: var(--c-medium, #6b7280);
-        --xd-border: var(--border-1, #e5e7eb);
-        --xd-surface: var(--c-white, #fff);
-        --xd-subtle: var(--c-light, #f8f9fa);
-        --xd-radius-xl: 20px;
-        --xd-radius-lg: 14px;
-        --xd-radius-md: var(--radius-8, 10px);
-        --xd-radius-pill: var(--button-radius, 100px);
-        --xd-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05);
-        --xd-shadow-float: 0 15px 35px rgba(0, 0, 0, 0.08);
-        --xd-shadow-colored: 0 8px 20px rgba(255, 51, 102, 0.18);
-        /* Visual-parity pass, corrected against the actual reference image at full resolution:
-           reference typography is compact (Inter, ~14-15px body), not loosely spaced. */
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        font-size: 15px;
-        line-height: 1.55;
-        color: var(--xd-text-body);
-    }
-    .xd-page, .xd-page * { font-family: inherit; }
-    .xd-page p { line-height: 1.6; margin-bottom: 1em; }
+  /* ---------- Tokens (scoped to .rd-page only) ---------- */
+  .rd-page {
+    --rd-brand: #ff3366;
+    --rd-brand-deep: #d32b55;
+    --rd-gold: #ffc107;
+    --rd-gold-text: #916300;
+    --rd-ink: #221f20;
+    --rd-ink-soft: #55494b;
+    --rd-grey-mid: #756a6c;
+    --rd-grey-line: #e4dcda;
+    --rd-wash: #f4efed;
+    --rd-paper: #fffcfb;
+    --rd-card: #ffffff;
+    --rd-success: #2f8f45;
+    --rd-success-bg: #e8f5e9;
+    --rd-danger: #c13515;
+    --rd-danger-bg: #fbece8;
+    --rd-gold-bg: #fff6dd;
+    --rd-shadow: 0 1px 2px rgba(34,31,32,0.04), 0 12px 32px -16px rgba(34,31,32,0.18);
+    --rd-shadow-lg: 0 24px 60px -24px rgba(34,31,32,0.35);
+  }
 
-    /* Content width — matches the reference layout's own container instead of the site's narrower Bootstrap .container */
-    .xd-container { max-width: 1200px; width: 100%; margin: 0 auto; padding: 0 24px; }
-    @media (max-width: 768px) {
-        .xd-container { padding: 0 16px; }
-    }
+  /* ---------- Base ---------- */
+  .rd-page {
+    background: var(--rd-paper); color: var(--rd-ink);
+    font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15.5px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  .rd-page img, .rd-page svg { max-width: 100%; display: block; }
+  .rd-page a { color: inherit; text-decoration: none; }
+  .rd-page h1, .rd-page h2, .rd-page h3, .rd-page h4 {
+    font-family: 'Fraunces', Georgia, serif; font-weight: 600; color: var(--rd-ink);
+    margin: 0; text-wrap: balance; letter-spacing: -0.01em;
+  }
+  /* The site's global .bg-page-listing h2:not([class*="c-"]) rule (0,2,1 specificity) otherwise
+     beats the rule above (0,1,1) for every <h2> on the page, painting every section heading brand-pink. */
+  .rd-page h2 { color: var(--rd-ink) !important; }
+  .rd-eyebrow {
+    font-family: 'Work Sans', sans-serif; font-size: 0.76rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--rd-brand); display: block; margin-bottom: 6px;
+  }
+  .rd-page p { color: var(--rd-ink-soft); margin: 0 0 1em; }
+  .rd-measure { max-width: 68ch; }
+  .rd-tnum { font-variant-numeric: tabular-nums; }
+  .rd-wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(18px, 3.4vw, 40px); }
+  .rd-ico { width: 15px; height: 15px; flex: none; display: inline-block; }
 
-    /* Gallery grid cosmetic upgrade (structure/JS unchanged), enlarged to match reference proportions */
-    .xd-gallery.bg-listing-gallery { border-radius: var(--xd-radius-xl); overflow: hidden; box-shadow: var(--xd-shadow-card); min-height: 420px; }
-    .xd-gallery.bg-listing-gallery .bg-listing-gallery-items img { height: 100%; }
+  .rd-page section[id] { scroll-margin-top: 150px; }
 
-    /* Hero */
-    .xd-hero-banner {
-        position: relative;
-        border-radius: var(--xd-radius-xl);
-        overflow: hidden;
-        min-height: 340px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 28px 36px;
-        margin-top: 24px;
-        box-shadow: var(--xd-shadow-float);
-        background: var(--xd-text-main);
-    }
-    .xd-hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center; z-index: 0; }
-    .xd-hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(17,24,39,0.15) 0%, rgba(17,24,39,0.85) 100%); z-index: 1; }
-    .xd-hero-top, .xd-hero-bottom { position: relative; z-index: 2; }
-    .xd-hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .xd-hero-tag {
-        display: inline-block; background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.4);
-        padding: 5px 14px; border-radius: var(--xd-radius-pill); font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
-    }
-    .xd-hero-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-    .xd-hero-icon-btn {
-        display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%;
-        background: rgba(255,255,255,0.18); color: #fff; cursor: pointer; text-decoration: none;
-    }
-    .xd-hero-title { font-size: 28px; color: #fff; line-height: 1.2; font-weight: 700; margin-bottom: 8px; }
-    .xd-hero-meta { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; color: rgba(255,255,255,0.92); font-size: 15px; }
-    .xd-hero-meta .icon-location { margin-right: 4px; }
-    .xd-hero-price { display: inline-flex; align-items: center; gap: 8px; }
-    .xd-hero-price del { color: rgba(255,255,255,0.65); font-weight: normal; }
-    .xd-hero-price strong { color: #fff; font-size: 18px; }
-    .xd-hero-banner .tier-badge { position: relative; }
+  /* ---------- Utility bar ---------- */
+  .rd-util-bar { border-bottom: 1px solid var(--rd-grey-line); background: var(--rd-paper); }
+  .rd-util-bar .rd-wrap { display: flex; align-items: center; justify-content: space-between; padding: 12px clamp(18px,3.4vw,40px); flex-wrap: wrap; gap: 8px; }
+  .rd-crumbs { font-size: 0.82rem; color: var(--rd-grey-mid); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .rd-crumbs a:hover { color: var(--rd-brand); }
+  .rd-sep { color: var(--rd-grey-line); }
+  .rd-util-actions { display: flex; gap: 18px; font-size: 0.85rem; color: var(--rd-ink-soft); }
+  .rd-util-actions .bg-menu-list > span, .rd-util-actions > span { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .rd-util-actions span:hover { color: var(--rd-brand); }
 
-    /* Layout grid */
-    .xd-layout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 40px; align-items: start; margin-top: 8px; }
-    .xd-main-col { min-width: 0; }
+  /* ---------- Title block ---------- */
+  .rd-title-block { padding: 22px 0 18px; }
+  .rd-title-block h1 { font-size: clamp(1.6rem, 3vw, 2.15rem); margin-bottom: 8px; }
+  .rd-title-meta { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; font-size: 0.9rem; color: var(--rd-ink-soft); }
+  .rd-title-meta .icon-location { color: var(--rd-brand); margin-right: 2px; }
+  .rd-title-price del { color: var(--rd-grey-mid); font-weight: normal; margin-right: 4px; }
+  .rd-title-price strong { font-family: 'Fraunces', serif; color: var(--rd-ink); }
+  .rd-badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .rd-badge {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600;
+    padding: 6px 12px; border-radius: 999px;
+  }
+  .rd-badge-cert { background: var(--rd-gold-bg); color: var(--rd-gold-text); }
+  .rd-badge-row .tier-badge { position: static; display: inline-block; background: #2F6F57; color: #fff; font-size: 0.78rem; font-weight: 600; padding: 6px 12px; border-radius: 999px; }
 
-    /* Cards — corrected against the reference: sections are NOT heavy bordered/shadowed boxes there.
-       They flow directly on the page, separated by a thin bottom divider and generous spacing. */
-    .xd-card {
-        background: transparent;
-        border: none;
-        border-bottom: 1px solid var(--xd-border);
-        border-radius: 0;
-        padding: 32px 0;
-        margin-bottom: 0;
-        box-shadow: none;
-        scroll-margin-top: 150px; /* clears the sticky 80px site header + the sticky xd-nav-tabs bar */
-    }
-    .xd-card:last-child { border-bottom: none; }
-    /* The reference's section headings are plain bold text — no icon badge, no eyebrow pill above them.
-       Hidden via CSS (not deleted from markup) so the underlying data-driven structure is untouched and
-       this is trivially reversible if a future design wants them back. */
-    .xd-tag { display: none; }
-    .xd-title-icon { display: none; }
-    .xd-title { font-size: 20px; color: var(--xd-text-main) !important; font-weight: 700; margin-bottom: 16px; }
-    .xd-card table { width: 100%; border-collapse: collapse; }
-    .xd-card table th, .xd-card table td { padding: 10px 12px; border-bottom: 1px solid var(--xd-border); text-align: left; font-size: 14px; }
-    .xd-card table th { color: var(--xd-text-muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+  /* ---------- Gallery grid ---------- */
+  .rd-gallery-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 150px);
+    gap: 6px; border-radius: 16px; overflow: hidden; position: relative; margin: 18px 0 6px;
+  }
+  .rd-g-tile { grid-column: span 1; grid-row: span 1; min-height: 0; overflow: hidden; cursor: pointer; }
+  .rd-g-tile img { width: 100%; height: 100%; object-fit: cover; }
+  .rd-g-tile:first-child { grid-column: span 2; grid-row: span 2; }
+  .rd-g-tile--empty { background: var(--rd-wash); }
+  .rd-show-all-btn {
+    position: absolute; right: 16px; bottom: 16px; background: var(--rd-card); color: var(--rd-ink);
+    font-size: 0.82rem; font-weight: 600; padding: 9px 16px; border-radius: 8px; box-shadow: var(--rd-shadow);
+    display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--rd-grey-line); cursor: pointer;
+  }
 
-    /* Highlights grid */
-    .xd-audience-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-    .xd-audience-item {
-        display: flex; align-items: flex-start; gap: 16px; background: var(--xd-subtle); padding: 20px;
-        border-radius: var(--xd-radius-md); border: 1px solid var(--xd-border);
-    }
-    .xd-audience-icon { color: var(--xd-brand); font-size: 16px; line-height: 1.5; }
+  /* ---------- Section nav ---------- */
+  .rd-section-nav {
+    position: sticky; top: 80px; z-index: 30; background: var(--rd-paper);
+    border-bottom: 1px solid var(--rd-grey-line); box-shadow: var(--rd-shadow); margin-top: 8px;
+  }
+  .rd-section-nav ul { list-style: none; display: flex; gap: 30px; margin: 0; padding: 0; overflow-x: auto; }
+  .rd-section-nav a {
+    display: inline-block; padding: 16px 2px; font-size: 0.88rem; font-weight: 600; color: var(--rd-grey-mid);
+    border-bottom: 2px solid transparent; white-space: nowrap;
+  }
+  .rd-section-nav a:hover { color: var(--rd-ink); }
+  .rd-section-nav a.active { color: var(--rd-ink); border-color: var(--rd-brand); }
 
-    /* Room cards */
-    .xd-room-list { display: flex; flex-direction: column; gap: 28px; }
-    .xd-room-card {
-        display: grid; grid-template-columns: 280px 1fr; background: var(--xd-subtle); border-radius: var(--xd-radius-lg);
-        overflow: hidden; border: 1px solid var(--xd-border);
-    }
-    .xd-room-gallery { display: flex; flex-direction: column; padding: 12px; gap: 8px; background: var(--xd-surface); }
-    .xd-room-main-img { width: 100%; height: 190px; object-fit: cover; border-radius: var(--xd-radius-md); background: var(--xd-subtle); }
-    .xd-room-thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .xd-room-thumb { width: 100%; height: 58px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; opacity: 0.8; }
-    .xd-room-thumb:hover { opacity: 1; border-color: var(--xd-brand); }
-    .xd-room-info { padding: 28px; }
-    .xd-room-badge { display: inline-block; background: var(--xd-brand); color: #fff; padding: 6px 14px; border-radius: 10px; font-size: 13px; font-weight: bold; }
-    .xd-room-loc { color: var(--xd-text-muted); font-size: 14px; margin-top: 10px; }
-    .xd-room-loc .icon-location { color: var(--xd-brand); margin-right: 4px; }
-    .xd-room-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
-    .xd-room-tag {
-        background: var(--xd-surface); color: var(--xd-text-body); border: 1px solid var(--xd-border);
-        padding: 4px 12px; border-radius: var(--xd-radius-pill); font-size: 13px;
-    }
-    .xd-badge { padding: 4px 12px; border-radius: var(--xd-radius-pill); font-size: 12px; font-weight: 600; }
-    .xd-badge-open { background: #dcfce7; color: #16a34a; }
-    .xd-badge-warn { background: #fef9c3; color: #a16207; }
-    .xd-badge-danger { background: #fee2e2; color: #dc2626; }
-    .xd-room-title { font-size: 19px; color: var(--xd-text-main); font-weight: 700; margin: 8px 0; }
-    .xd-room-title a { color: inherit; text-decoration: none; }
-    .xd-room-avail-note { font-size: 14px; color: var(--xd-text-muted); font-weight: normal; margin-bottom: 10px; }
-    .xd-room-desc-list { margin: 10px 0; }
-    .xd-room-about { font-size: 14px; color: var(--xd-text-body); }
-    .xd-occ-table { margin: 14px 0; overflow-x: auto; }
-    .xd-room-bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 18px; flex-wrap: wrap; }
-    .xd-room-price-block small { color: var(--xd-text-muted); font-size: 13px; }
-    .xd-room-price { font-size: 19px; font-weight: bold; color: var(--xd-brand); display: flex; align-items: center; gap: 8px; }
-    .xd-room-price del { color: var(--xd-text-muted); font-weight: normal; font-size: 14px; }
-    .xd-room-cta { display: flex; gap: 10px; }
+  /* ---------- Page grid ---------- */
+  .rd-page-grid { display: grid; grid-template-columns: 1fr 380px; gap: 56px; align-items: start; padding: 40px 0 80px; }
+  .rd-content-col > section { padding: 34px 0; border-top: 1px solid var(--rd-grey-line); }
+  .rd-content-col > section:first-child { padding-top: 6px; border-top: none; }
+  .rd-content-col h2 { font-size: clamp(1.35rem, 2vw, 1.65rem); margin-bottom: 18px; }
 
-    /* Daily routine */
-    .xd-routine-list { display: flex; flex-direction: column; gap: 12px; }
-    .xd-routine-item {
-        display: grid; grid-template-columns: 140px 1fr; gap: 16px; padding: 14px 18px; background: var(--xd-subtle);
-        border-left: 3px solid var(--xd-brand); border-radius: 0 var(--xd-radius-md) var(--xd-radius-md) 0; align-items: center;
-    }
-    .xd-routine-time { font-weight: bold; color: var(--xd-brand); font-size: 12px; }
-    .xd-routine-desc h4 { font-size: 15px; font-weight: 600; color: var(--xd-text-main); margin-bottom: 2px; }
-    .xd-routine-desc p { margin: 0; color: var(--xd-text-body); font-size: 14px; }
+  .rd-spec-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .rd-spec-chip {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 0.84rem; color: var(--rd-ink-soft);
+    padding: 8px 13px; border-radius: 999px; background: var(--rd-wash);
+  }
 
-    /* Amenities */
-    .xd-amenities-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-    .xd-amenity-card {
-        display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--xd-subtle);
-        border: 1px solid var(--xd-border); border-radius: var(--xd-radius-md); color: var(--xd-text-main); font-weight: 600; font-size: 15px;
-    }
+  .rd-bullet-list { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 11px; }
+  .rd-bullet-list li { display: flex; gap: 11px; color: var(--rd-ink-soft); font-size: 0.94rem; }
+  .rd-bullet-list li::before { content: ""; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--rd-brand); margin-top: 8px; }
 
-    /* Culinary */
-    .xd-culinary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
-    .xd-culinary-img { width: 100%; height: 240px; object-fit: cover; border-radius: var(--xd-radius-lg); border: 1px solid var(--xd-border); }
+  .rd-schedule-list { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--rd-grey-line); }
+  .rd-schedule-list li { display: flex; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--rd-grey-line); font-size: 0.9rem; color: var(--rd-ink-soft); }
+  .rd-schedule-list time { font-variant-numeric: tabular-nums; color: var(--rd-brand); font-weight: 600; width: 4.4em; flex: none; }
 
-    /* Inclusions/Exclusions */
-    .xd-inc-exc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-    .xd-inc-card { padding: 22px; border-radius: var(--xd-radius-lg); border: 1px solid var(--xd-border); background: var(--xd-subtle); }
-    .xd-inc-head { font-size: 16px; font-weight: bold; margin-bottom: 12px; }
-    .xd-inc-head.included { color: #16a34a; }
-    .xd-inc-head.excluded { color: #dc2626; }
-    .xd-inc-list ul { margin: 0; padding-left: 18px; }
-    .xd-inc-list p { margin: 0 0 6px 0; }
+  .rd-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+  .rd-check-list ul, .rd-cross-list ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 0.9rem; }
+  .rd-check-list li, .rd-cross-list li { display: flex; gap: 10px; color: var(--rd-ink-soft); }
+  .rd-check-list li::before { content: "\2713"; color: var(--rd-success); font-weight: 700; flex: none; }
+  .rd-cross-list li::before { content: "\2013"; color: var(--rd-grey-mid); font-weight: 700; flex: none; }
 
-    /* Sidebar / booking card */
-    .xd-sidebar { position: sticky; top: 90px; align-self: start; }
-    .xd-booking-card {
-        background: var(--xd-surface); border: 1px solid var(--xd-border); border-radius: var(--xd-radius-xl);
-        padding: 20px; box-shadow: var(--xd-shadow-float);
-    }
-    .xd-booking-header { text-align: center; margin-bottom: 14px; }
-    .xd-discount-tag {
-        display: inline-flex; align-items: center; gap: 4px; background: rgba(220,38,38,0.08); color: #dc2626;
-        border: 1px solid rgba(220,38,38,0.2); font-size: 11px; font-weight: bold; text-transform: uppercase;
-        letter-spacing: 0.5px; padding: 4px 12px; border-radius: var(--xd-radius-pill); margin-bottom: 10px;
-    }
-    .xd-booking-title { font-size: 18px; color: var(--xd-text-main); margin-bottom: 4px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .xd-form-group { margin-bottom: 16px; }
-    .xd-form-label { display: block; font-size: 12px; font-weight: bold; color: var(--xd-text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .xd-select, .xd-input {
-        width: 100%; padding: 11px 14px; background: var(--xd-subtle); border: 1px solid var(--xd-border);
-        border-radius: var(--xd-radius-md); font-size: 15px; color: var(--xd-text-main);
-    }
-    .xd-select:focus, .xd-input:focus { outline: none; border-color: var(--xd-brand); }
+  /* ---------- Room cards ---------- */
+  .rd-room-card { border: 1px solid var(--rd-grey-line); border-radius: 14px; overflow: hidden; margin-bottom: 18px; background: var(--rd-card); }
+  .rd-room-photos { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 130px; gap: 2px; height: 130px; background: var(--rd-wash); }
+  .rd-room-photos img { display: block; width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+  .rd-room-photos--empty { height: 0; }
+  .rd-room-body { padding: 18px 20px 20px; }
+  .rd-room-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+  .rd-room-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.12rem; }
+  .rd-room-name a { color: inherit; }
+  .rd-room-desc { font-size: 0.87rem; color: var(--rd-grey-mid); margin: 4px 0 0; }
+  .rd-room-avail-note { font-size: 0.78rem; color: var(--rd-brand); font-weight: 600; margin: 6px 0 0; }
+  .rd-amenity-row { display: flex; flex-wrap: wrap; gap: 14px; margin: 14px 0; font-size: 0.82rem; color: var(--rd-ink-soft); }
+  .rd-amenity-row span { display: inline-flex; align-items: center; gap: 6px; }
+  .rd-room-price-table { font-size: 0.85rem; margin-top: 12px; overflow-x: auto; }
+  .rd-room-price-table table { border-collapse: collapse; width: 100%; }
+  .rd-room-price-table th { text-align: left; font-weight: 500; color: var(--rd-grey-mid); padding: 2px 14px 6px 0; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .rd-room-price-table td { padding: 3px 14px 3px 0; font-weight: 600; }
+  .rd-room-cta { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
 
-    /* Duration pills */
-    .xd-pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
-    .xd-pill-btn {
-        flex: 1; min-width: 64px; padding: 9px 8px; background: var(--xd-subtle); border: 1px solid var(--xd-border);
-        border-radius: var(--xd-radius-md); font-size: 13px; color: var(--xd-text-body); cursor: pointer;
-    }
-    .xd-pill-btn:hover { border-color: var(--xd-brand); color: var(--xd-brand); }
-    .xd-pill-btn.active {
-        background: linear-gradient(135deg, var(--xd-brand) 0%, var(--xd-brand-dark) 100%); color: #fff; border-color: transparent;
-        font-weight: bold; box-shadow: 0 2px 8px var(--xd-brand-glow);
-    }
+  .rd-status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; padding: 5px 12px; border-radius: 999px; white-space: nowrap; }
+  .rd-status-pill .rd-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .rd-status-open { background: var(--rd-success-bg); color: var(--rd-success); } .rd-status-open .rd-dot { background: var(--rd-success); }
+  .rd-status-few { background: var(--rd-gold-bg); color: var(--rd-gold-text); } .rd-status-few .rd-dot { background: var(--rd-gold); }
+  .rd-status-full { background: var(--rd-danger-bg); color: var(--rd-danger); } .rd-status-full .rd-dot { background: var(--rd-danger); }
 
-    /* Room picker list */
-    .xd-room-picker-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
-    .xd-room-picker-item {
-        display: flex; align-items: center; padding: 9px 12px; background: var(--xd-subtle); border: 1px solid var(--xd-border);
-        border-radius: var(--xd-radius-md); cursor: pointer;
-    }
-    .xd-room-picker-item:hover { border-color: var(--xd-brand); }
-    .xd-room-picker-item.active { border-color: var(--xd-brand); background: var(--xd-brand-light); }
-    .xd-room-picker-thumb { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; margin-right: 12px; flex-shrink: 0; }
-    .xd-room-picker-details { display: flex; flex-direction: column; min-width: 0; }
-    .xd-room-picker-name { font-size: 13.5px; color: var(--xd-text-main); font-weight: bold; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .xd-room-picker-price { font-size: 13px; color: var(--xd-brand); font-weight: bold; }
-    .xd-room-picker-price del { color: var(--xd-text-muted); font-weight: normal; margin-right: 4px; font-size: 12px; }
+  /* ---------- Food ---------- */
+  .rd-food-photos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0 6px; }
+  .rd-food-photos img { aspect-ratio: 1; border-radius: 10px; object-fit: cover; width: 100%; height: 100%; }
 
-    .xd-calc-box { background: var(--xd-subtle); border-radius: var(--xd-radius-md); padding: 14px 16px; margin: 16px 0; border: 1px solid var(--xd-border); }
-    .xd-calc-row { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--xd-text-body); font-size: 14px; }
-    .xd-calc-row.total { border-top: 1px solid var(--xd-border); padding-top: 8px; margin-bottom: 0; font-size: 16px; color: var(--xd-text-main); font-weight: bold; }
-    .xd-btn-gradient {
-        width: 100%; background: linear-gradient(135deg, var(--xd-brand) 0%, var(--xd-brand-dark) 100%); color: #fff; border: none;
-        padding: 14px; border-radius: var(--xd-radius-pill); font-size: 15px; font-weight: bold; cursor: pointer;
-        box-shadow: var(--xd-shadow-colored); text-align: center; text-decoration: none; display: inline-block;
-    }
-    .xd-btn-gradient:disabled { opacity: 0.55; cursor: not-allowed; }
-    .xd-btn-outline {
-        width: 100%; background: transparent; color: var(--xd-text-main); border: 1px solid var(--xd-border);
-        padding: 11px; border-radius: var(--xd-radius-pill); font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
-    }
-    .xd-btn-outline:hover { border-color: var(--xd-brand); color: var(--xd-brand); }
-    .xd-btn-sm { width: auto; padding: 8px 18px; font-size: 13px; }
+  /* ---------- Pricing ---------- */
+  .rd-page table.rd-price-table { width: 100%; border-collapse: collapse; font-size: 0.94rem; }
+  .rd-page table.rd-price-table th { text-align: left; font-weight: 500; color: var(--rd-grey-mid); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 14px 12px 0; border-bottom: 1px solid var(--rd-grey-line); }
+  .rd-page table.rd-price-table td { padding: 15px 14px 15px 0; border-bottom: 1px solid var(--rd-grey-line); vertical-align: baseline; }
+  .rd-page table.rd-price-table tr:last-child td { border-bottom: none; }
+  .rd-price-main { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.1rem; color: var(--rd-ink); }
+  .rd-price-strike { color: var(--rd-grey-mid); text-decoration: line-through; font-size: 0.84rem; }
+  .rd-table-scroll { overflow-x: auto; }
 
-    /* Mobile bottom bar + drawer */
-    .xd-mobile-bar {
-        display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--xd-surface);
-        border-top: 1px solid var(--xd-border); padding: 10px 16px; box-shadow: 0 -4px 20px rgba(0,0,0,0.12); z-index: 1500;
-        flex-direction: column; gap: 8px;
-    }
-    .xd-mobile-bar-top { display: flex; justify-content: center; }
-    .xd-mobile-discount-tag {
-        background: rgba(220,38,38,0.1); color: #dc2626; border: 1px solid rgba(220,38,38,0.25);
-        font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: var(--xd-radius-pill);
-    }
-    .xd-mobile-discount-tag--plain { background: var(--xd-subtle); color: var(--xd-text-muted); border-color: var(--xd-border); }
-    .xd-mobile-bar-bottom { display: flex; gap: 10px; }
-    .xd-btn-mobile-outline, .xd-btn-mobile-gradient {
-        flex: 1; padding: 10px; border-radius: var(--xd-radius-pill); font-size: 13px; font-weight: bold; cursor: pointer; border: none;
-    }
-    .xd-btn-mobile-outline { background: var(--xd-surface); color: var(--xd-text-main); border: 1px solid var(--xd-border); }
-    .xd-btn-mobile-gradient { background: linear-gradient(135deg, var(--xd-brand) 0%, var(--xd-brand-dark) 100%); color: #fff; box-shadow: var(--xd-shadow-colored); }
+  /* ---------- Terms ---------- */
+  .rd-terms-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 36px; margin: 0; }
+  .rd-terms-grid dt { font-weight: 600; font-size: 0.87rem; margin-bottom: 4px; color: var(--rd-ink); }
+  .rd-terms-grid dd { margin: 0; color: var(--rd-ink-soft); font-size: 0.88rem; }
+  .rd-terms-grid > div { padding-bottom: 16px; border-bottom: 1px solid var(--rd-grey-line); }
 
-    .xd-mobile-drawer-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2100; display: none; opacity: 0; transition: opacity 0.25s ease;
-    }
-    .xd-mobile-drawer-overlay.active { display: flex; opacity: 1; }
-    .xd-mobile-drawer {
-        position: absolute; bottom: 0; left: 0; right: 0; background: var(--xd-surface);
-        border-top-left-radius: 22px; border-top-right-radius: 22px; padding: 22px 18px 18px; max-height: 85vh; overflow-y: auto;
-    }
-    .xd-drawer-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-    .xd-modal-close { background: none; border: none; font-size: 16px; cursor: pointer; color: var(--xd-text-muted); }
+  /* ---------- Center ---------- */
+  .rd-center-head { display: flex; gap: 18px; align-items: center; margin-bottom: 18px; }
+  .rd-center-mark {
+    width: 54px; height: 54px; border-radius: 50%; flex: none;
+    background: linear-gradient(135deg, var(--rd-brand), var(--rd-gold));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif; color: #fff; font-weight: 600; font-size: 1.2rem;
+  }
+  .rd-center-head h2 { font-size: 1.35rem; margin-bottom: 2px; }
+  .rd-center-head p { margin: 0; font-size: 0.88rem; color: var(--rd-grey-mid); }
+  .rd-center-photos { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 16px 0 20px; }
+  .rd-center-photos img { aspect-ratio: 1; border-radius: 8px; object-fit: cover; width: 100%; height: 100%; }
+  .rd-tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .rd-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; padding: 7px 13px; border-radius: 999px; background: var(--rd-wash); color: var(--rd-ink-soft); }
+  .rd-map-box {
+    margin-top: 22px; border-radius: 14px; height: 160px; position: relative; overflow: hidden;
+    background-image:
+      linear-gradient(var(--rd-grey-line) 1px, transparent 1px), linear-gradient(90deg, var(--rd-grey-line) 1px, transparent 1px);
+    background-size: 26px 26px; background-color: var(--rd-wash);
+    display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px;
+  }
+  .rd-map-pin { width: 30px; height: 30px; border-radius: 50% 50% 50% 0; background: var(--rd-brand); transform: rotate(-45deg); box-shadow: var(--rd-shadow-lg); }
+  .rd-map-box .rd-map-label { font-size: 0.85rem; font-weight: 600; color: var(--rd-ink); background: var(--rd-card); padding: 6px 14px; border-radius: 999px; box-shadow: var(--rd-shadow); text-align: center; max-width: 80%; }
+  .rd-contact-row { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 0.87rem; margin-top: 20px; color: var(--rd-ink-soft); }
+  .rd-contact-row a { border-bottom: 1px solid var(--rd-grey-line); }
+  .rd-contact-row a:hover { border-color: var(--rd-brand); color: var(--rd-brand); }
+  .rd-subhead { font-size: 1rem; font-weight: 700; margin: 22px 0 10px; }
 
-    /* ===== New class families (Task 2 scaffolding — additive only, no existing rule above is modified) ===== */
+  /* ---------- Reviews ---------- */
+  .rd-reviews-wrap { border-radius: 14px; overflow: hidden; border: 1px solid var(--rd-grey-line); }
 
-    /* In-page tab navigation (reference: Overview/Accommodation/Food/Pricing/Availability/Terms/Center/Reviews).
-       Sticky just below the site's own sticky 80px header so it stays visible while scrolling. */
-    .xd-nav-tabs-wrap { position: sticky; top: 80px; z-index: 40; background: var(--xd-surface); margin-top: 20px; }
-    .xd-nav-tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--xd-border); }
-    .xd-nav-tab {
-        flex-shrink: 0; padding: 14px 18px; font-size: 14px; font-weight: 600; color: var(--xd-text-muted);
-        text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap;
-    }
-    .xd-nav-tab:hover { color: var(--xd-text-main); }
-    .xd-nav-tab.active { color: var(--xd-brand); border-bottom-color: var(--xd-brand); }
+  /* ---------- Booking sidebar (re-skins partials.experience-booking-sidebar / -fields) ---------- */
+  .rd-page .xd-sidebar { position: sticky; top: 96px; max-height: calc(100vh - 116px); overflow-y: auto; }
+  .rd-page .xd-booking-card {
+    border: 1px solid var(--rd-grey-line); border-radius: 16px; padding: 18px; background: var(--rd-card);
+    box-shadow: var(--rd-shadow-lg);
+  }
+  .rd-page .xd-booking-header { text-align: left; margin-bottom: 4px; }
+  .rd-page .xd-discount-tag {
+    display: inline-flex; align-items: center; gap: 4px; background: var(--rd-danger-bg); color: var(--rd-danger);
+    border: none; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 3px 10px; border-radius: 999px; margin-bottom: 8px;
+  }
+  .rd-page .xd-booking-title { font-family: 'Fraunces', serif; font-size: 1.08rem; color: var(--rd-ink); margin-bottom: 12px; display: block; justify-content: flex-start; text-align: left; }
+  .rd-page .xd-form-group { margin-bottom: 12px; }
+  .rd-page .xd-form-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rd-grey-mid); margin-bottom: 6px; display: block; }
+  .rd-page .xd-pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .rd-page .xd-pill-btn {
+    flex: 1; min-width: 64px; text-align: center; font-size: 0.82rem; font-weight: 600; padding: 8px 6px;
+    border: 1px solid var(--rd-grey-line); border-radius: 9px; cursor: pointer; color: var(--rd-ink-soft); background: var(--rd-card);
+  }
+  .rd-page .xd-pill-btn:hover { border-color: var(--rd-brand); color: var(--rd-brand); }
+  .rd-page .xd-pill-btn.active { border-color: var(--rd-brand); background: var(--rd-brand); color: #fff; box-shadow: none; font-weight: 600; }
+  .rd-page .xd-room-picker-list { display: flex; flex-direction: column; gap: 6px; max-height: 190px; overflow-y: auto; padding-right: 2px; }
+  .rd-page .xd-room-picker-item {
+    display: flex; align-items: center; padding: 6px 8px; border: 1px solid var(--rd-grey-line);
+    border-radius: 9px; cursor: pointer; background: var(--rd-card);
+  }
+  .rd-page .xd-room-picker-item:hover { border-color: var(--rd-brand); }
+  .rd-page .xd-room-picker-item.active { border-color: var(--rd-brand); box-shadow: 0 0 0 1px var(--rd-brand) inset; background: var(--rd-card); }
+  .rd-page .xd-room-picker-thumb { width: 30px; height: 30px; border-radius: 7px; object-fit: cover; margin-right: 9px; flex-shrink: 0; }
+  .rd-page .xd-room-picker-details { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+  .rd-page .xd-room-picker-name { font-size: 0.81rem; color: var(--rd-ink); font-weight: 600; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rd-page .xd-room-picker-price { font-size: 0.78rem; color: var(--rd-ink-soft); font-weight: 600; }
+  .rd-page .xd-room-picker-item.active .xd-room-picker-price { color: var(--rd-brand); }
+  .rd-page .xd-room-picker-price del { color: var(--rd-grey-mid); font-weight: normal; margin-right: 4px; font-size: 0.78rem; }
+  .rd-page .xd-input, .rd-page .xd-select {
+    width: 100%; padding: 11px 14px; background: var(--rd-card); border: 1px solid var(--rd-grey-line);
+    border-radius: 10px; font-size: 0.94rem; color: var(--rd-ink);
+  }
+  .rd-page .xd-input:focus, .rd-page .xd-select:focus { outline: 2px solid var(--rd-brand); outline-offset: 1px; border-color: var(--rd-brand); }
+  .rd-page .xd-calc-box { background: var(--rd-wash); border-radius: 10px; padding: 11px 14px; margin: 12px 0; border: none; }
+  .rd-page .xd-calc-row { display: flex; justify-content: space-between; margin-bottom: 5px; color: var(--rd-ink-soft); font-size: 0.84rem; }
+  .rd-page .xd-calc-row.total { border-top: 1px solid var(--rd-grey-line); padding-top: 6px; margin-bottom: 0; font-size: 0.96rem; color: var(--rd-ink); font-weight: 700; }
+  .rd-page .xd-calc-row.total .qb-booking-amount { font-family: 'Fraunces', serif; }
+  .rd-page .xd-btn-gradient {
+    width: 100%; background: var(--rd-brand); color: #fff; border: 1px solid transparent;
+    padding: 11px 24px; border-radius: 10px; font-size: 0.92rem; font-weight: 600; cursor: pointer;
+    text-align: center; text-decoration: none; display: inline-block; box-shadow: none; transition: background-color .15s;
+  }
+  .rd-page .xd-btn-gradient:hover { background: var(--rd-brand-deep); }
+  .rd-page .xd-btn-gradient:disabled { opacity: 0.55; cursor: not-allowed; }
+  .rd-page .xd-btn-outline {
+    width: 100%; background: transparent; color: var(--rd-ink); border: 1px solid var(--rd-grey-line);
+    padding: 9px 24px; border-radius: 10px; font-size: 0.87rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;
+  }
+  .rd-page .xd-btn-outline:hover { border-color: var(--rd-ink-soft); }
+  .rd-page .xd-btn-sm { width: auto; padding: 9px 16px; font-size: 0.85rem; margin-bottom: 0; }
+  .rd-page #razorpay-affordability-widget { margin-top: 10px !important; }
 
-    /* Header (rebuilt, visual-parity pass): plain text on the page background, not a photo-overlay hero.
-       Order matches the reference: title -> meta -> badges. */
-    .xd-header-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 20px; }
-    .xd-header-title { font-size: 28px; color: var(--xd-text-main); font-weight: 700; line-height: 1.25; margin: 0; }
-    .xd-header-actions { display: flex; align-items: center; gap: 16px; flex-shrink: 0; padding-top: 4px; }
-    .xd-header-action-btn {
-        display: inline-flex; align-items: center; gap: 6px; color: var(--xd-text-body); font-size: 13px; font-weight: 600;
-        cursor: pointer; text-decoration: none; white-space: nowrap;
-    }
-    .xd-header-action-btn:hover { color: var(--xd-brand); }
-    .xd-header-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; color: var(--xd-text-body); font-size: 14px; margin: 10px 0 14px; }
-    .xd-header-meta .icon-location { color: var(--xd-brand); margin-right: 2px; }
-    .xd-header-price del { color: var(--xd-text-muted); font-weight: normal; margin-right: 4px; }
-    .xd-header-price strong { color: var(--xd-text-main); }
-    .xd-header-rating { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: var(--xd-text-main); font-size: 13px; }
-    .xd-plain-tag {
-        display: inline-block; background: var(--xd-brand-light); color: var(--xd-brand);
-        padding: 4px 12px; border-radius: var(--xd-radius-pill); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .xd-header-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 20px; }
-    .xd-header-badge {
-        display: inline-flex; align-items: center; gap: 4px; background: var(--xd-subtle); color: var(--xd-text-body);
-        border: 1px solid var(--xd-border); padding: 4px 10px; border-radius: var(--xd-radius-pill); font-size: 11px; font-weight: 600;
-    }
-    /* .tier-badge (from partials/commission-tier-badge.blade.php) only has legacy CSS for photo-overlay
-       (.img_list/.thumb, position:absolute) or h1+sibling (position:static) contexts — neither matches this
-       header's markup structure, so it's scoped and styled explicitly here rather than relying on those. */
-    .xd-header-badges .tier-badge {
-        position: static; display: inline-block; background: #2F6F57; color: #fff;
-        font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: var(--xd-radius-pill);
-    }
+  /* ---------- Availability (re-skins partials.experience-availability's .xd-card) ---------- */
+  .rd-page .xd-card { border: 1px solid var(--rd-grey-line); border-radius: 14px; padding: 20px 22px 22px; }
+  .rd-page .xd-tag, .rd-page .xd-title-icon { display: none; }
+  .rd-page .xd-title { font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 600; color: var(--rd-ink); margin-bottom: 14px; }
+  .rd-page .xd-avail-weekdays {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px;
+    font-size: 0.72rem; font-weight: 600; color: var(--rd-grey-mid); text-transform: uppercase; letter-spacing: 0.04em; text-align: center;
+  }
+  .rd-page .xd-avail-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+  .rd-page .xd-avail-day {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px;
+    font-size: 0.85rem; color: var(--rd-ink-soft); background: transparent; border: none;
+  }
+  .rd-page .xd-avail-day--blank { background: transparent; }
+  .rd-page .xd-avail-day.is-open { background: transparent; color: var(--rd-ink-soft); position: relative; }
+  .rd-page .xd-avail-day.is-open::after { content: ""; position: absolute; bottom: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--rd-success); }
+  .rd-page .xd-avail-day.is-few { background: transparent; color: var(--rd-ink-soft); position: relative; }
+  .rd-page .xd-avail-day.is-few::after { content: ""; position: absolute; bottom: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--rd-gold); }
+  .rd-page .xd-avail-day.is-full { background: transparent; color: var(--rd-ink-soft); position: relative; }
+  .rd-page .xd-avail-day.is-full::after { content: ""; position: absolute; bottom: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--rd-danger); }
+  .rd-page .xd-avail-legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.8rem; color: var(--rd-grey-mid); margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--rd-grey-line); }
+  .rd-page .xd-avail-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+  .rd-page .xd-avail-legend-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .rd-page .xd-avail-other-heading { font-family: 'Fraunces', serif; font-size: 0.95rem; font-weight: 600; color: var(--rd-ink); margin: 22px 0 10px; }
+  .rd-page .xd-avail-list { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 6px; }
+  .rd-page .xd-routine-item {
+    flex: none; width: 140px; border: 1px solid var(--rd-grey-line); border-radius: 10px; padding: 12px;
+    background: var(--rd-card); display: block; border-left: 1px solid var(--rd-grey-line);
+  }
+  .rd-page .xd-routine-time { font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.85rem; color: var(--rd-ink); display: block; margin-bottom: 8px; }
+  .rd-page .xd-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.76rem; font-weight: 600; padding: 4px 11px; border-radius: 999px; }
+  .rd-page .xd-badge-open { background: var(--rd-success-bg); color: var(--rd-success); }
+  .rd-page .xd-badge-warn { background: var(--rd-gold-bg); color: var(--rd-gold-text); }
+  .rd-page .xd-badge-danger { background: var(--rd-danger-bg); color: var(--rd-danger); }
 
-    /* Pricing/package section grouping wrapper (stacked cards, no tabs — see design.md) */
-    .xd-pkg-group { display: flex; flex-direction: column; gap: 24px; }
-    .xd-pkg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  /* ---------- Mobile bottom bar + drawer ---------- */
+  .rd-page .xd-mobile-bar { display: none; }
+  .rd-page .xd-mobile-drawer-overlay {
+    position: fixed; inset: 0; background: rgba(34,31,32,0.6); z-index: 2100; display: none; opacity: 0; transition: opacity .25s ease;
+  }
+  .rd-page .xd-mobile-drawer-overlay.active { display: flex; opacity: 1; }
+  .rd-page .xd-mobile-drawer {
+    position: absolute; bottom: 0; left: 0; right: 0; background: var(--rd-card);
+    border-top-left-radius: 22px; border-top-right-radius: 22px; padding: 22px 18px 18px; max-height: 85vh; overflow-y: auto;
+  }
+  .rd-page .xd-drawer-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .rd-page .xd-drawer-header .xd-booking-title { margin-bottom: 0; }
+  .rd-page .xd-modal-close { background: none; border: none; font-size: 16px; cursor: pointer; color: var(--rd-grey-mid); line-height: 1; }
+  .rd-page footer.rd-credit { text-align: center; padding: 20px 0 40px; font-size: 0.78rem; color: var(--rd-grey-mid); border-top: 1px solid var(--rd-grey-line); }
 
-    /* Price-breakdown note line, extends existing .xd-calc-box/.xd-calc-row rather than duplicating them */
-    .xd-breakdown-note { font-size: 12px; color: var(--xd-text-muted); margin-top: 6px; line-height: 1.4; }
-
-    /* Availability/calendar section */
-    .xd-avail-weekdays {
-        display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 8px;
-        font-size: 12px; font-weight: 700; color: var(--xd-text-muted); text-transform: uppercase; letter-spacing: 0.5px; text-align: center;
+  @media (max-width: 1024px) {
+    .rd-page-grid { grid-template-columns: 1fr; }
+    .rd-page .xd-sidebar { display: none; }
+    .rd-page .xd-mobile-bar {
+      display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1500;
+      background: var(--rd-card); border-top: 1px solid var(--rd-grey-line); padding: 12px 18px;
+      align-items: center; justify-content: space-between; box-shadow: 0 -8px 24px rgba(0,0,0,0.12);
+      flex-direction: row; gap: 10px;
     }
-    .xd-avail-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-    .xd-avail-day {
-        display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: var(--xd-radius-md);
-        font-size: 14px; color: var(--xd-text-body); background: var(--xd-subtle); border: 1px solid var(--xd-border);
+    .rd-page .xd-mobile-bar-top { display: none; }
+    .rd-page .xd-mobile-bar-bottom { display: flex; gap: 10px; flex: 1; }
+    .rd-page .xd-btn-mobile-outline, .rd-page .xd-btn-mobile-gradient {
+      flex: 1; padding: 10px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1px solid var(--rd-grey-line);
     }
-    .xd-avail-day--blank { background: transparent; border-color: transparent; }
-    .xd-avail-day.is-open { background: #dcfce7; color: #16a34a; border-color: transparent; font-weight: 700; }
-    .xd-avail-day.is-few { background: #fef9c3; color: #a16207; border-color: transparent; font-weight: 700; }
-    .xd-avail-day.is-full { background: #fee2e2; color: #dc2626; border-color: transparent; font-weight: 700; }
-    .xd-avail-legend { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 18px; font-size: 13px; color: var(--xd-text-muted); }
-    .xd-avail-legend-item { display: inline-flex; align-items: center; gap: 6px; }
-    .xd-avail-legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-    .xd-avail-other-heading { font-size: 15px; font-weight: 700; color: var(--xd-text-main); margin: 24px 0 12px; }
-    .xd-avail-list { display: flex; flex-direction: column; gap: 8px; }
-    /* Sidebar quick-date pills (reuses .xd-pill-btn interaction pattern for the sidebar's upcoming-start-date picker) */
-    .xd-avail-pill-group { display: flex; flex-wrap: wrap; gap: 6px; }
-    @media (max-width: 480px) {
-        .xd-avail-weekdays, .xd-avail-grid { gap: 4px; }
-        .xd-avail-day { font-size: 12px; }
-    }
-
-    /* Need Help? / support section */
-    .xd-help-card { display: flex; align-items: flex-start; gap: 14px; padding: 16px; background: var(--xd-subtle); border: 1px solid var(--xd-border); border-radius: var(--xd-radius-lg); }
-    .xd-help-contact-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-    .xd-help-contact-item {
-        display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--xd-surface);
-        border: 1px solid var(--xd-border); border-radius: var(--xd-radius-pill); font-size: 13px; color: var(--xd-text-main); text-decoration: none;
-    }
-
-    /* Reviews container restyle (iframe src/embed mechanism untouched — wrapper styling only) */
-    .xd-reviews-wrap { border-radius: var(--xd-radius-xl); overflow: hidden; border: 1px solid var(--xd-border); }
-
-    /* About Center subsection headings (visual-parity pass) */
-    .xd-about-subhead { font-size: 16px; font-weight: 700; color: var(--xd-text-main); margin-bottom: 10px; }
-
-    @media (max-width: 1024px) {
-        .xd-layout-grid { grid-template-columns: 1fr; }
-        .xd-sidebar { display: none; }
-        .xd-mobile-bar { display: flex; }
-        body { padding-bottom: 90px; }
-    }
-    @media (max-width: 768px) {
-        .xd-hero-banner { padding: 22px 18px; min-height: 280px; }
-        .xd-room-card, .xd-audience-grid, .xd-amenities-grid, .xd-culinary-grid, .xd-inc-exc-grid { grid-template-columns: 1fr; }
-        .xd-routine-item { grid-template-columns: 1fr; border-left: none; border-top: 3px solid var(--xd-brand); border-radius: 0 0 var(--xd-radius-md) var(--xd-radius-md); }
-        .xd-card { padding: 24px 0; }
-        .xd-hero-title { font-size: 24px; }
-    }
+    .rd-page .xd-btn-mobile-outline { background: var(--rd-card); color: var(--rd-ink); }
+    .rd-page .xd-btn-mobile-gradient { background: var(--rd-brand); color: #fff; border-color: transparent; }
+    .rd-gallery-grid { grid-template-rows: repeat(2, 110px); }
+    .rd-terms-grid, .rd-two-col { grid-template-columns: 1fr; }
+    .rd-food-photos, .rd-center-photos { grid-template-columns: repeat(3, 1fr); }
+    body { padding-bottom: 78px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .rd-page * { transition: none !important; } }
 </style>
-<script defer src="https://cdn.razorpay.com/widgets/affordability/affordability.js"></script>
 @endsection
-@section('content')
-<div class="xd-page">
 
-    <!-- Hero / Header (display markup extracted to partials/experience-header.blade.php — Task 3).
-         $discount/$pay/$razorPayAmount stay computed here, not in the partial, because $razorPayAmount is
-         read again later in the footer Razorpay-widget script and Blade's include mechanism does not leak
-         child-set vars back out. -->
-    <?php $discount = $razorPayAmount = 0; ?>
-    @if(@$experienceList->min_duration_price)
-    <?php
-    $pay = @$experienceList->min_promo_price ? @$experienceList->min_promo_price : @$experienceList->min_duration_price;
-    if ((!empty(@$experienceList->offer_start_date)) && (!empty(@$experienceList->offer_discount)) && (@$experienceList->offer_discount > 0)) {
-        $now = \Carbon\Carbon::parse(date("Y-m-d"))->format("Y-m-d");
-        if ((\Carbon\Carbon::parse(@$experienceList->offer_start_date)->format("Y-m-d") <= $now) && (\Carbon\Carbon::parse(@$experienceList->offer_end_date)->format("Y-m-d") >= $now)) {
-            if (@$experienceList->offer_discount_type == "amt") {
-                $discount += @$experienceList->offer_discount;
+@section('content')
+<?php $discount = $razorPayAmount = 0; ?>
+@if(@$experienceList->min_duration_price)
+<?php
+$pay = @$experienceList->min_promo_price ? @$experienceList->min_promo_price : @$experienceList->min_duration_price;
+if ((!empty(@$experienceList->offer_start_date)) && (!empty(@$experienceList->offer_discount)) && (@$experienceList->offer_discount > 0)) {
+    $now = \Carbon\Carbon::parse(date("Y-m-d"))->format("Y-m-d");
+    if ((\Carbon\Carbon::parse(@$experienceList->offer_start_date)->format("Y-m-d") <= $now) && (\Carbon\Carbon::parse(@$experienceList->offer_end_date)->format("Y-m-d") >= $now)) {
+        if (@$experienceList->offer_discount_type == "amt") {
+            $discount += @$experienceList->offer_discount;
+        } else {
+            $discount += (@$pay * @$experienceList->offer_discount) / 100;
+        }
+    }
+}
+$razorPayAmount = \App\Http\Helpers\CommonHelper::get_currency_rate(@$pay - $discount, $site_currency, false);
+?>
+@endif
+
+<?php
+// Per-room resolved price (flat duration price, or fallback min occupancy price), shared by the
+// accommodation cards and the booking sidebar's room picker (partials.experience-booking-fields).
+$roomPricing = array();
+foreach (@$experience_accomodations as $racm) {
+    $rDiscount = 0;
+    $rPay = @$racm->room_price;
+    if ((!empty(@$experience->eirly_bird_before_days)) && (!empty(@$experience->eirly_bird_discount)) && (@$experience->eirly_bird_discount > 0)) {
+        if (@$experience->eirly_bird_discount_type == "amt") {
+            $rDiscount += @$experience->eirly_bird_discount;
+        } else {
+            $rDiscount = (@$rPay * @$experience->eirly_bird_discount) / 100;
+        }
+    }
+    if ((!empty(@$experience->offer_start_date)) && (!empty(@$experience->offer_discount)) && (@$experience->offer_discount > 0)) {
+        $rNow = \Carbon\Carbon::parse(date("Y-m-d"))->format("Y-m-d");
+        if ((\Carbon\Carbon::parse(@$experience->offer_start_date)->format("Y-m-d") <= $rNow) && (\Carbon\Carbon::parse(@$experience->offer_end_date)->format("Y-m-d") >= $rNow)) {
+            if (@$experience->offer_discount_type == "amt") {
+                $rDiscount += @$experience->offer_discount;
             } else {
-                $discount += (@$pay * @$experienceList->offer_discount) / 100;
+                $rDiscount += (@$rPay * @$experience->offer_discount) / 100;
             }
         }
     }
-    $razorPayAmount = \App\Http\Helpers\CommonHelper::get_currency_rate(@$pay - $discount, $site_currency, false);
-    ?>
-    @endif
-    @include('partials.experience-header')
+    $rHasFlat = !empty($rPay) && $rPay > 0;
+    $rFallback = null;
+    if (!$rHasFlat) {
+        $occCandidates = array();
+        if (!empty(@$racm->single_occupancy_price)) { $occCandidates[] = @$racm->single_occupancy_price; }
+        if (!empty(@$racm->double_occupancy_price)) { $occCandidates[] = @$racm->double_occupancy_price; }
+        $durP = @$experience_accommodation_duration_prices[$racm->id] ?? collect();
+        foreach ($durP as $dp) {
+            if (!empty($dp->single_price)) { $occCandidates[] = $dp->single_price; }
+            if (!empty($dp->double_price)) { $occCandidates[] = $dp->double_price; }
+        }
+        if (sizeof($occCandidates) > 0) {
+            $rFallback = min($occCandidates);
+        }
+    }
+    $rThumb = null;
+    if (@$accomodationimagegalleries) {
+        foreach (@$accomodationimagegalleries as $rimg) {
+            if ($rimg->accomodation_id == $racm->id && $rimg->image_url) {
+                $rThumb = $rimg->image_url;
+                break;
+            }
+        }
+    }
+    $roomPricing[$racm->id] = array(
+        'hasFlat' => $rHasFlat,
+        'pay' => $rPay,
+        'discount' => $rDiscount,
+        'fallback' => $rFallback,
+        'currency' => @$racm->currency,
+        'thumb' => $rThumb,
+    );
+}
+?>
 
-    <!-- Gallery (extracted to partials/experience-gallery.blade.php — Task 4) -->
-    @include('partials.experience-gallery')
+<div class="rd-page">
 
-    <!-- In-page tab navigation (new, visual-parity pass — reference shows Overview/Accommodation/Food/Pricing/
-         Availability/Terms/Center/Reviews tabs under the gallery). Pure anchor links + scroll-spy; reuses
-         existing section ids, no new backend/data. Each tab is omitted if its target section has no data,
-         so the nav never links to an empty/missing section. -->
-    <div class="xd-container">
-        <div class="xd-nav-tabs-wrap">
-            <nav class="xd-nav-tabs" id="xd-page-nav">
-                <a href="#package" class="xd-nav-tab active">Overview</a>
-                @if(sizeof(@$experience_accomodations) > 0)<a href="#accomodation-rooms" class="xd-nav-tab">Accommodation</a>@endif
-                @if((sizeof(@$foodimagegalleries->toArray())>0) OR (@$experience->food_banner_image_url) OR (@$experience->food_overview))<a href="#food-overview" class="xd-nav-tab">Food</a>@endif
-                @if(@$experience_durations && sizeof(@$experience_durations) > 0)<a href="#price-options" class="xd-nav-tab">Pricing</a>@endif
-                @if(@$experience_upcoming_availability && sizeof(@$experience_upcoming_availability) > 0)<a href="#availability" class="xd-nav-tab">Availability</a>@endif
-                <a href="#payment-terms" class="xd-nav-tab">Terms</a>
-                @if(@$center->about_center)<a href="#about" class="xd-nav-tab">Center</a>@endif
-                @if(@$center->bg_id)<a href="#reviews" class="xd-nav-tab">Reviews</a>@endif
-            </nav>
+  <div class="rd-util-bar">
+    <div class="rd-wrap">
+      <nav class="rd-crumbs">
+        <a href="{{ url('/') }}">Home</a>
+        @if($country)<span class="rd-sep">/</span><a href="{{ url('/experiences?sdestination='.($experience_destination->firstWhere('parent', 0)->id ?? '')) }}">{{ $country }}</a>@endif
+        @if($city)<span class="rd-sep">/</span><span>{{ rtrim($city, ', ') }}</span>@endif
+        <span class="rd-sep">/</span><span>{{ @$experience->name }}</span>
+      </nav>
+      <div class="rd-util-actions">
+        <div class="bg-menu-list">
+          <span><span class="icon-share"></span> Share</span>
+          <ul class="bg-box horiz">
+            <li><a target="_blank" href="https://www.facebook.com/balanceboat"><span class="icon-facebook"></span></a></li>
+            <li><a target="_blank" href="https://www.pinterest.com/balanceboat"><span class="icon-pinterest"></span></a></li>
+          </ul>
         </div>
+        <a href="#booking-card"><span><span class="icon-compass"></span> Reserve</span></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="rd-wrap rd-title-block">
+    <div>
+      @if($category)
+      <span class="rd-eyebrow">{{ $category }}{{ $subcategory ? ' · '.rtrim($subcategory, ', ') : '' }}</span>
+      @endif
+      <h1>{{ @$experience->name }}</h1>
+      <div class="rd-title-meta">
+        @if(@$center->address_of_center || @$experience->location)
+        <span><span class="icon-location"></span> {{ @$center->address_of_center }} {{ @$experience->location }}</span>
+        @endif
+        @if(@$center->name)
+        <span>&middot; Hosted by {{ @$center->name }}</span>
+        @endif
+        @if(@$experienceList->min_duration_price)
+        <span class="rd-title-price">&middot; From
+          @if(!empty($discount))<del>{{ \App\Http\Helpers\CommonHelper::get_currency_rate((@$pay), $site_currency) }}</del>@endif
+          <strong>{{ \App\Http\Helpers\CommonHelper::get_currency_rate(@$pay - $discount, $site_currency) }}</strong>
+        </span>
+        @endif
+      </div>
+      <div class="rd-badge-row">
+        @if($category)<span class="rd-badge rd-badge-cert">{{ $category }}</span>@endif
+        @include('partials.commission-tier-badge')
+      </div>
     </div>
 
-    <section class="pt-5 mb-5">
-        <div class="xd-container">
-            <div class="xd-layout-grid">
-                <main id="package" class="xd-main-col">
+    <?php
+    $galleryImgs = array();
+    if (@$experience->banner_image_url) {
+        $galleryImgs[] = Storage::disk('s3')->url(rawurlencode(@$experience->banner_image_url));
+    }
+    foreach (@$imagegalleries as $gallery) {
+        if (@$gallery->image_url && sizeof($galleryImgs) < 5) {
+            $galleryImgs[] = strtok(Storage::disk('s3')->url(rawurlencode($gallery->image_url)), '?');
+        }
+    }
+    ?>
+    <div class="rd-gallery-grid">
+      @if(sizeof($galleryImgs) > 0)
+        @foreach($galleryImgs as $gimg)
+        <div class="rd-g-tile"><img class="lazy" data-src="{{ $gimg }}" alt="{{ @$experience->name }}" /></div>
+        @endforeach
+      @else
+        <div class="rd-g-tile rd-g-tile--empty"></div>
+      @endif
+      <span id="bg-gallery-all" class="rd-show-all-btn">
+        <span class="icon-arrows1"></span> Show all photos
+      </span>
+    </div>
+  </div>
 
-                    <div class="intereactive-lists-loader">
-                        <div class="row"><div class="col-12"><div class="il-wrapper bg-box"><div class="listing-loader"></div></div></div></div>
-                        <div class="row"><div class="col-12"><div class="il-wrapper bg-box"><div class="listing-loader"></div></div></div></div>
-                        <div class="row"><div class="col-12"><div class="il-wrapper bg-box"><div class="listing-loader"></div></div></div></div>
-                        <div class="row"><div class="col-12"><div class="il-wrapper bg-box"><div class="listing-loader"></div></div></div></div>
-                        <div class="row"><div class="col-12"><div class="il-wrapper bg-box"><div class="listing-loader"></div></div></div></div>
-                    </div>
+  <nav class="rd-section-nav" id="rd-page-nav">
+    <div class="rd-wrap">
+      <ul>
+        <li><a href="#overview" class="active">Overview</a></li>
+        @if(sizeof(@$experience_accomodations) > 0)<li><a href="#accommodation">Accommodation</a></li>@endif
+        @if((sizeof(@$foodimagegalleries->toArray())>0) OR (@$experience->food_banner_image_url) OR (@$experience->food_overview))<li><a href="#food">Food</a></li>@endif
+        @if(@$experience_durations && sizeof(@$experience_durations) > 0)<li><a href="#pricing">Pricing</a></li>@endif
+        @if(@$experience_upcoming_availability && sizeof(@$experience_upcoming_availability) > 0)<li><a href="#availability">Availability</a></li>@endif
+        <li><a href="#payment-terms">Terms</a></li>
+        @if(@$center->about_center)<li><a href="#center">Center</a></li>@endif
+        @if(@$center->bg_id)<li><a href="#reviews">Reviews</a></li>@endif
+      </ul>
+    </div>
+  </nav>
 
-                    <div class="intereactive-lists no-loader d-none">
+  <div class="rd-wrap rd-page-grid">
+    <div class="rd-content-col">
 
-                        {{-- Overview --}}
-                        @if(@$experience->experience_overview)
-                        <div class="xd-card">
-                            <span class="xd-tag">The Philosophy</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#x1F9D8;</span> Overview</h2>
-                            <div>{!! @$experience->experience_overview !!}</div>
-                        </div>
-                        @endif
+      {{-- OVERVIEW --}}
+      <section id="overview">
+        <?php
+        $specChips = array();
+        if (@$experience->duration) { $specChips[] = $experience->duration; }
+        if (@$experience->skill_level) { $specChips[] = $experience->skill_level; }
+        if (@$experience->styles_taught) {
+            foreach (explode(",", $experience->styles_taught) as $st) { if (trim($st)) $specChips[] = trim($st); }
+        }
+        if (@$experience->language_spoken) {
+            foreach (explode("||", $experience->language_spoken) as $lg) { if (trim($lg)) $specChips[] = trim($lg); }
+        }
+        ?>
+        @if(sizeof($specChips) > 0)
+        <div class="rd-spec-row">
+            @foreach($specChips as $chip)
+            <span class="rd-spec-chip">{{ $chip }}</span>
+            @endforeach
+        </div>
+        @endif
 
-                        {{-- Highlights (real experience_highlights field) --}}
-                        @php
-                            $highlightsText = trim(strip_tags(@$experience->experience_highlights));
-                            $highlightPoints = array();
-                            if ($highlightsText !== '') {
-                                $highlightPoints = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $highlightsText))));
-                                if (count($highlightPoints) <= 1) {
-                                    $highlightPoints = array_values(array_filter(array_map('trim', preg_split('/(?<=[.!?])\s+/', $highlightsText, -1, PREG_SPLIT_NO_EMPTY))));
-                                }
-                            }
-                        @endphp
-                        @if(count($highlightPoints) > 0)
-                        <div class="xd-card">
-                            <span class="xd-tag">Why This Retreat</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#10022;</span> Highlights</h2>
-                            <div class="xd-audience-grid">
-                                @foreach($highlightPoints as $point)
-                                <div class="xd-audience-item">
-                                    <span class="xd-audience-icon">&#10022;</span>
-                                    <div>{{ $point }}</div>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
+        @if(@$experience->experience_overview)
+        <div class="rd-measure">{!! @$experience->experience_overview !!}</div>
+        @endif
 
-                        {{-- Experience Summary --}}
-                        @if(@$experience->experience_summary)
-                        <div class="xd-card">
-                            <span class="xd-tag">At a Glance</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#128203;</span> Experience Summary</h2>
-                            @php
-                                $summaryText = trim(strip_tags($experience->experience_summary));
-                                $summaryPoints = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $summaryText))));
-                                if (count($summaryPoints) <= 1) {
-                                    $summaryPoints = array_values(array_filter(array_map('trim', preg_split('/(?<=[.!?])\s+/', $summaryText, -1, PREG_SPLIT_NO_EMPTY))));
-                                }
-                            @endphp
-                            <ul class="bg-list-icon">
-                                @foreach($summaryPoints as $point)
-                                    <li>{{ $point }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                        @endif
+        <?php
+        $highlightsText = trim(strip_tags(@$experience->experience_highlights));
+        $highlightPoints = array();
+        if ($highlightsText !== '') {
+            $highlightPoints = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $highlightsText))));
+            if (count($highlightPoints) <= 1) {
+                $highlightPoints = array_values(array_filter(array_map('trim', preg_split('/(?<=[.!?])\s+/', $highlightsText, -1, PREG_SPLIT_NO_EMPTY))));
+            }
+        }
+        ?>
+        @if(count($highlightPoints) > 0)
+        <h3 class="rd-subhead" style="margin-top:24px;">Highlights</h3>
+        <ul class="rd-bullet-list">
+            @foreach($highlightPoints as $point)
+            <li>{{ $point }}</li>
+            @endforeach
+        </ul>
+        @endif
 
-                        {{-- Sanctuaries / Accommodations --}}
-                        <?php
-                        // Precomputed once so the room cards below and the sidebar/mobile room-picker
-                        // (which needs the same price + thumbnail per room) never fall out of sync.
-                        $roomPricing = array();
-                        foreach (@$experience_accomodations as $racm) {
-                            $rDiscount = 0;
-                            $rPay = @$racm->room_price;
-                            if ((!empty(@$experience->eirly_bird_before_days)) && (!empty(@$experience->eirly_bird_discount)) && (@$experience->eirly_bird_discount > 0)) {
-                                if (@$experience->eirly_bird_discount_type == "amt") {
-                                    $rDiscount += @$experience->eirly_bird_discount;
-                                } else {
-                                    $rDiscount = (@$rPay * @$experience->eirly_bird_discount) / 100;
-                                }
-                            }
-                            if ((!empty(@$experience->offer_start_date)) && (!empty(@$experience->offer_discount)) && (@$experience->offer_discount > 0)) {
-                                $rNow = \Carbon\Carbon::parse(date("Y-m-d"))->format("Y-m-d");
-                                if ((\Carbon\Carbon::parse(@$experience->offer_start_date)->format("Y-m-d") <= $rNow) && (\Carbon\Carbon::parse(@$experience->offer_end_date)->format("Y-m-d") >= $rNow)) {
-                                    if (@$experience->offer_discount_type == "amt") {
-                                        $rDiscount += @$experience->offer_discount;
-                                    } else {
-                                        $rDiscount += (@$rPay * @$experience->offer_discount) / 100;
-                                    }
-                                }
-                            }
-                            $rHasFlat = !empty($rPay) && $rPay > 0;
-                            $rFallback = null;
-                            if (!$rHasFlat) {
-                                $occCandidates = array();
-                                if (!empty(@$racm->single_occupancy_price)) { $occCandidates[] = @$racm->single_occupancy_price; }
-                                if (!empty(@$racm->double_occupancy_price)) { $occCandidates[] = @$racm->double_occupancy_price; }
-                                $durP = @$experience_accommodation_duration_prices[$racm->id] ?? collect();
-                                foreach ($durP as $dp) {
-                                    if (!empty($dp->single_price)) { $occCandidates[] = $dp->single_price; }
-                                    if (!empty($dp->double_price)) { $occCandidates[] = $dp->double_price; }
-                                }
-                                if (sizeof($occCandidates) > 0) {
-                                    $rFallback = min($occCandidates);
-                                }
-                            }
-                            $rThumb = null;
-                            if (@$accomodationimagegalleries) {
-                                foreach (@$accomodationimagegalleries as $rimg) {
-                                    if ($rimg->accomodation_id == $racm->id && $rimg->image_url) {
-                                        $rThumb = $rimg->image_url;
-                                        break;
-                                    }
-                                }
-                            }
-                            $roomPricing[$racm->id] = array(
-                                'hasFlat' => $rHasFlat,
-                                'pay' => $rPay,
-                                'discount' => $rDiscount,
-                                'fallback' => $rFallback,
-                                'currency' => @$racm->currency,
-                                'thumb' => $rThumb,
-                            );
-                        }
-                        ?>
-                        {{-- Pricing/Package sections (Choose Your Room + Price Options) extracted to
-                             partials/experience-pricing-packages.blade.php — Task 7. $roomPricing computed
-                             above stays in this parent scope because partials/experience-booking-fields.blade.php
-                             (shared booking form, further down this file) also reads it. --}}
-                        @include('partials.experience-pricing-packages')
+        <?php
+        $routineItems = (@$experience_schedules && sizeof(@$experience_schedules) > 0) ? $experience_schedules->sortBy('schedule_start_time') : collect();
+        ?>
+        @if($routineItems->count() > 0)
+        <h3 class="rd-subhead">Daily Schedule</h3>
+        <ul class="rd-schedule-list">
+            @foreach($routineItems as $schedule)
+            <li>
+                <time>@if($schedule->schedule_start_time){{ \Carbon\Carbon::parse($schedule->schedule_start_time)->format('H:i') }}@endif</time>
+                {{ $schedule->schedule_day ? $schedule->schedule_day.' — ' : '' }}{{ $schedule->activity_description }}
+            </li>
+            @endforeach
+        </ul>
+        @elseif(@$experience->schedule)
+        <h3 class="rd-subhead">Daily Schedule</h3>
+        <div class="rd-measure">{!! @$experience->schedule !!}</div>
+        @endif
 
-                        {{-- Upcoming Availability (extracted to partials/experience-availability.blade.php — Task 9) --}}
-                        @include('partials.experience-availability')
+        @if(@$experience->experience_summary)
+        <h3 class="rd-subhead">At a Glance</h3>
+        <?php
+        $summaryText = trim(strip_tags($experience->experience_summary));
+        $summaryPoints = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $summaryText))));
+        if (count($summaryPoints) <= 1) {
+            $summaryPoints = array_values(array_filter(array_map('trim', preg_split('/(?<=[.!?])\s+/', $summaryText, -1, PREG_SPLIT_NO_EMPTY))));
+        }
+        ?>
+        <ul class="rd-bullet-list">
+            @foreach($summaryPoints as $point)
+            <li>{{ $point }}</li>
+            @endforeach
+        </ul>
+        @endif
 
-                        {{-- Daily Routine --}}
-                        <?php $routineItems = (@$experience_schedules && sizeof(@$experience_schedules) > 0) ? $experience_schedules->sortBy('schedule_start_time') : collect(); ?>
-                        @if($routineItems->count() > 0)
-                        <div class="xd-card" id="routine">
-                            <span class="xd-tag">Daily Rhythm</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#127749;</span> The Daily Routine</h2>
-                            <div class="xd-routine-list">
-                                @foreach($routineItems as $schedule)
-                                <div class="xd-routine-item">
-                                    <span class="xd-routine-time">
-                                        @if($schedule->schedule_start_time){{ \Carbon\Carbon::parse($schedule->schedule_start_time)->format('h:i A') }}@endif
-                                        @if($schedule->schedule_end_time) - {{ \Carbon\Carbon::parse($schedule->schedule_end_time)->format('h:i A') }}@endif
-                                    </span>
-                                    <div class="xd-routine-desc">
-                                        @if($schedule->schedule_day)<h4>{{ $schedule->schedule_day }}</h4>@endif
-                                        <p>{{ $schedule->activity_description }}</p>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @elseif(@$experience->schedule)
-                        <div class="xd-card" id="routine">
-                            <span class="xd-tag">Daily Rhythm</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#127749;</span> Experience Schedule</h2>
-                            <div>{!! @$experience->schedule !!}</div>
-                        </div>
-                        @endif
+        @if(@$experience->what_is_included || @$experience->what_is_not_included)
+        <div class="rd-two-col" style="margin-top:28px;">
+            @if(@$experience->what_is_included)
+            <div>
+                <h3 class="rd-subhead" style="margin-top:0;">Included</h3>
+                <div class="rd-check-list">{!! @$experience->what_is_included !!}</div>
+            </div>
+            @endif
+            @if(@$experience->what_is_not_included)
+            <div>
+                <h3 class="rd-subhead" style="margin-top:0;">Not Included</h3>
+                <div class="rd-cross-list">{!! @$experience->what_is_not_included !!}</div>
+            </div>
+            @endif
+        </div>
+        @endif
 
-                        {{-- Experience Details --}}
-                        @if(@$experience->experience_details)
-                        <div class="xd-card">
-                            <span class="xd-tag">More Detail</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#128221;</span> Experience Details</h2>
-                            <div>{!! @$experience->experience_details !!}</div>
-                        </div>
-                        @endif
+        @if(@$experience->experience_details)
+        <h3 class="rd-subhead">More Details</h3>
+        <div class="rd-measure">{!! @$experience->experience_details !!}</div>
+        @endif
+      </section>
 
-                        {{-- Placement: About Center, Amenities, Certification, and Accomodation Overview moved
-                             (Task 10) to a consolidated "About the Center" cluster after Payment & Cancellation
-                             Terms / Cancellation Policy, before Reviews — matches the reference image's single
-                             "About [Center]" section (founder story + highlights + amenities + nearby + contact)
-                             in that position. See the consolidated block below Cancellation Policy. --}}
+      {{-- ACCOMMODATION --}}
+      @if(sizeof(@$experience_accomodations) > 0)
+      <section id="accommodation">
+        <h2>Accommodation</h2>
+        <p class="rd-measure" style="color:var(--rd-grey-mid); font-size:0.88rem; margin-top:-8px; margin-bottom:20px;">Choose your room below — pricing and availability update instantly in the booking panel.</p>
 
-                        {{-- Food & Drink (extracted to partials/experience-food.blade.php — Task 8) --}}
-                        @include('partials.experience-food')
-
-                        {{-- Inclusions & Exclusions --}}
-                        @if(@$experience->what_is_included || @$experience->what_is_not_included)
-                        <div class="xd-card" id="what-is-included">
-                            <span class="xd-tag">Full Clarity</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#9878;&#65039;</span> Inclusions &amp; Exclusions</h2>
-                            <div class="xd-inc-exc-grid">
-                                @if(@$experience->what_is_included)
-                                <div class="xd-inc-card">
-                                    <div class="xd-inc-head included">&#10003; What's Included</div>
-                                    <div class="xd-inc-list bg-list-icon">{!! @$experience->what_is_included !!}</div>
-                                </div>
-                                @endif
-                                @if(@$experience->what_is_not_included)
-                                <div class="xd-inc-card" id="what-is-not-included">
-                                    <div class="xd-inc-head excluded">&#10005; What's Excluded</div>
-                                    <div class="xd-inc-list bg-list-icon">{!! @$experience->what_is_not_included !!}</div>
-                                </div>
-                                @endif
-                            </div>
-                        </div>
-                        @endif
-
-                        {{-- Style --}}
-                        @if(@$experience->styles_taught)
-                        <div class="xd-card" id="style">
-                            <span class="xd-tag">Practice</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#129496;</span> Style</h2>
-                            <ul class="bg-list-icon">
-                                <?php
-                                foreach (explode(",", @$experience->styles_taught) as $styles_taught) {
-                                ?>
-                                    <li>{{ $styles_taught }}</li>
-                                <?php
-                                }
-                                ?>
-                            </ul>
-                        </div>
-                        @endif
-
-                        {{-- Languages --}}
-                        @if(@$experience->language_spoken)
-                        <div class="xd-card" id="languages">
-                            <span class="xd-tag">Communication</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#128172;</span> Languages</h2>
-                            <ul class="bg-list-icon">
-                                <?php
-                                foreach (explode("||", @$experience->language_spoken) as $language) {
-                                ?>
-                                    <li>{{ @$language }}</li>
-                                <?php
-                                }
-                                ?>
-                            </ul>
-                        </div>
-                        @endif
-
-                        {{-- Placement: How to Reach, Things to Do, and Booking Info moved (Task 10) into the
-                             same consolidated "About the Center" cluster after Payment & Cancellation Terms /
-                             Cancellation Policy — How to Reach maps to the reference's "Nearby"/logistics content
-                             inside its "About [Center]" section; Things to Do and Booking Info have no explicit
-                             slot in the reference, so per the no-removal rule they are preserved in the same
-                             cluster rather than dropped. --}}
-
-                        {{-- Payment & Cancellation Terms + Cancellation Policy (extracted, merged — partials/experience-payment-terms.blade.php — Task 11) --}}
-                        @include('partials.experience-payment-terms')
-
-                        {{-- ===== Consolidated "About the Center" cluster (Task 10) =====
-                             Placement decision: the reference image shows ONE "About [Center]" section
-                             (founder story + highlights + amenities + nearby/logistics + contact) positioned
-                             after Payment & Cancellation Terms, before Reviews. That single reference section
-                             absorbs what this app models as five separate fields: About Center, Amenities,
-                             How to Reach, Things to Do, and Booking Info — plus Certification and the
-                             center-level Accomodation Overview gallery, which sat alongside them before this
-                             move and are kept adjacent rather than orphaned. None are removed; all are
-                             preserved here per the no-removal rule. --}}
-
-                        {{-- Placement: matches reference's "About [Center]" founder-story block --}}
-                        @if(@$center->about_center)
-                        <div id="about" class="xd-card">
-                            <span id="centre-overview" class="xd-tag">The Host</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#127978;</span> About {{ @$center->name }}</h2>
-                            <span class="view-website c-medium fs-14 fw-500 d-block mb-3">
-                                <span class="c-brand icon-globe me-2"></span>
-                                <a target="_blank" href="{{ url("center/".@$center->slug) }}">View Profile</a>
-                            </span>
-                            {!! @$center->about_center !!}
-
-                            @if(@$center->year_of_foundation || @$center->founders)
-                            <div class="xd-inc-exc-grid" style="margin-top:20px;">
-                                @if(@$center->year_of_foundation)
-                                <div class="xd-inc-card"><div class="xd-inc-head" style="color:var(--xd-text-main);">Founded</div>{{ @$center->year_of_foundation }}</div>
-                                @endif
-                                @if(@$center->founders)
-                                <div class="xd-inc-card"><div class="xd-inc-head" style="color:var(--xd-text-main);">Founders</div>{{ @$center->founders }}</div>
-                                @endif
-                            </div>
-                            @endif
-
-                            @if(@$center->our_mission)
-                            <div style="margin-top:24px;">
-                                <h4 class="xd-about-subhead">Our Mission</h4>
-                                {!! @$center->our_mission !!}
-                            </div>
-                            @endif
-
-                            @if(@$center->our_philosophy)
-                            <div style="margin-top:24px;">
-                                <h4 class="xd-about-subhead">Our Philosophy</h4>
-                                {!! @$center->our_philosophy !!}
-                            </div>
-                            @endif
-
-                            @if(@$center->what_sets_us_apart)
-                            <div style="margin-top:24px;">
-                                <h4 class="xd-about-subhead">What Sets Us Apart</h4>
-                                {!! @$center->what_sets_us_apart !!}
-                            </div>
-                            @endif
-
-                            @if(@$center->center_highlights)
-                            <div style="margin-top:24px;">
-                                <h4 class="xd-about-subhead">Highlights</h4>
-                                {!! @$center->center_highlights !!}
-                            </div>
-                            @endif
-
-                            @if(@$center->center_features)
-                            <div style="margin-top:24px;">
-                                <h4 class="xd-about-subhead">Features</h4>
-                                {!! @$center->center_features !!}
-                            </div>
-                            @endif
-
-                            @if(@$center->awards)
-                            <div style="margin-top:24px;">
-                                <h4 class="xd-about-subhead">Awards</h4>
-                                {!! @$center->awards !!}
-                            </div>
-                            @endif
-
-                            @if(sizeof((array)@$center_locations) > 0)
-                            <div style="margin-top:24px;">
-                                <h4 class="xd-about-subhead">Nearby Locations</h4>
-                                <div class="xd-room-tags">
-                                    @foreach(@$center_locations as $center_location)
-                                    <span class="xd-room-tag">{{ $center_location->name }}</span>
-                                    @endforeach
-                                </div>
-                            </div>
-                            @endif
-
-                            <div class="xd-help-contact-row" style="margin-top:24px;">
-                                @if(@$center->email_address)
-                                <span class="xd-help-contact-item"><span class="c-brand icon-mail me-1"></span> {{ @$center->email_address }}</span>
-                                @endif
-                                @if(@$center->contact_number)
-                                <span class="xd-help-contact-item"><span class="c-brand icon-phone me-1"></span> {{ @$center->contact_number }}</span>
-                                @endif
-                                @if(@$center->whatsapp_number)
-                                <span class="xd-help-contact-item"><span class="c-brand icon-whatsapp me-1"></span> {{ @$center->whatsapp_number }}</span>
-                                @endif
-                                @if(@$center->website)
-                                <a class="xd-help-contact-item" target="_blank" href="{{ @$center->website }}"><span class="c-brand icon-globe me-1"></span> Website</a>
-                                @endif
-                                @if(@$center->facebook_url)
-                                <a class="xd-help-contact-item" target="_blank" href="{{ @$center->facebook_url }}"><span class="icon-facebook me-1"></span> Facebook</a>
-                                @endif
-                                @if(@$center->instagram_url)
-                                <a class="xd-help-contact-item" target="_blank" href="{{ @$center->instagram_url }}"><span class="icon-instagram me-1"></span> Instagram</a>
-                                @endif
-                            </div>
-                        </div>
-                        @endif
-
-                        {{-- Placement: matches reference's amenities sub-block inside "About [Center]" --}}
-                        @if(sizeof((array)@$amenities) > 0)
-                        <div class="xd-card">
-                            <span class="xd-tag">Resort Comforts</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#128142;</span> Amenities</h2>
-                            <div class="xd-amenities-grid">
-                                @foreach(@$amenities as $amenity)
-                                <div class="xd-amenity-card">
-                                    @if(@$amenity->image_url)
-                                    <img class="lazy" width="22" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode($amenity->image_url)),'?') }}" alt="{{ $amenity->name }}" />
-                                    @endif
-                                    {{ $amenity->name }}
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
-
-                        {{-- Placement: kept adjacent to About Center (was already neighboring it before this move; not one of the five, preserved rather than orphaned) --}}
-                        @if($experience->experience_certification_id)
-                        <div class="xd-card">
-                            <span class="xd-tag">Recognised</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#127942;</span> Certification</h2>
-                            <?php $imagegallerie = \App\Certificates::where("id", $experience->experience_certification_id)->get(); ?>
-                            @if(@$imagegallerie)
-                            <div class="d-flex flex-wrap" style="gap:12px;">
-                                @foreach(@$imagegallerie as $gallery)
-                                @if(@$gallery && @$gallery->image_url)
-                                <img class="lazy" width="150px" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode($gallery->image_url)),'?') }}" alt="{!! @$gallery->image_url !!}">
-                                @endif
-                                @endforeach
-                            </div>
-                            @endif
-                        </div>
-                        @endif
-
-                        {{-- Placement: kept adjacent to About Center (center-level property gallery; was already neighboring it before this move; not one of the five, preserved rather than orphaned) --}}
-                        @if((sizeof((array)@$accomodationimagegalleries)>0) OR (@$center->accomodation_banner_image_url) OR (@$center->accomodation_overview))
-                        <div id="accomodation" class="xd-card deal-gallery">
-                            <span class="xd-tag">The Space</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#127960;</span> Accomodation</h2>
-                            <div class="article-items">
-                                <div class="left w-100">
-                                    <div class="container-fluid p-0">
-                                        <div class="slideshow-container">
-                                            @if(@$center->accomodation_banner_image_url)
-                                            <div class="mySlides fade">
-                                                <img class="lazy" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode(@$center->accomodation_banner_image_url)),'?') }}" />
-                                            </div>
-                                            @endif
-                                            @if(sizeof((array)@$accomodationimagegalleries)>0)
-                                                @foreach(@$accomodationimagegalleries as $accomodationimagegallery)
-                                                @if(@$accomodationimagegallery->image_url)
-                                                <div class="mySlides fade">
-                                                    <img class="lazy" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)),'?') }}" />
-                                                </div>
-                                                @endif
-                                                @endforeach
-                                                <a class="prev">&#10094;</a>
-                                                <a class="next">&#10095;</a>
-                                                <div class="thumnnails">
-                                                    @if(@$center->accomodation_banner_image_url)
-                                                    <span class="dot">
-                                                        <img class="lazy" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode(@$center->accomodation_banner_image_url)),'?') }}" />
-                                                    </span>
-                                                    @endif
-                                                    @foreach(@$accomodationimagegalleries as $accomodationimagegallery)
-                                                    @if(@$accomodationimagegallery->image_url)
-                                                    <span class="dot">
-                                                        <img class="lazy" data-src="{{ strtok(Storage::disk('s3')->url(rawurlencode(@$accomodationimagegallery->image_url)),'?') }}" />
-                                                    </span>
-                                                    @endif
-                                                    @endforeach
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-3">
-                                {!! @$center->accomodation_overview !!}
-                            </div>
-                        </div>
-                        @endif
-
-                        {{-- Placement: matches reference's "Nearby"/logistics content inside "About [Center]" --}}
-                        @if(@$center->how_to_get_there || @$center->airport_name || @$center->pickup_drop_cost)
-                        <div id="howtoreach" class="xd-card">
-                            <span class="xd-tag">Getting There</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#9992;&#65039;</span> How to reach {{ @$center->name }}</h2>
-                            <div>{!! @$center->how_to_get_there !!}</div>
-                            <div class="row mt-3">
-                                @if(@$center->airport_name)
-                                <div class="col-md-6 mb-2"><strong>Nearest Airport:</strong> {{ @$center->airport_name }}</div>
-                                @endif
-                                @if(@$center->pickup_drop_cost)
-                                <div class="col-md-6 mb-2"><strong>Pickup / Drop Cost:</strong> {{ \App\Http\Helpers\CommonHelper::get_currency_rate(@$center->pickup_drop_cost, $site_currency) }}</div>
-                                @endif
-                            </div>
-                        </div>
-                        @endif
-
-                        {{-- Placement: no explicit slot in the reference; fallback — preserved in this cluster rather than dropped --}}
-                        @if(@$center->things_to_do_around_the_center)
-                        <div id="things-to-do" class="xd-card">
-                            <span class="xd-tag">Explore</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#128506;&#65039;</span> Things to Do Around {{ @$center->name }}</h2>
-                            <div>{!! @$center->things_to_do_around_the_center !!}</div>
-                        </div>
-                        @endif
-
-                        {{-- Placement: no explicit slot in the reference; fallback — preserved in this cluster rather than dropped --}}
-                        @if(@$experience->booking_info)
-                        <div class="xd-card" id="booking_info">
-                            <span class="xd-tag">Good to Know</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#8505;&#65039;</span> Booking Info</h2>
-                            <div>{!! @$experience->booking_info !!}</div>
-                        </div>
-                        @endif
-                        {{-- ===== End consolidated cluster ===== --}}
-
-                        {{-- Need Help? (new section — partials/experience-need-help.blade.php — Task 12) --}}
-                        @include('partials.experience-need-help')
-
-                        {{-- Reviews (container restyle only, Task 13 — iframe src/embed mechanism and @if guard untouched, per Requirement 16) --}}
-                        @if(@$center->bg_id)
-                        <div class="xd-card" id="reviews">
-                            <span class="xd-tag">Guest Experiences</span>
-                            <h2 class="xd-title"><span class="xd-title-icon">&#128172;</span> Reviews</h2>
-                            <div class="xd-reviews-wrap">
-                                <iframe src="https://balancegurus.com/embed/reviews?listing_id=<?php echo @$center->bg_id;?>" target="_blank" width="100%" height="600" style="border:none;"></iframe>
-                            </div>
-                        </div>
-                        @endif
-
-                    </div>
-                </main>
-
-                <!-- Desktop Sticky Booking Sidebar (display markup extracted to
-                     partials/experience-booking-sidebar.blade.php — Task 14). $offerActive stays computed
-                     here, not in the partial, because the mobile bottom bar further down also reads it and
-                     Blade's include mechanism does not leak child-set vars back out (same pattern as Tasks 3/7). -->
-                <?php
-                $offerActive = false;
-                if ((!empty(@$experience->offer_start_date)) && (!empty(@$experience->offer_discount)) && (@$experience->offer_discount > 0)) {
-                    $nowD = \Carbon\Carbon::parse(date("Y-m-d"))->format("Y-m-d");
-                    if ((\Carbon\Carbon::parse(@$experience->offer_start_date)->format("Y-m-d") <= $nowD) && (\Carbon\Carbon::parse(@$experience->offer_end_date)->format("Y-m-d") >= $nowD)) {
-                        $offerActive = true;
-                    }
+        @foreach(@$experience_accomodations as $racm)
+        <?php
+        $roomImgs = array();
+        if (@$accomodationimagegalleries) {
+            foreach (@$accomodationimagegalleries as $ex_img) {
+                if ($ex_img->accomodation_id == $racm->id && $ex_img->image_url && sizeof($roomImgs) < 5) {
+                    $roomImgs[] = strtok(Storage::disk('s3')->url(rawurlencode($ex_img->image_url)), '?');
                 }
-                ?>
-                @include('partials.experience-booking-sidebar')
+            }
+        }
+        $roomCapacity = @$racm->ea_max_guest_in_room ?: @$racm->max_guest_in_room;
+        $nextAvail = @$experience_availability_next[$racm->id] ?? null;
+        $rp = $roomPricing[$racm->id];
+        $durPrices = @$experience_accommodation_duration_prices[$racm->id] ?? collect();
+        ?>
+        <div class="rd-room-card">
+            @if(sizeof($roomImgs) > 0)
+            <div class="rd-room-photos" style="grid-template-columns: repeat({{ sizeof($roomImgs) }}, 1fr);">
+                @foreach($roomImgs as $rimg)
+                <img class="lazy" data-src="{{ $rimg }}" alt="{{ $racm->name }}" />
+                @endforeach
+            </div>
+            @endif
+            <div class="rd-room-body">
+                <div class="rd-room-top">
+                    <div>
+                        <div class="rd-room-name"><a href="javascript:void(0);" class="popup-large more-info-deal">{{ $racm->name }}</a></div>
+                        @if(@$racm->ea_about)
+                        <p class="rd-room-desc">{!! html_entity_decode(\App\Http\Helpers\CommonHelper::excerpt(strip_tags(@$racm->ea_about), 140)) !!}</p>
+                        @elseif(@$racm->description)
+                        <p class="rd-room-desc">{!! html_entity_decode(\App\Http\Helpers\CommonHelper::excerpt(strip_tags(@$racm->description), 140)) !!}</p>
+                        @endif
+                        @if(@$racm->recurring_type == 'Daily')
+                        <p class="rd-room-avail-note">Available all year round</p>
+                        @elseif(@$racm->available_month)
+                        <p class="rd-room-avail-note">{{ $racm->available_month }}</p>
+                        @endif
+                    </div>
+                    @if($nextAvail)
+                    <span class="rd-status-pill {{ $nextAvail->status == 'open' ? 'rd-status-open' : ($nextAvail->status == 'few_left' ? 'rd-status-few' : 'rd-status-full') }}">
+                        <span class="rd-dot"></span>{{ \App\ExperienceAccommodationAvailability::statusLabel($nextAvail->status) }}
+                        @if(in_array($nextAvail->status, ['open', 'few_left']))
+                        &middot; {{ $nextAvail->remaining }} left from {{ \Carbon\Carbon::parse($nextAvail->start_date)->format('d M') }}
+                        @endif
+                    </span>
+                    @endif
+                </div>
+                <div class="rd-amenity-row">
+                    @if($roomCapacity)<span><span class="icon-user"></span> Sleeps {{ $roomCapacity }}</span>@endif
+                    @if(@$racm->duration)<span><span class="icon-clock"></span> {{ $racm->duration }} Days</span>@endif
+                    <span><span class="icon-location"></span> <?php echo \App\Experiences::get_state_country($experience->id); ?></span>
+                </div>
+
+                @if($durPrices->count() || @$racm->single_occupancy_price || @$racm->double_occupancy_price)
+                <div class="rd-room-price-table">
+                    <table>
+                        <thead><tr><th>Duration</th><th>Single</th><th>Double (pp)</th></tr></thead>
+                        <tbody>
+                            @if($durPrices->count())
+                                @foreach($durPrices as $dp)
+                                <tr>
+                                    <td class="rd-tnum">{{ $dp->duration_days }} Days</td>
+                                    <td class="rd-tnum">{{ $dp->single_price ? \App\Http\Helpers\CommonHelper::get_currency_rate($dp->single_price, $dp->currency ?: @$racm->currency) : '-' }}</td>
+                                    <td class="rd-tnum">{{ $dp->double_price ? \App\Http\Helpers\CommonHelper::get_currency_rate($dp->double_price, $dp->currency ?: @$racm->currency) : '-' }}</td>
+                                </tr>
+                                @endforeach
+                            @else
+                            <tr>
+                                <td class="rd-tnum">{{ @$racm->duration ? @$racm->duration.' Days' : 'Standard' }}</td>
+                                <td class="rd-tnum">{{ @$racm->single_occupancy_price ? \App\Http\Helpers\CommonHelper::get_currency_rate(@$racm->single_occupancy_price, @$racm->currency) : '-' }}</td>
+                                <td class="rd-tnum">{{ @$racm->double_occupancy_price ? \App\Http\Helpers\CommonHelper::get_currency_rate(@$racm->double_occupancy_price, @$racm->currency) : '-' }}</td>
+                            </tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+                @endif
+
+                <div class="rd-room-cta">
+                    <button type="button" class="xd-btn-gradient xd-btn-sm" onclick="xdSelectRoom('{{ $racm->id }}')">Select Room</button>
+                    <button type="button" data-popup="requstcallPopup" class="show-bg-modal xd-btn-outline xd-btn-sm">Send Inquiry</button>
+                </div>
             </div>
         </div>
-    </section>
+        @endforeach
+      </section>
+      @endif
 
-    <!-- Mobile persistent booking bar + drawer (extracted to
-         partials/experience-mobile-booking.blade.php — Task 15) -->
-    @include('partials.experience-mobile-booking')
+      {{-- FOOD --}}
+      @if((sizeof(@$foodimagegalleries->toArray())>0) OR (@$experience->food_banner_image_url) OR (@$experience->food_overview))
+      <section id="food">
+        <h2>Food &amp; Dining</h2>
+        @if(@$experience->food_overview)
+        <div class="rd-measure">{!! @$experience->food_overview !!}</div>
+        @endif
+        <?php
+        $foodImgs = array();
+        if (@$experience->food_banner_image_url) { $foodImgs[] = strtok(Storage::disk('s3')->url(rawurlencode(@$experience->food_banner_image_url)), '?'); }
+        foreach (@$foodimagegalleries as $fg) {
+            if (@$fg->image_url && sizeof($foodImgs) < 4) { $foodImgs[] = strtok(Storage::disk('s3')->url(rawurlencode($fg->image_url)), '?'); }
+        }
+        ?>
+        @if(sizeof($foodImgs) > 0)
+        <div class="rd-food-photos" style="grid-template-columns: repeat({{ min(sizeof($foodImgs), 4) }}, 1fr);">
+            @foreach($foodImgs as $fimg)
+            <img class="lazy" data-src="{{ $fimg }}" alt="Food at {{ @$center->name }}" />
+            @endforeach
+        </div>
+        @endif
+      </section>
+      @endif
 
+      {{-- PRICING --}}
+      @if(@$experience_durations && sizeof(@$experience_durations) > 0)
+      <section id="pricing">
+        <h2>Pricing</h2>
+        <div class="rd-table-scroll">
+            <table class="rd-price-table">
+                <thead><tr><th>Duration</th><th>Standard Price</th><th>Promo Price</th></tr></thead>
+                <tbody>
+                    @foreach(@$experience_durations as $ed)
+                    <tr>
+                        <td class="rd-tnum">{{ $ed->duration }} Days</td>
+                        <td class="rd-price-strike rd-tnum">{{ $ed->price ? \App\Http\Helpers\CommonHelper::get_currency_rate($ed->price, $ed->currency) : '-' }}</td>
+                        <td class="rd-price-main rd-tnum">{{ $ed->promo_price ? \App\Http\Helpers\CommonHelper::get_currency_rate($ed->promo_price, $ed->currency) : '-' }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+      </section>
+      @endif
+
+      {{-- AVAILABILITY (real calendar-generation logic, restyled via CSS above) --}}
+      @include('partials.experience-availability')
+
+      {{-- PAYMENT & CANCELLATION TERMS --}}
+      <?php
+      $depositPolicy = @$experience->deposit_policy ?: @$center_commission->deposit_policy;
+      $depositAmount = @$experience->deposit_amount ?: @$center_commission->deposit_amount;
+      $cancelCondition = @$experience->cancellation_policy_condition ?: @$center_commission->cancellation_policy_condition;
+      $cancelDays = @$experience->cancellation_policy_days ?: @$center_commission->cancellation_policy_days;
+      $restOfPayment = @$experience->rest_of_payment ?: @$center_commission->rest_of_payment;
+      $restOfPaymentDays = @$experience->rest_of_payment_days ?: @$center_commission->rest_of_payment_days;
+      $taxInfo = @$experience->tax ?: @$center_commission->tax;
+      ?>
+      @if($depositPolicy || $cancelCondition || $restOfPayment || $taxInfo || @$experience->cancellation_policy)
+      <section id="payment-terms">
+        <h2>Payment &amp; Cancellation Terms</h2>
+        @if($depositPolicy || $cancelCondition || $restOfPayment || $taxInfo)
+        <dl class="rd-terms-grid">
+            @if($depositPolicy && $depositAmount)
+            <div><dt>Deposit</dt><dd>{{ \App\Http\Helpers\CommonHelper::get_currency_rate($depositAmount, $site_currency) }} required to confirm your place</dd></div>
+            @endif
+            @if($restOfPayment && $restOfPaymentDays)
+            <div><dt>Balance due</dt><dd>{{ $restOfPaymentDays }} days before the retreat start date</dd></div>
+            @endif
+            @if($cancelCondition && $cancelDays)
+            <div><dt>Cancellation</dt><dd>Must be made at least {{ $cancelDays }} days in advance</dd></div>
+            @endif
+            @if($taxInfo)
+            <div><dt>Applicable tax</dt><dd>{{ $taxInfo }}</dd></div>
+            @endif
+        </dl>
+        @endif
+        @if(@$experience->cancellation_policy)
+        <div style="margin-top:{{ ($depositPolicy || $cancelCondition || $restOfPayment || $taxInfo) ? '24px' : '0' }};">
+            <h3 class="rd-subhead" style="margin-top:0;">Cancellation Policy</h3>
+            <div class="rd-measure">{!! @$experience->cancellation_policy !!}</div>
+        </div>
+        @endif
+      </section>
+      @endif
+
+      {{-- CENTER --}}
+      @if(@$center->about_center)
+      <section id="center">
+        <?php
+        $centerInitials = '';
+        foreach (explode(' ', trim(@$center->name)) as $w) { if ($w) $centerInitials .= mb_substr($w, 0, 1); }
+        $centerInitials = mb_strtoupper(mb_substr($centerInitials, 0, 2));
+        ?>
+        <div class="rd-center-head">
+            <div class="rd-center-mark">{{ $centerInitials ?: 'C' }}</div>
+            <div>
+                <h2>About {{ @$center->name }}</h2>
+                @if(@$center->year_of_foundation || @$center->founders)
+                <p>@if(@$center->year_of_foundation)Founded {{ $center->year_of_foundation }}@endif @if(@$center->founders) by {{ $center->founders }}@endif</p>
+                @endif
+            </div>
+        </div>
+        <div class="rd-measure">{!! @$center->about_center !!}</div>
+
+        @if(@$center->our_mission)<h3 class="rd-subhead">Our Mission</h3><div class="rd-measure">{!! $center->our_mission !!}</div>@endif
+        @if(@$center->our_philosophy)<h3 class="rd-subhead">Our Philosophy</h3><div class="rd-measure">{!! $center->our_philosophy !!}</div>@endif
+        @if(@$center->what_sets_us_apart)<h3 class="rd-subhead">What Sets Us Apart</h3><div class="rd-measure">{!! $center->what_sets_us_apart !!}</div>@endif
+
+        <?php
+        $centerPhotos = array();
+        if (@$center->accomodation_banner_image_url) { $centerPhotos[] = strtok(Storage::disk('s3')->url(rawurlencode($center->accomodation_banner_image_url)), '?'); }
+        foreach (@$accomodationimagegalleries as $cimg) {
+            if (@$cimg->image_url && sizeof($centerPhotos) < 5) { $centerPhotos[] = strtok(Storage::disk('s3')->url(rawurlencode($cimg->image_url)), '?'); }
+        }
+        ?>
+        @if(sizeof($centerPhotos) > 0)
+        <div class="rd-center-photos" style="grid-template-columns: repeat({{ min(sizeof($centerPhotos), 5) }}, 1fr);">
+            @foreach($centerPhotos as $cphoto)
+            <img class="lazy" data-src="{{ $cphoto }}" alt="{{ @$center->name }}" />
+            @endforeach
+        </div>
+        @endif
+
+        @if(@$center->center_highlights)
+        <h3 class="rd-subhead">Highlights</h3>
+        <div class="rd-measure">{!! $center->center_highlights !!}</div>
+        @endif
+
+        @if(sizeof((array)@$amenities) > 0)
+        <h3 class="rd-subhead">Amenities</h3>
+        <div class="rd-tag-row">
+            @foreach(@$amenities as $amenity)
+            <span class="rd-chip">{{ $amenity->name }}</span>
+            @endforeach
+        </div>
+        @endif
+
+        @if(sizeof((array)@$center_locations) > 0)
+        <h3 class="rd-subhead">Nearby</h3>
+        <div class="rd-tag-row">
+            @foreach(@$center_locations as $center_location)
+            <span class="rd-chip">{{ $center_location->name }}</span>
+            @endforeach
+        </div>
+        @endif
+
+        @if(@$center->how_to_get_there || @$center->airport_name || @$center->pickup_drop_cost)
+        <h3 class="rd-subhead">Getting There</h3>
+        @if(@$center->airport_name || @$center->pickup_drop_cost)
+        <dl class="rd-terms-grid" style="grid-template-columns:1fr 1fr;">
+            @if(@$center->airport_name)<div><dt>Nearest airport</dt><dd>{{ $center->airport_name }}</dd></div>@endif
+            @if(@$center->pickup_drop_cost)<div style="border-bottom:none;"><dt>Pickup / drop</dt><dd class="rd-tnum">{{ \App\Http\Helpers\CommonHelper::get_currency_rate($center->pickup_drop_cost, $site_currency) }}</dd></div>@endif
+        </dl>
+        @endif
+        @if(@$center->how_to_get_there)
+        <div class="rd-measure" style="margin-top:14px;">{!! $center->how_to_get_there !!}</div>
+        @endif
+        @endif
+
+        @if(@$center->things_to_do_around_the_center)
+        <h3 class="rd-subhead">Things to Do Nearby</h3>
+        <div class="rd-measure">{!! $center->things_to_do_around_the_center !!}</div>
+        @endif
+
+        @if(@$experience->booking_info)
+        <h3 class="rd-subhead">Good to Know</h3>
+        <div class="rd-measure">{!! $experience->booking_info !!}</div>
+        @endif
+
+        @if(@$center->address_of_center || @$experience->location)
+        <div class="rd-map-box">
+            <div class="rd-map-pin"></div>
+            <span class="rd-map-label">{{ @$center->address_of_center }} {{ @$experience->location }}</span>
+        </div>
+        @endif
+
+        <div class="rd-contact-row">
+            @if(@$center->email_address)<a href="mailto:{{ $center->email_address }}">{{ $center->email_address }}</a>@endif
+            @if(@$center->contact_number)<a href="tel:{{ $center->contact_number }}">{{ $center->contact_number }}</a>@endif
+            @if(@$center->whatsapp_number)<a href="https://wa.me/{{ preg_replace('/\D+/', '', $center->whatsapp_number) }}" target="_blank">WhatsApp</a>@endif
+            @if(@$center->website)<a href="{{ $center->website }}" target="_blank">Website</a>@endif
+            @if(@$center->facebook_url)<a href="{{ $center->facebook_url }}" target="_blank">Facebook</a>@endif
+            @if(@$center->instagram_url)<a href="{{ $center->instagram_url }}" target="_blank">Instagram</a>@endif
+        </div>
+      </section>
+      @endif
+
+      {{-- REVIEWS --}}
+      @if(@$center->bg_id)
+      <section id="reviews">
+        <h2>Reviews</h2>
+        <div class="rd-reviews-wrap">
+            <iframe src="https://balancegurus.com/embed/reviews?listing_id=<?php echo @$center->bg_id;?>" width="100%" height="600" style="border:none;"></iframe>
+        </div>
+      </section>
+      @endif
+
+    </div>
+
+    {{-- Desktop sticky booking sidebar — real partial, re-skinned via CSS above --}}
+    <?php
+    $offerActive = false;
+    if ((!empty(@$experience->offer_start_date)) && (!empty(@$experience->offer_discount)) && (@$experience->offer_discount > 0)) {
+        $nowD = \Carbon\Carbon::parse(date("Y-m-d"))->format("Y-m-d");
+        if ((\Carbon\Carbon::parse(@$experience->offer_start_date)->format("Y-m-d") <= $nowD) && (\Carbon\Carbon::parse(@$experience->offer_end_date)->format("Y-m-d") >= $nowD)) {
+            $offerActive = true;
+        }
+    }
+    ?>
+    @include('partials.experience-booking-sidebar')
+  </div>
+
+  <footer class="rd-credit">{{ @$experience->name }} &middot; hosted by {{ @$center->name }} &middot; via Balanceboat</footer>
+
+  {{-- Mobile persistent booking bar + drawer — real partial, re-skinned via CSS above.
+       Deliberately kept INSIDE .rd-page (matches .rd-page structure) — every .rd-page .xd-mobile-*
+       rule above depends on this ancestor to match at all. --}}
+  @include('partials.experience-mobile-booking')
 </div>
 
 <section id="bg-gallery-popup" class="bg-listing-gallery-cont gallery-popup hidden">
@@ -1074,6 +1039,7 @@ foreach ($experience_destination as $edest) {
     </div>
 </section>
 @endsection
+
 @section('footer')
 <script src="{{asset('public/basicfront/js/jquery.validate.min.js')}}" defer></script>
 <script type="text/javascript">
@@ -1173,17 +1139,20 @@ foreach ($experience_destination as $edest) {
 
     document.addEventListener('DOMContentLoaded', function() {
         var overlay = document.getElementById('xd-mobile-drawer-overlay');
-        overlay.addEventListener('click', function(e) {
-            if (e.target === this) xdCloseDrawer();
-        });
+        if (overlay) {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) xdCloseDrawer();
+            });
+        }
     });
 
-    // Additive-only (new section, visual-parity pass): scroll-spy for the in-page tab nav.
-    // Pure UI highlight, does not touch /get_booking_price, /reservation, or /store-inquiry.
-    function xdInitPageNavScrollSpy() {
-        var nav = document.getElementById('xd-page-nav');
+    // Scroll-spy for the in-page section nav. Re-runs on 'load' and once more just past the 3000ms
+    // mark: lazy-loaded images can still be resizing the page shortly after 'load', so a single early
+    // calculation can under/over-shoot.
+    function rdInitPageNavScrollSpy() {
+        var nav = document.getElementById('rd-page-nav');
         if (!nav) return;
-        var tabs = Array.prototype.slice.call(nav.querySelectorAll('.xd-nav-tab'));
+        var tabs = Array.prototype.slice.call(nav.querySelectorAll('a'));
         var targets = tabs.map(function(tab) {
             var id = tab.getAttribute('href').slice(1);
             return document.getElementById(id);
@@ -1199,23 +1168,40 @@ foreach ($experience_destination as $edest) {
             });
         }
         window.addEventListener('scroll', setActiveOnScroll, { passive: true });
-        // Re-run after 'load' and again just past the 3000ms mark: script.js keeps the whole
-        // content column hidden behind .d-none until a hardcoded setTimeout(...,3000) reveals
-        // it (see public/basicfront/js/script.js), so every section's offsetTop still reads ~0
-        // at DOMContentLoaded/'load' time — the loop below then marches through every tab and
-        // leaves the LAST one active instead of the first.
         window.addEventListener('load', setActiveOnScroll);
         setTimeout(setActiveOnScroll, 3200);
         setActiveOnScroll();
     }
-    document.addEventListener('DOMContentLoaded', xdInitPageNavScrollSpy);
+    document.addEventListener('DOMContentLoaded', rdInitPageNavScrollSpy);
+
+    // Keep the section nav's sticky offset glued to the SITE header's actual bottom edge, instead of
+    // assuming it's always a fixed 80px. The global <header> (position:sticky) stops sticking and
+    // scrolls out of view once its own containing block is scrolled past — a pre-existing site
+    // behavior. A hardcoded `top: 80px` on .rd-page-nav would then leave a stale 80px gap once the
+    // header is gone, with page content bleeding up through it. Re-measuring the header on every
+    // scroll/resize keeps the nav pinned directly under wherever the header currently ends (or top:0
+    // once it's gone).
+    function rdSyncNavTop() {
+        var header = document.querySelector('header');
+        var nav = document.getElementById('rd-page-nav');
+        if (!header || !nav) return;
+        function sync() {
+            var headerBottom = Math.max(0, Math.round(header.getBoundingClientRect().bottom));
+            nav.style.top = headerBottom + 'px';
+        }
+        window.addEventListener('scroll', sync, { passive: true });
+        window.addEventListener('resize', sync);
+        window.addEventListener('load', sync);
+        sync();
+    }
+    document.addEventListener('DOMContentLoaded', rdSyncNavTop);
 
     <?php
     if (!empty($razorPayAmount)) {
         if (\App\Http\Helpers\CommonHelper::get_currency_rate(@$pay - @$discount, $site_currency, false) > 0) {?>
 
-            const key = "rzp_live_wp4Xjvh9X9GOYe"; //Replace it with your Test Key ID generated from the Dashboard
-            const amount = <?php echo $razorPayAmount*100; ?> //in paise
+            const key = "rzp_live_wp4Xjvh9X9GOYe";
+            const amount = <?php echo $razorPayAmount*100; ?>
 
             window.onload = function() {
             const widgetConfig = {
@@ -1228,4 +1214,5 @@ foreach ($experience_destination as $edest) {
         <?php }
     }?>
 </script>
+<script defer src="https://cdn.razorpay.com/widgets/affordability/affordability.js"></script>
 @endsection

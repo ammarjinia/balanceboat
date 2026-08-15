@@ -207,6 +207,7 @@ foreach ($experience_destination as $edest) {
   .rd-room-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.12rem; }
   .rd-room-name a { color: inherit; }
   .rd-room-desc { font-size: 0.87rem; color: var(--rd-grey-mid); margin: 4px 0 0; }
+  .rd-room-avail-note { font-size: 0.78rem; color: var(--rd-brand); font-weight: 600; margin: 6px 0 0; }
   .rd-amenity-row { display: flex; flex-wrap: wrap; gap: 14px; margin: 14px 0; font-size: 0.82rem; color: var(--rd-ink-soft); }
   .rd-amenity-row span { display: inline-flex; align-items: center; gap: 6px; }
   .rd-room-price-table { font-size: 0.85rem; margin-top: 12px; overflow-x: auto; }
@@ -272,38 +273,38 @@ foreach ($experience_destination as $edest) {
   .rd-reviews-wrap { border-radius: 14px; overflow: hidden; border: 1px solid var(--rd-grey-line); }
 
   /* ---------- Booking sidebar (re-skins partials.experience-booking-sidebar / -fields) ---------- */
-  .rd-page .xd-sidebar { position: sticky; top: 96px; }
+  .rd-page .xd-sidebar { position: sticky; top: 96px; max-height: calc(100vh - 116px); overflow-y: auto; }
   .rd-page .xd-booking-card {
-    border: 1px solid var(--rd-grey-line); border-radius: 16px; padding: 22px; background: var(--rd-card);
+    border: 1px solid var(--rd-grey-line); border-radius: 16px; padding: 18px; background: var(--rd-card);
     box-shadow: var(--rd-shadow-lg);
   }
-  .rd-page .xd-booking-header { text-align: left; margin-bottom: 6px; }
+  .rd-page .xd-booking-header { text-align: left; margin-bottom: 4px; }
   .rd-page .xd-discount-tag {
     display: inline-flex; align-items: center; gap: 4px; background: var(--rd-danger-bg); color: var(--rd-danger);
-    border: none; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
-    padding: 4px 11px; border-radius: 999px; margin-bottom: 10px;
+    border: none; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 3px 10px; border-radius: 999px; margin-bottom: 8px;
   }
-  .rd-page .xd-booking-title { font-family: 'Fraunces', serif; font-size: 1.2rem; color: var(--rd-ink); margin-bottom: 18px; display: block; justify-content: flex-start; text-align: left; }
-  .rd-page .xd-form-group { margin-bottom: 16px; }
-  .rd-page .xd-form-label { font-size: 0.76rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rd-grey-mid); margin-bottom: 8px; display: block; }
+  .rd-page .xd-booking-title { font-family: 'Fraunces', serif; font-size: 1.08rem; color: var(--rd-ink); margin-bottom: 12px; display: block; justify-content: flex-start; text-align: left; }
+  .rd-page .xd-form-group { margin-bottom: 12px; }
+  .rd-page .xd-form-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rd-grey-mid); margin-bottom: 6px; display: block; }
   .rd-page .xd-pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
   .rd-page .xd-pill-btn {
-    flex: 1; min-width: 64px; text-align: center; font-size: 0.85rem; font-weight: 600; padding: 10px 6px;
+    flex: 1; min-width: 64px; text-align: center; font-size: 0.82rem; font-weight: 600; padding: 8px 6px;
     border: 1px solid var(--rd-grey-line); border-radius: 9px; cursor: pointer; color: var(--rd-ink-soft); background: var(--rd-card);
   }
   .rd-page .xd-pill-btn:hover { border-color: var(--rd-brand); color: var(--rd-brand); }
   .rd-page .xd-pill-btn.active { border-color: var(--rd-brand); background: var(--rd-brand); color: #fff; box-shadow: none; font-weight: 600; }
-  .rd-page .xd-room-picker-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+  .rd-page .xd-room-picker-list { display: flex; flex-direction: column; gap: 6px; max-height: 190px; overflow-y: auto; padding-right: 2px; }
   .rd-page .xd-room-picker-item {
-    display: flex; align-items: center; padding: 10px 12px; border: 1px solid var(--rd-grey-line);
-    border-radius: 10px; cursor: pointer; background: var(--rd-card);
+    display: flex; align-items: center; padding: 6px 8px; border: 1px solid var(--rd-grey-line);
+    border-radius: 9px; cursor: pointer; background: var(--rd-card);
   }
   .rd-page .xd-room-picker-item:hover { border-color: var(--rd-brand); }
   .rd-page .xd-room-picker-item.active { border-color: var(--rd-brand); box-shadow: 0 0 0 1px var(--rd-brand) inset; background: var(--rd-card); }
-  .rd-page .xd-room-picker-thumb { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; margin-right: 12px; flex-shrink: 0; }
+  .rd-page .xd-room-picker-thumb { width: 30px; height: 30px; border-radius: 7px; object-fit: cover; margin-right: 9px; flex-shrink: 0; }
   .rd-page .xd-room-picker-details { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-  .rd-page .xd-room-picker-name { font-size: 0.85rem; color: var(--rd-ink); font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .rd-page .xd-room-picker-price { font-size: 0.85rem; color: var(--rd-ink-soft); font-weight: 600; }
+  .rd-page .xd-room-picker-name { font-size: 0.81rem; color: var(--rd-ink); font-weight: 600; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rd-page .xd-room-picker-price { font-size: 0.78rem; color: var(--rd-ink-soft); font-weight: 600; }
   .rd-page .xd-room-picker-item.active .xd-room-picker-price { color: var(--rd-brand); }
   .rd-page .xd-room-picker-price del { color: var(--rd-grey-mid); font-weight: normal; margin-right: 4px; font-size: 0.78rem; }
   .rd-page .xd-input, .rd-page .xd-select {
@@ -311,24 +312,24 @@ foreach ($experience_destination as $edest) {
     border-radius: 10px; font-size: 0.94rem; color: var(--rd-ink);
   }
   .rd-page .xd-input:focus, .rd-page .xd-select:focus { outline: 2px solid var(--rd-brand); outline-offset: 1px; border-color: var(--rd-brand); }
-  .rd-page .xd-calc-box { background: var(--rd-wash); border-radius: 10px; padding: 14px 16px; margin: 16px 0; border: none; }
-  .rd-page .xd-calc-row { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--rd-ink-soft); font-size: 0.87rem; }
-  .rd-page .xd-calc-row.total { border-top: 1px solid var(--rd-grey-line); padding-top: 8px; margin-bottom: 0; font-size: 1rem; color: var(--rd-ink); font-weight: 700; }
+  .rd-page .xd-calc-box { background: var(--rd-wash); border-radius: 10px; padding: 11px 14px; margin: 12px 0; border: none; }
+  .rd-page .xd-calc-row { display: flex; justify-content: space-between; margin-bottom: 5px; color: var(--rd-ink-soft); font-size: 0.84rem; }
+  .rd-page .xd-calc-row.total { border-top: 1px solid var(--rd-grey-line); padding-top: 6px; margin-bottom: 0; font-size: 0.96rem; color: var(--rd-ink); font-weight: 700; }
   .rd-page .xd-calc-row.total .qb-booking-amount { font-family: 'Fraunces', serif; }
   .rd-page .xd-btn-gradient {
     width: 100%; background: var(--rd-brand); color: #fff; border: 1px solid transparent;
-    padding: 12px 24px; border-radius: 10px; font-size: 0.94rem; font-weight: 600; cursor: pointer;
+    padding: 11px 24px; border-radius: 10px; font-size: 0.92rem; font-weight: 600; cursor: pointer;
     text-align: center; text-decoration: none; display: inline-block; box-shadow: none; transition: background-color .15s;
   }
   .rd-page .xd-btn-gradient:hover { background: var(--rd-brand-deep); }
   .rd-page .xd-btn-gradient:disabled { opacity: 0.55; cursor: not-allowed; }
   .rd-page .xd-btn-outline {
     width: 100%; background: transparent; color: var(--rd-ink); border: 1px solid var(--rd-grey-line);
-    padding: 11px 24px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-bottom: 10px;
+    padding: 9px 24px; border-radius: 10px; font-size: 0.87rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;
   }
   .rd-page .xd-btn-outline:hover { border-color: var(--rd-ink-soft); }
   .rd-page .xd-btn-sm { width: auto; padding: 9px 16px; font-size: 0.85rem; margin-bottom: 0; }
-  .rd-page #razorpay-affordability-widget { margin-top: 14px !important; }
+  .rd-page #razorpay-affordability-widget { margin-top: 10px !important; }
 
   /* ---------- Availability (re-skins partials.experience-availability's .xd-card) ---------- */
   .rd-page .xd-card { border: 1px solid var(--rd-grey-line); border-radius: 14px; padding: 20px 22px 22px; }
@@ -687,7 +688,7 @@ foreach (@$experience_accomodations as $racm) {
         $roomImgs = array();
         if (@$accomodationimagegalleries) {
             foreach (@$accomodationimagegalleries as $ex_img) {
-                if ($ex_img->accomodation_id == $racm->id && $ex_img->image_url && sizeof($roomImgs) < 3) {
+                if ($ex_img->accomodation_id == $racm->id && $ex_img->image_url && sizeof($roomImgs) < 5) {
                     $roomImgs[] = strtok(Storage::disk('s3')->url(rawurlencode($ex_img->image_url)), '?');
                 }
             }
@@ -713,6 +714,11 @@ foreach (@$experience_accomodations as $racm) {
                         <p class="rd-room-desc">{!! html_entity_decode(\App\Http\Helpers\CommonHelper::excerpt(strip_tags(@$racm->ea_about), 140)) !!}</p>
                         @elseif(@$racm->description)
                         <p class="rd-room-desc">{!! html_entity_decode(\App\Http\Helpers\CommonHelper::excerpt(strip_tags(@$racm->description), 140)) !!}</p>
+                        @endif
+                        @if(@$racm->recurring_type == 'Daily')
+                        <p class="rd-room-avail-note">Available all year round</p>
+                        @elseif(@$racm->available_month)
+                        <p class="rd-room-avail-note">{{ $racm->available_month }}</p>
                         @endif
                     </div>
                     @if($nextAvail)
