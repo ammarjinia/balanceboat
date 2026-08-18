@@ -28,13 +28,13 @@
         <link rel="icon" type="image/x-icon" href="{{asset('basicfront/img/favicon.ico')}}">
         <link href="{{asset('basicfront/img/favicon.ico')}}" rel="apple-touch-icon" />
         <title>@yield('title', "Booking website for holiday retreats and professional trainings in Yoga, Meditation, Ayurveda, Detox and Wellness")</title>
-        <link rel="preconnect" href="https://balanceboatblob.blob.core.windows.net" />
+        <link rel="preconnect" href="https://pub-2f883e7452554ee2bbe1b3d44d2a8715.r2.dev" />
         <link rel="preconnect" href="https://cdnbbendpoint.azureedge.net" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-        <link rel="dns-prefetch" href="https://balanceboatblob.blob.core.windows.net" />
+        <link rel="dns-prefetch" href="https://pub-2f883e7452554ee2bbe1b3d44d2a8715.r2.dev" />
         <link rel="dns-prefetch" href="https://cdnbbendpoint.azureedge.net" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />

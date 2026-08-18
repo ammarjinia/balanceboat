@@ -537,7 +537,7 @@ foreach ($experience_destination as $edest) {
                             <?php
                             foreach (@$amenities as $amenity) {
                                 if ($amenity->image_url) {?>
-                                    <img src="{{ "https://balanceboatblob.blob.core.windows.net/balancegurus/".rawurlencode(@$amenity->image_url) }}" alt=" {{ $amenity->name }}" title=" {{ $amenity->name }}" class="" width="18px" />&nbsp;
+                                    <img src="{{ "https://pub-2f883e7452554ee2bbe1b3d44d2a8715.r2.dev/balancegurus/".rawurlencode(@$amenity->image_url) }}" alt=" {{ $amenity->name }}" title=" {{ $amenity->name }}" class="" width="18px" />&nbsp;
                                 <?php
                                 }
                             }

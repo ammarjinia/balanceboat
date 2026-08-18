@@ -295,6 +295,7 @@ foreach ($experience_destination as $edest) {
   .rd-center-photos img { aspect-ratio: 1; border-radius: 8px; object-fit: cover; width: 100%; height: 100%; }
   .rd-tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
   .rd-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; padding: 7px 13px; border-radius: 999px; background: var(--rd-wash); color: var(--rd-ink-soft); }
+  .rd-chip-icon { width: 15px; height: 15px; object-fit: contain; flex: none; filter: grayscale(1) opacity(0.75); }
   .rd-map-box {
     margin-top: 22px; border-radius: 14px; height: 160px; position: relative; overflow: hidden;
     background-image:
@@ -998,7 +999,16 @@ ksort($avByDate);
         <h3 class="rd-subhead">Amenities</h3>
         <div class="rd-tag-row">
             @foreach(@$amenities as $amenity)
-            <span class="rd-chip">{{ $amenity->name }}</span>
+            <span class="rd-chip">
+                @if(@$amenity->image_url)
+                {{-- Same host every other amenity icon on the site uses (content-deal-experience,
+                     payment, reservation, etc.). It's currently returning 403 "account is disabled" —
+                     a pre-existing, site-wide Azure storage outage, not specific to this page. The
+                     onerror hides a broken icon gracefully rather than leaving the glyph once it fires. --}}
+                <img class="rd-chip-icon" src="{{ 'https://pub-2f883e7452554ee2bbe1b3d44d2a8715.r2.dev/balancegurus/'.rawurlencode($amenity->image_url) }}" alt="" onerror="this.style.display='none'" />
+                @endif
+                {{ $amenity->name }}
+            </span>
             @endforeach
         </div>
         @endif
