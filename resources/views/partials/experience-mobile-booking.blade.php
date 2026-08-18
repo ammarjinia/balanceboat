@@ -31,10 +31,7 @@
 
             @include('partials.experience-booking-fields')
 
-            <div class="xd-form-group">
-                <label class="xd-form-label">Start Date</label>
-                <input type="text" class="xd-input qb-date bkdate" name="booking_date" value="" min="<?php echo date("Y-m-d");?>" onfocus="(this.type = 'date')" placeholder="Select a date" />
-            </div>
+            @include('partials.experience-date-field')
 
             <div class="xd-calc-box">
                 <div class="xd-calc-row">

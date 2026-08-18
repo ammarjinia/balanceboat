@@ -79,7 +79,7 @@ foreach ($experience_destination as $edest) {
     --rd-grey-mid: #756a6c;
     --rd-grey-line: #e4dcda;
     --rd-wash: #f4efed;
-    --rd-paper: #fffcfb;
+    --rd-paper: #ffffff;
     --rd-card: #ffffff;
     --rd-success: #2f8f45;
     --rd-success-bg: #e8f5e9;
@@ -109,11 +109,20 @@ foreach ($experience_destination as $edest) {
     font-family: 'Work Sans', sans-serif; font-size: 0.76rem; font-weight: 600;
     letter-spacing: 0.1em; text-transform: uppercase; color: var(--rd-brand); display: block; margin-bottom: 6px;
   }
-  .rd-page p { color: var(--rd-ink-soft); margin: 0 0 1em; }
-  .rd-measure { max-width: 68ch; }
+  .rd-page p { color: var(--rd-ink-soft); margin: 0 0 1em; overflow-wrap: break-word; }
+  .rd-measure { max-width: 68ch; overflow-wrap: break-word; word-break: break-word; }
+  .rd-measure img { max-width: 100%; height: auto; }
+  .rd-measure table { max-width: 100%; display: block; overflow-x: auto; }
+  .rd-measure iframe { max-width: 100%; }
   .rd-tnum { font-variant-numeric: tabular-nums; }
   .rd-wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(18px, 3.4vw, 40px); }
   .rd-ico { width: 15px; height: 15px; flex: none; display: inline-block; }
+  /* CMS rich-text fields (About Center / How to Reach / etc.) can carry long unbroken URLs, phone
+     numbers, or fixed-width WYSIWYG markup; without this they overflow the content column. .rd-left-col
+     needs min-width:0 too since it's a grid item — grid items default to min-width:auto, which ignores
+     child overflow-wrap and lets long content stretch the column instead of wrapping. */
+  .rd-left-col { min-width: 0; }
+  .rd-content-col, .rd-check-list, .rd-cross-list, .rd-terms-grid dd { overflow-wrap: break-word; word-break: break-word; }
 
   .rd-page section[id] { scroll-margin-top: 150px; }
 
@@ -171,7 +180,10 @@ foreach ($experience_destination as $edest) {
   .rd-section-nav a.active { color: var(--rd-ink); border-color: var(--rd-brand); }
 
   /* ---------- Page grid ---------- */
-  .rd-page-grid { display: grid; grid-template-columns: 1fr 380px; gap: 56px; align-items: start; padding: 40px 0 80px; }
+  /* .rd-page-grid now wraps .rd-left-col (title/gallery/nav/content) + the sidebar as siblings,
+     so the sidebar starts level with the banner instead of only alongside the content sections.
+     Top padding lives on .rd-title-block instead, so it isn't applied twice. */
+  .rd-page-grid { display: grid; grid-template-columns: 1fr 380px; gap: 56px; align-items: start; padding: 0 0 80px; }
   .rd-content-col > section { padding: 34px 0; border-top: 1px solid var(--rd-grey-line); }
   .rd-content-col > section:first-child { padding-top: 6px; border-top: none; }
   .rd-content-col h2 { font-size: clamp(1.35rem, 2vw, 1.65rem); margin-bottom: 18px; }
@@ -198,9 +210,38 @@ foreach ($experience_destination as $edest) {
 
   /* ---------- Room cards ---------- */
   .rd-room-card { border: 1px solid var(--rd-grey-line); border-radius: 14px; overflow: hidden; margin-bottom: 18px; background: var(--rd-card); }
-  .rd-room-photos { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 130px; gap: 2px; height: 130px; background: var(--rd-wash); }
+  .rd-room-photos { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 130px; gap: 2px; height: 130px; background: var(--rd-wash); position: relative; }
   .rd-room-photos img { display: block; width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
   .rd-room-photos--empty { height: 0; }
+  .rd-room-gallery-btn {
+    position: absolute; right: 10px; bottom: 10px; background: rgba(34,31,32,0.72); color: #fff;
+    font-size: 0.76rem; font-weight: 600; padding: 6px 12px; border-radius: 8px;
+    display: inline-flex; align-items: center; gap: 6px; cursor: pointer; z-index: 2;
+  }
+  .rd-room-gallery-btn:hover { background: rgba(34,31,32,0.88); }
+
+  /* ---------- Room photo lightbox (rd-room-gallery) ---------- */
+  .rd-lightbox {
+    position: fixed; inset: 0; background: rgba(17,15,15,0.92); z-index: 3000; display: none;
+    align-items: center; justify-content: center; flex-direction: column; padding: 40px 20px;
+  }
+  .rd-lightbox.active { display: flex; }
+  .rd-lightbox-title { color: #fff; font-family: 'Fraunces', serif; font-size: 1.05rem; margin-bottom: 14px; text-align: center; }
+  .rd-lightbox-stage { position: relative; max-width: min(920px, 92vw); width: 100%; display: flex; align-items: center; justify-content: center; }
+  .rd-lightbox-stage img { max-width: 100%; max-height: 74vh; border-radius: 10px; object-fit: contain; }
+  .rd-lightbox-close, .rd-lightbox-prev, .rd-lightbox-next {
+    position: absolute; background: rgba(255,255,255,0.12); color: #fff; border: none; border-radius: 50%;
+    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;
+  }
+  .rd-lightbox-close:hover, .rd-lightbox-prev:hover, .rd-lightbox-next:hover { background: rgba(255,255,255,0.24); }
+  .rd-lightbox-close { top: -52px; right: 0; }
+  .rd-lightbox-prev { left: -8px; top: 50%; transform: translateY(-50%); }
+  .rd-lightbox-next { right: -8px; top: 50%; transform: translateY(-50%); }
+  .rd-lightbox-count { color: var(--rd-grey-line); font-size: 0.82rem; margin-top: 12px; }
+  @media (max-width: 640px) {
+    .rd-lightbox-prev { left: 4px; } .rd-lightbox-next { right: 4px; }
+    .rd-lightbox-close { top: -44px; }
+  }
   .rd-room-body { padding: 18px 20px 20px; }
   .rd-room-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .rd-room-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.12rem; }
@@ -354,6 +395,38 @@ foreach ($experience_destination as $edest) {
   .rd-page .xd-avail-legend-item { display: inline-flex; align-items: center; gap: 6px; }
   .rd-page .xd-avail-legend-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
   .rd-page .xd-avail-other-heading { font-family: 'Fraunces', serif; font-size: 0.95rem; font-weight: 600; color: var(--rd-ink); margin: 22px 0 10px; }
+  /* ---------- Calendar popup + "Check Availability" modal calendar (items 6 & 7) ----------
+     Both are built client-side by rdBuildCalendar() using the same .xd-avail-* classes above, so the
+     popup, the modal, and the static Availability section all look identical. These rules add the
+     month-nav header and interactive/disabled day states the static section didn't need. */
+  .rd-page .xd-avail-cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .rd-page .xd-avail-cal-month { font-family: 'Fraunces', serif; font-size: 0.95rem; font-weight: 600; color: var(--rd-ink); }
+  .rd-page .rd-cal-nav-btn {
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--rd-grey-line); background: var(--rd-card);
+    color: var(--rd-ink-soft); cursor: pointer; font-size: 1rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+  }
+  .rd-page .rd-cal-nav-btn:hover { border-color: var(--rd-brand); color: var(--rd-brand); }
+  .rd-page .xd-avail-day--past { opacity: 0.35; }
+  .rd-page .rd-cal-day-pick { cursor: pointer; }
+  .rd-page .rd-cal-day-pick:hover { background: var(--rd-wash); font-weight: 700; }
+  .rd-page .rd-cal-day-pick.rd-cal-day-selected { background: var(--rd-brand); color: #fff; font-weight: 700; }
+
+  .rd-datefield-group { position: relative; }
+  .rd-page .rd-date-input { cursor: pointer; background: var(--rd-card); }
+  .rd-page .rd-cal-popup {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 60; display: none;
+    background: var(--rd-card); border: 1px solid var(--rd-grey-line); border-radius: 14px;
+    box-shadow: var(--rd-shadow-lg); padding: 14px;
+  }
+  .rd-page .rd-cal-popup.active { display: block; }
+
+  /* Calendar embedded in the shared #checkAvailability modal (layouts/experience_details.blade.php)
+     — that markup sits outside .rd-page, so it's wrapped in a .rd-page carrier div to pick up these
+     same tokens/rules. It only needs to render inline (no popup positioning/background). */
+  .rd-modal-cal-wrap.rd-page {
+    background: transparent; margin-bottom: 22px; font-size: 15px;
+    border: 1px solid var(--rd-grey-line); border-radius: 14px; padding: 18px 20px;
+  }
   .rd-page .xd-avail-list { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 6px; }
   .rd-page .xd-routine-item {
     flex: none; width: 140px; border: 1px solid var(--rd-grey-line); border-radius: 10px; padding: 12px;
@@ -483,6 +556,23 @@ foreach (@$experience_accomodations as $racm) {
 }
 ?>
 
+<?php
+// Same date => best-status aggregation as partials.experience-availability, computed again here
+// (Blade @include doesn't leak a partial's local variables back to the parent) so the date-picker
+// popup and the "Check Availability" modal calendar (items 6 & 7) can be colored from the same
+// real data as the static Availability section, via rdBuildCalendar() in the footer script.
+$avByDate = array();
+$statusRank = array('open' => 3, 'few_left' => 2, 'full' => 1, 'closed' => 1);
+foreach (@$experience_upcoming_availability ?? [] as $avail) {
+    $d = \Carbon\Carbon::parse($avail->start_date)->format('Y-m-d');
+    $rank = $statusRank[$avail->status] ?? 0;
+    if (!isset($avByDate[$d]) || $rank > $statusRank[$avByDate[$d]]) {
+        $avByDate[$d] = $avail->status;
+    }
+}
+ksort($avByDate);
+?>
+
 <div class="rd-page">
 
   <div class="rd-util-bar">
@@ -506,7 +596,12 @@ foreach (@$experience_accomodations as $racm) {
     </div>
   </div>
 
-  <div class="rd-wrap rd-title-block">
+  {{-- Single shared grid: the booking sidebar (aside, below) is a sibling of .rd-left-col so it
+       starts level with the title/banner instead of only alongside the content sections. --}}
+  <div class="rd-wrap rd-page-grid">
+    <div class="rd-left-col">
+
+  <div class="rd-title-block">
     <div>
       @if($category)
       <span class="rd-eyebrow">{{ $category }}{{ $subcategory ? ' · '.rtrim($subcategory, ', ') : '' }}</span>
@@ -572,7 +667,6 @@ foreach (@$experience_accomodations as $racm) {
     </div>
   </nav>
 
-  <div class="rd-wrap rd-page-grid">
     <div class="rd-content-col">
 
       {{-- OVERVIEW --}}
@@ -699,10 +793,11 @@ foreach (@$experience_accomodations as $racm) {
         ?>
         <div class="rd-room-card">
             @if(sizeof($roomImgs) > 0)
-            <div class="rd-room-photos" style="grid-template-columns: repeat({{ sizeof($roomImgs) }}, 1fr);">
+            <div class="rd-room-photos" style="grid-template-columns: repeat({{ sizeof($roomImgs) }}, 1fr);" data-room-gallery data-images="{{ json_encode($roomImgs) }}" data-title="{{ $racm->name }}">
                 @foreach($roomImgs as $rimg)
                 <img class="lazy" data-src="{{ $rimg }}" alt="{{ $racm->name }}" />
                 @endforeach
+                <span class="rd-room-gallery-btn"><span class="icon-arrows1"></span> {{ sizeof($roomImgs) }} photo{{ sizeof($roomImgs) > 1 ? 's' : '' }}</span>
             </div>
             @endif
             <div class="rd-room-body">
@@ -970,6 +1065,8 @@ foreach (@$experience_accomodations as $racm) {
 
     </div>
 
+    </div>{{-- /.rd-left-col --}}
+
     {{-- Desktop sticky booking sidebar — real partial, re-skinned via CSS above --}}
     <?php
     $offerActive = false;
@@ -1038,11 +1135,130 @@ foreach (@$experience_accomodations as $racm) {
         </div>
     </div>
 </section>
+
+{{-- Room photo lightbox (item 5 — accommodation images popup). Single reusable overlay: each
+     .rd-room-photos block below carries its own images as a data-images JSON attribute; the click
+     handler in the footer script reads that attribute and repopulates this same overlay. --}}
+<div class="rd-lightbox" id="rd-lightbox">
+    <div class="rd-lightbox-title" id="rd-lightbox-title"></div>
+    <div class="rd-lightbox-stage">
+        <button type="button" class="rd-lightbox-close" id="rd-lightbox-close" aria-label="Close">&#10005;</button>
+        <button type="button" class="rd-lightbox-prev" id="rd-lightbox-prev" aria-label="Previous photo">&#10094;</button>
+        <img id="rd-lightbox-img" src="" alt="" />
+        <button type="button" class="rd-lightbox-next" id="rd-lightbox-next" aria-label="Next photo">&#10095;</button>
+    </div>
+    <div class="rd-lightbox-count" id="rd-lightbox-count"></div>
+</div>
 @endsection
 
 @section('footer')
 <script src="{{asset('public/basicfront/js/jquery.validate.min.js')}}" defer></script>
 <script type="text/javascript">
+    // Real per-date status map (open/few_left/full/closed), same data as the static Availability
+    // section. Feeds the date-picker popup and the "Check Availability" modal calendar.
+    window.RD_AVAILABILITY = <?php echo json_encode($avByDate); ?>;
+
+    // Builds one month of the availability calendar into `container` (any element). Shared by the
+    // date-picker popup (clickable) and the read-only calendar in the "Check Availability" modal.
+    // Uses the same .xd-avail-* classes/markup shape as partials.experience-availability so all three
+    // calendars (static section, popup, modal) look identical.
+    function rdBuildCalendar(container, opts) {
+        opts = opts || {};
+        var avail = opts.data || {};
+        var keys = Object.keys(avail).sort();
+        var start = keys.length ? new Date(keys[0] + 'T00:00:00') : new Date();
+        var current = new Date(start.getFullYear(), start.getMonth(), 1);
+
+        function statusClass(s) { return s === 'open' ? 'is-open' : (s === 'few_left' ? 'is-few' : 'is-full'); }
+        function pad(n) { return n < 10 ? '0' + n : '' + n; }
+        function fmtKey(y, m, d) { return y + '-' + pad(m + 1) + '-' + pad(d); }
+
+        function render() {
+            var y = current.getFullYear(), m = current.getMonth();
+            var daysInMonth = new Date(y, m + 1, 0).getDate();
+            var firstDow = new Date(y, m, 1).getDay();
+            var leading = (firstDow + 6) % 7; // Monday-first, matching the static section's grid
+            var monthLabel = current.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+            var today = new Date(); today.setHours(0, 0, 0, 0);
+
+            var html = '<div class="xd-avail-cal-head">'
+                + '<button type="button" class="rd-cal-nav-btn" data-nav="-1" aria-label="Previous month">&#8249;</button>'
+                + '<span class="xd-avail-cal-month">' + monthLabel + '</span>'
+                + '<button type="button" class="rd-cal-nav-btn" data-nav="1" aria-label="Next month">&#8250;</button>'
+                + '</div>';
+            html += '<div class="xd-avail-weekdays"><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span></div>';
+            html += '<div class="xd-avail-grid">';
+            for (var i = 0; i < leading; i++) html += '<div class="xd-avail-day xd-avail-day--blank"></div>';
+            for (var d = 1; d <= daysInMonth; d++) {
+                var key = fmtKey(y, m, d);
+                var status = avail[key];
+                var isPast = new Date(y, m, d) < today;
+                var cls = 'xd-avail-day';
+                if (status) cls += ' ' + statusClass(status);
+                if (isPast) cls += ' xd-avail-day--past';
+                if (opts.clickable && !isPast) cls += ' rd-cal-day-pick';
+                if (opts.selected === key) cls += ' rd-cal-day-selected';
+                html += '<div class="' + cls + '"' + (opts.clickable && !isPast ? ' data-date="' + key + '"' : '') + (status ? ' title="' + status.replace('_', ' ') + '"' : '') + '>' + d + '</div>';
+            }
+            html += '</div>';
+            html += '<div class="xd-avail-legend">'
+                + '<span class="xd-avail-legend-item"><span class="xd-avail-legend-dot" style="background:#16a34a;"></span> Open</span>'
+                + '<span class="xd-avail-legend-item"><span class="xd-avail-legend-dot" style="background:#a16207;"></span> Few Left</span>'
+                + '<span class="xd-avail-legend-item"><span class="xd-avail-legend-dot" style="background:#dc2626;"></span> Full / Closed</span>'
+                + '</div>';
+            container.innerHTML = html;
+
+            Array.prototype.forEach.call(container.querySelectorAll('[data-nav]'), function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    current.setMonth(current.getMonth() + parseInt(btn.getAttribute('data-nav'), 10));
+                    render();
+                });
+            });
+            if (opts.clickable) {
+                Array.prototype.forEach.call(container.querySelectorAll('.rd-cal-day-pick'), function(cell) {
+                    cell.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        if (opts.onPick) opts.onPick(cell.getAttribute('data-date'));
+                    });
+                });
+            }
+        }
+        render();
+    }
+
+    // Wires every .rd-date-input (desktop sidebar + mobile drawer) to its sibling .rd-cal-popup.
+    (function() {
+        var inputs = document.querySelectorAll('.rd-date-input');
+        Array.prototype.forEach.call(inputs, function(input) {
+            var popup = input.parentElement.querySelector('.rd-cal-popup');
+            if (!popup) return;
+            var built = false;
+            input.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!built) {
+                    rdBuildCalendar(popup, {
+                        data: window.RD_AVAILABILITY,
+                        clickable: true,
+                        selected: input.value,
+                        onPick: function(dateStr) {
+                            input.value = dateStr;
+                            popup.classList.remove('active');
+                            input.dispatchEvent(new Event('change'));
+                        }
+                    });
+                    built = true;
+                }
+                document.querySelectorAll('.rd-cal-popup.active').forEach(function(p) { if (p !== popup) p.classList.remove('active'); });
+                popup.classList.toggle('active');
+            });
+        });
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.rd-datefield-group')) return;
+            document.querySelectorAll('.rd-cal-popup.active').forEach(function(p) { p.classList.remove('active'); });
+        });
+    })();
+
     $(document).ready(function() {
         $.ajaxSetup({
             headers: {
@@ -1086,6 +1302,15 @@ foreach (@$experience_accomodations as $racm) {
                 $(this).addClass('active');
                 $durations.val($(this).data('value'));
                 calculatePrice();
+            });
+
+            // Solo/Couple is captured as guest_type on the reservation form; it does not change the
+            // calculated price (room pricing here is a flat per-room rate, not per-occupancy), so no
+            // calculatePrice() call is needed here.
+            $form.find('.qb-guest-type-pills').on('click', '.xd-pill-btn', function() {
+                $form.find('.qb-guest-type-pills .xd-pill-btn').removeClass('active');
+                $(this).addClass('active');
+                $form.find('.qb-guest-type-value').val($(this).data('value'));
             });
 
             $form.find('.qb-room-picker-list').on('click', '.xd-room-picker-item', function() {
@@ -1195,6 +1420,74 @@ foreach (@$experience_accomodations as $racm) {
         sync();
     }
     document.addEventListener('DOMContentLoaded', rdSyncNavTop);
+
+    // Room photo lightbox (item 5). Delegated so it also covers rooms rendered after DOMContentLoaded
+    // (none currently, but keeps this resilient) and both the strip images and the count button.
+    (function() {
+        var lightbox = document.getElementById('rd-lightbox');
+        if (!lightbox) return;
+        var imgEl = document.getElementById('rd-lightbox-img');
+        var titleEl = document.getElementById('rd-lightbox-title');
+        var countEl = document.getElementById('rd-lightbox-count');
+        var images = [];
+        var title = '';
+        var index = 0;
+
+        function render() {
+            if (!images.length) return;
+            imgEl.src = images[index];
+            imgEl.alt = title;
+            countEl.textContent = (index + 1) + ' / ' + images.length;
+        }
+        function open(imgs, startIndex, roomTitle) {
+            images = imgs;
+            index = startIndex || 0;
+            title = roomTitle || '';
+            titleEl.textContent = title;
+            render();
+            lightbox.classList.add('active');
+        }
+        function close() {
+            lightbox.classList.remove('active');
+        }
+        function step(delta) {
+            if (!images.length) return;
+            index = (index + delta + images.length) % images.length;
+            render();
+        }
+
+        document.querySelectorAll('[data-room-gallery]').forEach(function(block) {
+            var imgs;
+            try { imgs = JSON.parse(block.getAttribute('data-images') || '[]'); } catch (e) { imgs = []; }
+            if (!imgs.length) return;
+            var roomTitle = block.getAttribute('data-title') || '';
+            var opener = function(e) {
+                var clickedImg = e.target.closest('img');
+                var startIndex = 0;
+                if (clickedImg) {
+                    var all = Array.prototype.slice.call(block.querySelectorAll('img'));
+                    startIndex = Math.max(0, all.indexOf(clickedImg));
+                }
+                open(imgs, startIndex, roomTitle);
+            };
+            block.querySelectorAll('img').forEach(function(img) {
+                img.addEventListener('click', opener);
+            });
+            var btn = block.querySelector('.rd-room-gallery-btn');
+            if (btn) btn.addEventListener('click', opener);
+        });
+
+        document.getElementById('rd-lightbox-close').addEventListener('click', close);
+        document.getElementById('rd-lightbox-prev').addEventListener('click', function() { step(-1); });
+        document.getElementById('rd-lightbox-next').addEventListener('click', function() { step(1); });
+        lightbox.addEventListener('click', function(e) { if (e.target === lightbox) close(); });
+        document.addEventListener('keydown', function(e) {
+            if (!lightbox.classList.contains('active')) return;
+            if (e.key === 'Escape') close();
+            if (e.key === 'ArrowLeft') step(-1);
+            if (e.key === 'ArrowRight') step(1);
+        });
+    })();
 
     <?php
     if (!empty($razorPayAmount)) {

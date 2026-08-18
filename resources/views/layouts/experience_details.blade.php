@@ -623,6 +623,24 @@
 
         <div id="checkAvailability" class="container-fluid d-none">
           <h2 class="mb-4 ellipsis">Check Availability</h2>
+
+          {{-- Item 7: same real-data calendar as the sidebar date-picker popup and the static
+               Availability section, rendered by the shared rdBuildCalendar() (defined on the
+               experience_detail page — this modal only ever shows there, see the guard below).
+               Read-only here (no onPick) since this form has no date field of its own; it's purely
+               so a visitor can see open dates before sending the message below. --}}
+          @if(isset($experience_upcoming_availability) && $experience_upcoming_availability->count() > 0)
+          <div class="rd-page rd-modal-cal-wrap" id="rd-modal-avail-cal"></div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              var el = document.getElementById('rd-modal-avail-cal');
+              if (el && typeof rdBuildCalendar === 'function') {
+                rdBuildCalendar(el, { data: window.RD_AVAILABILITY || {} });
+              }
+            });
+          </script>
+          @endif
+
           <form id="frmCheckAvailability" class="bg-form-el-cont fw-500" name="frmCheckAvailability" method="post">
             @honeypot
              @csrf

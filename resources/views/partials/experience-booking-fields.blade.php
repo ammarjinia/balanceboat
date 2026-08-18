@@ -15,6 +15,15 @@ $__firstAccomId = (@$experience_accomodations && sizeof(@$experience_accomodatio
 </div>
 
 <div class="xd-form-group">
+    <label class="xd-form-label">Guests</label>
+    <input type="hidden" name="guest_type" class="qb-guest-type-value" value="solo" />
+    <div class="xd-pill-group qb-guest-type-pills">
+        <button type="button" class="xd-pill-btn active" data-value="solo">Solo</button>
+        <button type="button" class="xd-pill-btn" data-value="couple">Couple</button>
+    </div>
+</div>
+
+<div class="xd-form-group">
     <label class="xd-form-label">Select Room</label>
     <input type="hidden" name="exp_accomodation_id" class="qb-accomodation-value" value="{{ $__firstAccomId }}" />
     @if(@$experience_accomodations && sizeof(@$experience_accomodations) > 0)
