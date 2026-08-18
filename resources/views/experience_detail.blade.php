@@ -308,7 +308,10 @@ foreach ($experience_destination as $edest) {
   .rd-contact-row { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 0.87rem; margin-top: 20px; color: var(--rd-ink-soft); }
   .rd-contact-row a { border-bottom: 1px solid var(--rd-grey-line); }
   .rd-contact-row a:hover { border-color: var(--rd-brand); color: var(--rd-brand); }
-  .rd-subhead { font-size: 1rem; font-weight: 700; margin: 22px 0 10px; }
+  /* .rd-page h1,h2,h3,h4 {margin:0} above has higher specificity (element+class beats class alone),
+     so a bare .rd-subhead rule never actually wins — every rd-subhead heading site-wide rendered with
+     zero margin regardless of this declaration. Scoping it to .rd-page .rd-subhead fixes that. */
+  .rd-page .rd-subhead { font-size: 1rem; font-weight: 700; margin: 22px 0 10px; }
 
   /* ---------- Reviews ---------- */
   .rd-reviews-wrap { border-radius: 14px; overflow: hidden; border: 1px solid var(--rd-grey-line); }
