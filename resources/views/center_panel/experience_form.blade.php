@@ -31,11 +31,24 @@
         <h1 class="text-3xl font-serif font-light text-slate-900">{{ $pageTitle }}</h1>
         <p class="text-xs text-slate-500 mt-1">Complete all steps to {{ $experience ? 'update your' : 'publish a new' }} retreat program.</p>
     </div>
-    <div class="flex items-center space-x-2 text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2 shrink-0">
-        <i class="fa-regular fa-clock text-slate-400"></i>
-        <span>Takes about <strong>5 minutes</strong></span>
+    <div class="flex items-center gap-2 shrink-0">
+        @if($experience)
+        <button type="button" x-data @click="$dispatch('open-ai-structure')"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-2xl text-xs font-semibold hover:from-purple-700 hover:to-fuchsia-700 active:scale-95 transition-all shadow-sm shadow-purple-200">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            Structure with AI
+        </button>
+        @endif
+        <div class="flex items-center space-x-2 text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2">
+            <i class="fa-regular fa-clock text-slate-400"></i>
+            <span>Takes about <strong>5 minutes</strong></span>
+        </div>
     </div>
 </div>
+
+@if($experience)
+    @include('center_panel.partials.ai-structure-modal', ['experience' => $experience])
+@endif
 
 {{-- Wizard Container --}}
 <div x-data="wizardApp()" x-init="init()" class="space-y-6">

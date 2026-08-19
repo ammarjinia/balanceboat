@@ -394,7 +394,11 @@ Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\C
         Route::get('/experiences/{id}/edit', 'CenterDashboardController@experienceEdit')->name('center-panel.experience.edit');
         Route::post('/experiences/{id}/update', 'CenterDashboardController@experienceUpdate')->name('center-panel.experience.update');
         Route::post('/experiences/destroy', 'CenterDashboardController@experienceDestroy')->name('center-panel.experience.destroy');
-        
+
+        // AI Content Structuring ("Structure with AI" button on the experience edit form)
+        Route::post('/experiences/{id}/structure-content/preview', 'CenterContentAiController@preview')->name('center-panel.experience.structure_content.preview');
+        Route::post('/experiences/{id}/structure-content/apply', 'CenterContentAiController@apply')->name('center-panel.experience.structure_content.apply');
+
         // Availability Management
         Route::get('/availability', 'CenterAvailabilityController@index')->name('center-panel.availability');
         Route::post('/availability/delete-price', 'CenterAvailabilityController@deletePrice')->name('center-panel.availability.delete_price');

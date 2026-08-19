@@ -39,6 +39,11 @@ return [
         'api_url' => env('ACTIVECAMPAIGN_API_URL', null),
         'api_key' => env('ACTIVECAMPAIGN_API_KEY', null),
         'event_key'=> env('ACTIVECAMPAIGN_EVENT_KEY', null)
-    ]
+    ],
+
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_CONTENT_MODEL', 'gpt-4o-mini'),
+    ],
 
 ];
