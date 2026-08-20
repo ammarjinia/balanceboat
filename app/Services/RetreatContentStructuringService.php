@@ -65,8 +65,8 @@ class RetreatContentStructuringService
         private ?string $apiKey = null,
         private ?string $model = null,
     ) {
-        $this->apiKey = $this->apiKey ?: config('services.openai.key');
-        $this->model = $this->model ?: config('services.openai.model', 'gpt-4o-mini');
+        $this->apiKey = $this->apiKey ?: config('services.gemini.key');
+        $this->model = $this->model ?: config('services.gemini.model', 'gemini-2.0-flash');
     }
 
     /**
@@ -95,7 +95,7 @@ class RetreatContentStructuringService
             ];
         }
 
-        $structured = $this->callOpenAi($experienceRaw, $centerRaw);
+        $structured = $this->callGemini($experienceRaw, $centerRaw);
 
         $experienceDiff = [];
         foreach (self::EXPERIENCE_FIELDS as $key => $meta) {
@@ -243,10 +243,10 @@ class RetreatContentStructuringService
         return [$matched, $unmatched];
     }
 
-    private function callOpenAi(array $experienceRaw, array $centerRaw): array
+    private function callGemini(array $experienceRaw, array $centerRaw): array
     {
         if (empty($this->apiKey)) {
-            throw new RuntimeException('OPENAI_API_KEY is not configured — set it in .env to use AI content structuring.');
+            throw new RuntimeException('GEMINI_API_KEY is not configured — set it in .env to use AI content structuring. Get a free key at https://aistudio.google.com/apikey');
         }
 
         $schemaDescription = $this->describeSchema();
@@ -281,26 +281,29 @@ SYS;
             . "Experience source content (JSON):\n" . json_encode($experienceRaw, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n\n"
             . "Center source content (JSON):\n" . json_encode($centerRaw, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
-        $response = Http::withToken($this->apiKey)
-            ->timeout(90)
-            ->post('https://api.openai.com/v1/chat/completions', [
-                'model' => $this->model,
-                'temperature' => 0.3,
-                'response_format' => ['type' => 'json_object'],
-                'messages' => [
-                    ['role' => 'system', 'content' => $system],
-                    ['role' => 'user', 'content' => $user],
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent";
+
+        $response = Http::timeout(90)
+            ->withHeaders(['x-goog-api-key' => $this->apiKey])
+            ->post($url, [
+                'system_instruction' => ['parts' => [['text' => $system]]],
+                'contents' => [
+                    ['role' => 'user', 'parts' => [['text' => $user]]],
+                ],
+                'generationConfig' => [
+                    'temperature' => 0.3,
+                    'responseMimeType' => 'application/json',
                 ],
             ]);
 
         if ($response->failed()) {
-            throw new RuntimeException('OpenAI request failed: ' . $response->status() . ' ' . $response->body());
+            throw new RuntimeException('Gemini request failed: ' . $response->status() . ' ' . $response->body());
         }
 
-        $content = $response->json('choices.0.message.content');
+        $content = $response->json('candidates.0.content.parts.0.text');
         $decoded = json_decode((string) $content, true);
         if (!is_array($decoded)) {
-            throw new RuntimeException('OpenAI returned a response that was not valid JSON.');
+            throw new RuntimeException('Gemini returned a response that was not valid JSON.');
         }
 
         return [

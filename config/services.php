@@ -46,4 +46,11 @@ return [
         'model' => env('OPENAI_CONTENT_MODEL', 'gpt-4o-mini'),
     ],
 
+    // Free-tier provider used by App\Services\RetreatContentStructuringService (the "Structure with
+    // AI" feature). Get a free key with no credit card at https://aistudio.google.com/apikey.
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_CONTENT_MODEL', 'gemini-2.0-flash'),
+    ],
+
 ];
