@@ -110,7 +110,7 @@ foreach ($experience_destination as $edest) {
     letter-spacing: 0.1em; text-transform: uppercase; color: var(--rd-brand); display: block; margin-bottom: 6px;
   }
   .rd-page p { color: var(--rd-ink-soft); margin: 0 0 1em; overflow-wrap: break-word; }
-  .rd-measure { max-width: 68ch; overflow-wrap: break-word; word-break: break-word; }
+  .rd-measure { max-width: 78ch; overflow-wrap: break-word; word-break: break-word; }
   .rd-measure img { max-width: 100%; height: auto; }
   .rd-measure table { max-width: 100%; display: block; overflow-x: auto; }
   .rd-measure iframe { max-width: 100%; }
@@ -185,7 +185,7 @@ foreach ($experience_destination as $edest) {
      Top padding lives on .rd-title-block instead, so it isn't applied twice. */
   .rd-page-grid { display: grid; grid-template-columns: 1fr 380px; gap: 56px; align-items: start; padding: 0 0 80px; }
   .rd-content-col > section { padding: 34px 0; border-top: 1px solid var(--rd-grey-line); }
-  .rd-content-col > section:first-child { padding-top: 6px; border-top: none; }
+  .rd-content-col > section:first-child { border-top: none; }
   .rd-content-col h2 { font-size: clamp(1.35rem, 2vw, 1.65rem); margin-bottom: 18px; }
 
   .rd-spec-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }

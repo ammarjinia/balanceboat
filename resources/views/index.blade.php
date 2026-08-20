@@ -1,7 +1,7 @@
 <!doctype html>
 <html class="no-js" lang="en">
     <head>
-        <title>Balanceboat | Retreat & Teacher Training Booking and Marketing website</title>
+        <title>Authentic Ayurveda & Panchakarma Retreats | Detox Wellness Vacations | Balanceboat</title>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -169,7 +169,7 @@
 
             <div class="where_togo_area mob">
                 <div class="container">
-                    <section class="mb-4"><h1 class="text-white font-weight-bold">Soul pampering<br />retreats</h1></section>
+                    <section class="mb-4"><h1 class="text-white font-weight-bold">Discover Curated Ayurveda & Panchakarma Retreats, Detox Vacations and Wellness Getaways</h1></section>
                 </div>
             </div>
 
@@ -177,7 +177,7 @@
                 <div class="container">
                     <div class="row align-items-center">
                         <div class="col-lg-12">
-                            <section class="mb-4"><h1 class="text-white font-weight-bold">Soul pampering<br />retreats</h1></section>
+                            <section class="mb-4"><h1 class="text-white font-weight-bold">Discover Curated Ayurveda & Panchakarma Retreats, Detox Vacations and Wellness Getaways</h1></section>
                             <div class="search_wrap">
                                 <form id="frmSearchbar" name="frmSearchbar" action="{{ url("experiences") }}" method="get" class="search_form">
                                     <div class="input_field">								
