@@ -21,11 +21,14 @@
         --bd-radius-pill: var(--button-radius, 100px);
         --bd-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05);
         --bd-shadow-float: 0 15px 35px rgba(0, 0, 0, 0.08);
+        background: #fff;
         padding-bottom: 40px;
     }
 
+    .bd-wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(18px, 3.4vw, 40px); }
+
     /* Hero */
-    .bd-hero { padding: 34px 0 22px; background: linear-gradient(180deg, var(--bd-brand-light) 0%, var(--bd-surface) 70%); }
+    .bd-hero { padding: 34px 0 22px; background: #fff; }
     .bd-hero-badge {
         display: inline-flex; align-items: center; gap: 6px; background: var(--bd-brand-light); color: var(--bd-brand);
         border: 1px solid var(--bd-brand-border); font-size: 11px; font-weight: bold; text-transform: uppercase;
@@ -143,14 +146,14 @@
 <div class="bd-page">
 
     <section class="bd-hero">
-        <div class="container">
+        <div class="bd-wrap">
             <span class="bd-hero-badge"><span class="icon-fire"></span> Exclusive Savings &amp; Curated Packages</span>
             <h1>Curated <span>Retreat Deal</span> Collections</h1>
             <p>Explore handpicked savings grouped by focus area, duration, and regional specialty.</p>
         </div>
     </section>
 
-    <div class="container">
+    <div class="bd-wrap">
 
         {{-- Desktop filter bar --}}
         <form class="bd-filter-bar" method="GET" action="{{ url('/best-deals') }}">
