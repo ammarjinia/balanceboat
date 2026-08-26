@@ -125,6 +125,7 @@ class Experiences extends Model {
                 e.offer_discount_type,
                 e.offer_discount,
                 e.start_date_time as experience_date,
+                e.commission,
                 cur.rate,
                 ('".$site_currency_rate."' * e.avg_price) / cur.rate AS final_room_price,
                 ('".$site_currency_rate."' * subquery.min_price) / cur.rate AS min_duration_price,
@@ -136,27 +137,27 @@ class Experiences extends Model {
             LEFT JOIN
                 currency cur ON e.currency = cur.name
             LEFT JOIN (
-                SELECT 
+                SELECT
                     experience_id,
                     MIN(price) AS min_price,
                     MIN(promo_price) AS min_promo_price
-                FROM 
+                FROM
                     experience_duration_prices
-                GROUP BY 
+                GROUP BY
                     experience_id
             ) subquery ON subquery.experience_id = e.id
             WHERE
-                e.is_draft = 0 $cnd 
-            GROUP BY 
+                e.is_draft = 0 $cnd
+            GROUP BY
                 e.id
-            $having 
-            ORDER BY 
+            $having
+            ORDER BY
                 $orderby $order, min_duration_price ASC
             $newlimit
         ");
         return $resExp;
     }
-    
+
     public static function get_exp_deal_price_data($cnd = '', $orderby = 'e.updated_at', $order = 'DESC', $limit = 10, $offset = 0, $having='') {
         $site_currency_rate = \App\Http\Helpers\CommonHelper::get_site_currency_rate();
         $newlimit = ($limit >= 0) ? " LIMIT $offset, $limit" : "";
@@ -215,6 +216,7 @@ class Experiences extends Model {
                 e.offer_discount_type,
                 e.offer_discount,
                 e.start_date_time as experience_date,
+                e.commission,
                 cur.rate,
                 ('".$site_currency_rate."' * e.avg_price) / cur.rate AS final_room_price,
                 ('".$site_currency_rate."' * subquery.min_price) / cur.rate AS min_duration_price,
@@ -226,28 +228,28 @@ class Experiences extends Model {
             LEFT JOIN
                 currency cur ON e.currency = cur.name
             LEFT JOIN (
-                SELECT 
+                SELECT
                     experience_id,
                     MIN(price) AS min_price,
                     MIN(promo_price) AS min_promo_price
-                FROM 
+                FROM
                     experience_duration_prices
-                GROUP BY 
+                GROUP BY
                     experience_id
             ) subquery ON subquery.experience_id = e.id
             WHERE
-                e.is_draft = 0 $cnd 
-            GROUP BY 
+                e.is_draft = 0 $cnd
+            GROUP BY
                 e.id
-            $having 
-            ORDER BY 
+            $having
+            ORDER BY
                 $orderby $order, min_duration_price ASC
             $newlimit
         ");
         return $resExp;
     }
-    
-    
+
+
 
     /**
      * @param  array|null $param

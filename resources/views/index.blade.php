@@ -15,7 +15,7 @@
         <meta name=twitter:description content="Balanceboat is a booking and marketing website for retreats and professionally organized trainings be it a wellness retreat or yoga teacher trainings in india, bali, costa rica, cambodia, sri lanka &. We offer the best package prices and a variety of yoga retreats and teacher trainings to choose from." />
         <meta name=twitter:site content="https://twitter.com/book_yoga" />
         <meta name=twitter:image:src content="@yield('image',asset('basicfront/img/social-share-image-1.jpg'))" />
-        <meta property=og:title content="@yield('meta_title','BalanceBoat.com &#x7C; Holiday Retreats and Professional trainings Worldwide')" />
+        <meta property=og:title content="@yield('meta_title','Authentic Ayurveda &#x7C; Panchakarma Retreats | Detox Wellness Vacations | Balanceboat')" />
         <meta property=og:description content="Balanceboat is a booking and marketing website for retreats and professionally organized trainings be it a wellness retreat or yoga teacher trainings in india, bali, costa rica, cambodia, sri lanka &. We offer the best package prices and a variety of yoga retreats and teacher trainings to choose from." />
         <meta property=og:image content="@yield('image',asset('basicfront/img/social-share-image-1.jpg'))" />
         <meta property=og:url content="{{ url()->current() }}" />
