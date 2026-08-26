@@ -213,6 +213,9 @@ foreach ($experience_destination as $edest) {
   .rd-room-photos { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 130px; gap: 2px; height: 130px; background: var(--rd-wash); position: relative; }
   .rd-room-photos img { display: block; width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
   .rd-room-photos--empty { height: 0; }
+  /* 1-2 photos read as a thin stretched banner at the filmstrip's 130px row height, so give
+     those counts a taller row instead of just letting the grid divide the width between them. */
+  .rd-room-photos--1, .rd-room-photos--2 { grid-auto-rows: 240px; height: 240px; }
   .rd-room-gallery-btn {
     position: absolute; right: 10px; bottom: 10px; background: rgba(34,31,32,0.72); color: #fff;
     font-size: 0.76rem; font-weight: 600; padding: 6px 12px; border-radius: 8px;
@@ -265,15 +268,6 @@ foreach ($experience_destination as $edest) {
   /* ---------- Food ---------- */
   .rd-food-photos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0 6px; }
   .rd-food-photos img { aspect-ratio: 1; border-radius: 10px; object-fit: cover; width: 100%; height: 100%; }
-
-  /* ---------- Pricing ---------- */
-  .rd-page table.rd-price-table { width: 100%; border-collapse: collapse; font-size: 0.94rem; }
-  .rd-page table.rd-price-table th { text-align: left; font-weight: 500; color: var(--rd-grey-mid); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 14px 12px 0; border-bottom: 1px solid var(--rd-grey-line); }
-  .rd-page table.rd-price-table td { padding: 15px 14px 15px 0; border-bottom: 1px solid var(--rd-grey-line); vertical-align: baseline; }
-  .rd-page table.rd-price-table tr:last-child td { border-bottom: none; }
-  .rd-price-main { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.1rem; color: var(--rd-ink); }
-  .rd-price-strike { color: var(--rd-grey-mid); text-decoration: line-through; font-size: 0.84rem; }
-  .rd-table-scroll { overflow-x: auto; }
 
   /* ---------- Terms ---------- */
   .rd-terms-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 36px; margin: 0; }
@@ -478,6 +472,51 @@ foreach ($experience_destination as $edest) {
     .rd-food-photos, .rd-center-photos { grid-template-columns: repeat(3, 1fr); }
     body { padding-bottom: 78px; }
   }
+
+  /* ---------- Phone refinements ---------- */
+  @media (max-width: 640px) {
+    .rd-page { font-size: 14.5px; }
+    .rd-wrap { padding: 0 16px; }
+    .rd-util-bar .rd-wrap { padding: 10px 16px; gap: 6px 14px; }
+    .rd-crumbs { font-size: 0.76rem; gap: 5px; }
+    .rd-util-actions { font-size: 0.8rem; gap: 14px; }
+
+    .rd-title-block { padding: 16px 0 14px; }
+    .rd-title-meta { font-size: 0.84rem; gap: 6px 8px; }
+    .rd-badge-row { margin-top: 10px; gap: 6px; }
+    .rd-badge { font-size: 0.72rem; padding: 5px 10px; }
+
+    .rd-gallery-grid {
+      grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 92px);
+      gap: 4px; border-radius: 12px; margin: 14px 0 6px;
+    }
+    .rd-g-tile:first-child { grid-column: span 2; grid-row: span 1; }
+    .rd-show-all-btn { right: 8px; bottom: 8px; padding: 7px 11px; font-size: 0.72rem; }
+
+    .rd-section-nav ul { gap: 20px; }
+    .rd-section-nav a { padding: 12px 2px; font-size: 0.82rem; }
+
+    .rd-content-col > section { padding: 26px 0; }
+    .rd-content-col h2 { margin-bottom: 14px; }
+    .rd-spec-row { gap: 8px; margin-bottom: 16px; }
+    .rd-spec-chip { font-size: 0.8rem; padding: 7px 11px; }
+
+    .rd-room-photos { grid-template-columns: repeat(3, 1fr); grid-auto-rows: 96px; height: 96px; }
+    .rd-room-photos--1, .rd-room-photos--2 { grid-auto-rows: 180px; height: 180px; }
+    .rd-room-body { padding: 14px 16px 16px; }
+    .rd-room-name { font-size: 1.02rem; }
+    .rd-amenity-row { gap: 10px; margin: 12px 0; font-size: 0.8rem; }
+    .rd-room-cta { gap: 8px; }
+    .rd-room-cta a, .rd-room-cta button { flex: 1 1 auto; text-align: center; }
+
+    .rd-food-photos, .rd-center-photos { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .rd-center-head { gap: 12px; }
+    .rd-center-mark { width: 44px; height: 44px; font-size: 1rem; }
+
+    .rd-schedule-list li { gap: 12px; font-size: 0.86rem; }
+    .rd-terms-grid { gap: 16px 24px; }
+  }
+
   @media (prefers-reduced-motion: reduce) { .rd-page * { transition: none !important; } }
 </style>
 @endsection
@@ -662,7 +701,6 @@ ksort($avByDate);
         <li><a href="#overview" class="active">Overview</a></li>
         @if(sizeof(@$experience_accomodations) > 0)<li><a href="#accommodation">Accommodation</a></li>@endif
         @if((sizeof(@$foodimagegalleries->toArray())>0) OR (@$experience->food_banner_image_url) OR (@$experience->food_overview))<li><a href="#food">Food</a></li>@endif
-        @if(@$experience_durations && sizeof(@$experience_durations) > 0)<li><a href="#pricing">Pricing</a></li>@endif
         @if(@$experience_upcoming_availability && sizeof(@$experience_upcoming_availability) > 0)<li><a href="#availability">Availability</a></li>@endif
         <li><a href="#payment-terms">Terms</a></li>
         @if(@$center->about_center)<li><a href="#center">Center</a></li>@endif
@@ -797,7 +835,7 @@ ksort($avByDate);
         ?>
         <div class="rd-room-card">
             @if(sizeof($roomImgs) > 0)
-            <div class="rd-room-photos" style="grid-template-columns: repeat({{ sizeof($roomImgs) }}, 1fr);" data-room-gallery data-images="{{ json_encode($roomImgs) }}" data-title="{{ $racm->name }}">
+            <div class="rd-room-photos{{ sizeof($roomImgs) <= 2 ? ' rd-room-photos--'.sizeof($roomImgs) : '' }}" style="grid-template-columns: repeat({{ sizeof($roomImgs) }}, 1fr);" data-room-gallery data-images="{{ json_encode($roomImgs) }}" data-title="{{ $racm->name }}">
                 @foreach($roomImgs as $rimg)
                 <img class="lazy" data-src="{{ $rimg }}" alt="{{ $racm->name }}" />
                 @endforeach
@@ -893,27 +931,6 @@ ksort($avByDate);
       </section>
       @endif
 
-      {{-- PRICING --}}
-      @if(@$experience_durations && sizeof(@$experience_durations) > 0)
-      <section id="pricing">
-        <h2>Pricing</h2>
-        <div class="rd-table-scroll">
-            <table class="rd-price-table">
-                <thead><tr><th>Duration</th><th>Standard Price</th><th>Promo Price</th></tr></thead>
-                <tbody>
-                    @foreach(@$experience_durations as $ed)
-                    <tr>
-                        <td class="rd-tnum">{{ $ed->duration }} Days</td>
-                        <td class="rd-price-strike rd-tnum">{{ $ed->price ? \App\Http\Helpers\CommonHelper::get_currency_rate($ed->price, $ed->currency) : '-' }}</td>
-                        <td class="rd-price-main rd-tnum">{{ $ed->promo_price ? \App\Http\Helpers\CommonHelper::get_currency_rate($ed->promo_price, $ed->currency) : '-' }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-      </section>
-      @endif
-
       {{-- AVAILABILITY (real calendar-generation logic, restyled via CSS above) --}}
       @include('partials.experience-availability')
 
@@ -926,20 +943,61 @@ ksort($avByDate);
       $restOfPayment = @$experience->rest_of_payment ?: @$center_commission->rest_of_payment;
       $restOfPaymentDays = @$experience->rest_of_payment_days ?: @$center_commission->rest_of_payment_days;
       $taxInfo = @$experience->tax ?: @$center_commission->tax;
+
+      /* deposit_policy / rest_of_payment / cancellation_policy_condition are enums (see
+         admin/experiences/edit.blade.php's radio groups), not "has a deposit" flags — each value
+         maps to different wording, and only one of the three deposit_policy values (and one of the
+         three rest_of_payment / cancellation_policy_condition values) actually carries a day count or
+         a currency amount. The previous `$depositPolicy && $depositAmount` style checks treated every
+         other value as "nothing to show", so Full-price deposits, on-arrival/on-departure balances and
+         Non-refundable/Always-refundable cancellations silently rendered no row at all. They also fed
+         a raw percentage (deposit_policy 3) straight into get_currency_rate(), printing e.g. "$25.00"
+         for a 25% deposit instead of a percentage. */
+      $depositText = null;
+      if ((int) $depositPolicy === 1) {
+          $depositText = 'Full payment required to confirm your place';
+      } elseif ((int) $depositPolicy === 2 && $depositAmount) {
+          $depositText = \App\Http\Helpers\CommonHelper::get_currency_rate($depositAmount, $site_currency) . ' required to confirm your place';
+      } elseif ((int) $depositPolicy === 3 && $depositAmount) {
+          $depositText = $depositAmount . '% of the price';
+          if (@$pay > 0) {
+              $estDeposit = ((@$pay - $discount) * $depositAmount) / 100;
+              $depositText .= ' (approx. ' . \App\Http\Helpers\CommonHelper::get_currency_rate($estDeposit, $site_currency) . ')';
+          }
+          $depositText .= ' required to confirm your place';
+      }
+
+      $balanceText = null;
+      if ((int) $restOfPayment === 1) {
+          $balanceText = 'Due on arrival';
+      } elseif ((int) $restOfPayment === 2) {
+          $balanceText = 'Due on departure';
+      } elseif ((int) $restOfPayment === 3 && $restOfPaymentDays) {
+          $balanceText = $restOfPaymentDays . ' days before the retreat start date';
+      }
+
+      $cancelText = null;
+      if ((int) $cancelCondition === 1) {
+          $cancelText = 'Non-refundable';
+      } elseif ((int) $cancelCondition === 2) {
+          $cancelText = 'Fully refundable at any time before arrival';
+      } elseif ((int) $cancelCondition === 3 && $cancelDays) {
+          $cancelText = 'Refundable if cancelled at least ' . $cancelDays . ' days before arrival';
+      }
       ?>
-      @if($depositPolicy || $cancelCondition || $restOfPayment || $taxInfo || @$experience->cancellation_policy)
+      @if($depositText || $balanceText || $cancelText || $taxInfo || @$experience->cancellation_policy)
       <section id="payment-terms">
         <h2>Payment &amp; Cancellation Terms</h2>
-        @if($depositPolicy || $cancelCondition || $restOfPayment || $taxInfo)
+        @if($depositText || $balanceText || $cancelText || $taxInfo)
         <dl class="rd-terms-grid">
-            @if($depositPolicy && $depositAmount)
-            <div><dt>Deposit</dt><dd>{{ \App\Http\Helpers\CommonHelper::get_currency_rate($depositAmount, $site_currency) }} required to confirm your place</dd></div>
+            @if($depositText)
+            <div><dt>Deposit</dt><dd>{{ $depositText }}</dd></div>
             @endif
-            @if($restOfPayment && $restOfPaymentDays)
-            <div><dt>Balance due</dt><dd>{{ $restOfPaymentDays }} days before the retreat start date</dd></div>
+            @if($balanceText)
+            <div><dt>Balance due</dt><dd>{{ $balanceText }}</dd></div>
             @endif
-            @if($cancelCondition && $cancelDays)
-            <div><dt>Cancellation</dt><dd>Must be made at least {{ $cancelDays }} days in advance</dd></div>
+            @if($cancelText)
+            <div><dt>Cancellation</dt><dd>{{ $cancelText }}</dd></div>
             @endif
             @if($taxInfo)
             <div><dt>Applicable tax</dt><dd>{{ $taxInfo }}</dd></div>
@@ -947,7 +1005,7 @@ ksort($avByDate);
         </dl>
         @endif
         @if(@$experience->cancellation_policy)
-        <div style="margin-top:{{ ($depositPolicy || $cancelCondition || $restOfPayment || $taxInfo) ? '24px' : '0' }};">
+        <div style="margin-top:{{ ($depositText || $balanceText || $cancelText || $taxInfo) ? '24px' : '0' }};">
             <h3 class="rd-subhead" style="margin-top:0;">Cancellation Policy</h3>
             <div class="rd-measure">{!! @$experience->cancellation_policy !!}</div>
         </div>

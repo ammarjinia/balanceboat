@@ -68,7 +68,7 @@
         <link href="{{asset('basicfront/css/pop_up.css')}}" rel="stylesheet" defer media="all" />
         <link href="{{asset('basicfront/css/custom.min.css')}}" rel="stylesheet" defer media="all"  />
         <link href="{{asset('basicfront/fonts.css')}}" rel="stylesheet" defer media="all"  />-->
-        <link href="{{asset('basicfront/css/merge.css?v=13')}}" rel="stylesheet"  media="all"  />
+        <link href="{{asset('basicfront/css/merge.css?v=14')}}" rel="stylesheet"  media="all"  />
         <link href="{{asset('basicfront/css/saj-custom.css?v=1.4')}}" rel="stylesheet" defer media="all"  />
         <style type="text/css">
             .chat-box {

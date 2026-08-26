@@ -44,7 +44,7 @@
         <link rel="stylesheet" href="{{ asset('basicfront/home/css/slicknav.css?v=2') }}" />
         <link rel="preload" href="{{ asset('basicfront/jquery-ui/jquery-ui.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
         <noscript><link rel="stylesheet" href="{{ asset('basicfront/jquery-ui/jquery-ui.min.css') }}"></noscript>
-        <link rel="stylesheet" href="{{ asset('basicfront/home/css/style.css') }}"  />
+        <link rel="stylesheet" href="{{ asset('basicfront/home/css/style.css?v=3') }}"  />
         <style type="text/css">
             .chat-box {
                 align-self: flex-end;
