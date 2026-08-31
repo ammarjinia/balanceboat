@@ -385,6 +385,7 @@ Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\C
     // Protected routes (authentication required)
     Route::group(['middleware' => 'center.auth'], function() {
         Route::get('/dashboard', 'CenterDashboardController@index')->name('center-panel.dashboard');
+        Route::get('/tutorials', 'CenterDashboardController@tutorials')->name('center-panel.tutorials');
         Route::get('/logout', 'CenterAuthController@logout')->name('center-panel.logout');
         
         // Experiences Management

@@ -306,6 +306,21 @@ class CenterDashboardController extends Controller
      * 
      * @return \Illuminate\View\View
      */
+    /**
+     * Show the center panel tutorials/help page
+     *
+     * @return \Illuminate\View\View
+     */
+    public function tutorials()
+    {
+        $centerId = Session::get('center_id');
+        $center   = Centers::findOrFail($centerId);
+
+        return view('center_panel.tutorials', [
+            'center' => $center,
+        ]);
+    }
+
     public function settings()
     {
         $centerId = Session::get('center_id');
