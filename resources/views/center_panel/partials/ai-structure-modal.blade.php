@@ -23,7 +23,7 @@
                     <i class="fa-solid fa-wand-magic-sparkles text-purple-500"></i>
                     Structure with AI
                 </h2>
-                <p class="text-xs text-slate-500 mt-0.5">Reorganizes your existing text into clean sections — it never invents new facts, and nothing changes until you check a row and hit Save.</p>
+                <p class="text-xs text-slate-500 mt-0.5">Reorganizes your existing text into clean, search-friendly sections and drafts an SEO title &amp; description — it never invents new facts, and nothing changes until you check a row and hit Save.</p>
             </div>
             <button type="button" @click="close()" class="text-slate-400 hover:text-slate-700">
                 <i class="fa-solid fa-xmark text-lg"></i>

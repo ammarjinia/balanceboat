@@ -12,11 +12,13 @@ use RuntimeException;
 /**
  * Takes whatever raw content a center has on file for a retreat (long rambling paragraphs, a
  * one-line note, a comma-dumped list, half-finished HTML from a WYSIWYG editor — the "Breakfast of
- * breakfast" style garbling included) and asks an LLM to re-express it as clean content in the
- * exact shape resources/views/experience_detail.blade.php expects for that field: HTML paragraphs
- * for prose fields, plain newline-separated lines for the two fields the template strips tags and
- * regex-splits on ($experience_highlights, $experience_summary), <ul><li> HTML for the two fields
- * the template renders as a bulleted list (what_is_included / what_is_not_included), and free-text
+ * breakfast" style garbling included) and asks an LLM to re-express it as clean, SEO/GEO-aware
+ * content in the exact shape resources/views/experience_detail.blade.php expects for that field:
+ * HTML paragraphs for prose fields, plain newline-separated lines for the two fields the template
+ * strips tags and regex-splits on ($experience_highlights, $experience_summary), <ul><li> HTML for
+ * the two fields the template renders as a bulleted list (what_is_included / what_is_not_included),
+ * one-line length-capped plain text for meta_title / meta_description (rendered into the page
+ * <title> and <meta name="description"> at experience_detail.blade.php:46-52), and free-text
  * amenity mentions matched against real Amenities rows rather than invented IDs.
  *
  * Hard rule enforced in the prompt: reorganize and clean up what's there, never invent facts (no
@@ -39,8 +41,12 @@ class RetreatContentStructuringService
      *                      (the template strip_tags()s and preg_split()s on newlines, then
      *                      re-renders each line as its own <li> with a CSS bullet)
      *   html_list       — <ul><li>...</li></ul>, rendered via {!! !!}
+     *   seo_title       — single line of plain text, no markup, no surrounding quotes, <= 60 chars
+     *   seo_description — single line of plain text, no markup, <= 155 chars
      */
     private const EXPERIENCE_FIELDS = [
+        'meta_title'           => ['label' => 'SEO Title', 'type' => 'seo_title', 'length' => 'one line, under 60 characters, leads with the primary search term (retreat type + destination)'],
+        'meta_description'     => ['label' => 'SEO Meta Description', 'type' => 'seo_description', 'length' => 'one line, under 155 characters, names the main benefit and the location'],
         'experience_overview'  => ['label' => 'Overview', 'type' => 'html_paragraphs', 'length' => 'long prose, 2-4 short paragraphs'],
         'experience_highlights'=> ['label' => 'Highlights', 'type' => 'plain_lines', 'length' => 'short list, 4-8 punchy lines, a few words to one short sentence each'],
         'experience_summary'   => ['label' => 'At a Glance', 'type' => 'plain_lines', 'length' => 'short list, 3-6 very short lines'],
@@ -252,28 +258,41 @@ class RetreatContentStructuringService
         $schemaDescription = $this->describeSchema();
 
         $system = <<<SYS
-You are a content editor for a yoga/wellness retreat booking website. You will be given raw,
-often messy source text pulled from a center's existing records (rambling notes, repeated
-fragments, comma-dumped lists, or nothing at all for some fields).
+You are an SEO/GEO (Generative Engine Optimization) content strategist for a yoga/wellness
+retreat booking website. You will be given raw, often messy source text pulled from a center's
+existing records (rambling notes, repeated fragments, comma-dumped lists, or nothing at all for
+some fields). Rewrite it into clean, search- and AI-assistant-friendly content.
 
 Rules, no exceptions:
 1. Reorganize, clean, and re-express only what is already present in the source text for that
-   field. Never invent facts: no new prices, dates, counts, amenities, or claims not implied by
-   the given source.
+   field. Never invent facts: no new prices, dates, counts, amenities, accreditations, instructor
+   credentials, or claims not implied by the given source.
 2. If a field's source text is empty or has no real content, return an empty string "" for it.
    Do not fill it with generic marketing filler.
 3. Fix garbled/repeated fragments (e.g. source "Breakfast of breakfast" should become just
    "Breakfast" if that's clearly the intent) rather than repeating the garbling.
-4. Match each field's requested output type exactly:
+4. SEO/GEO: where the source supports it, surface the concrete entities a search engine or AI
+   assistant keys on — destination, retreat length, specific practices or protocols (e.g.
+   Vinyasa, Panchakarma, breathwork), who it suits (e.g. beginner-friendly), tangible outcomes
+   (e.g. nervous-system reset, gut health), accreditation, instructor qualifications — using
+   natural, high-intent phrasing, never keyword stuffing. Keep copy scannable: short paragraphs,
+   bulleted lists, and the field's own bold markup (<strong>) on key terms. Avoid hyperbole
+   ("life-changing", "magical", "unbelievable") and empty sales language.
+5. Match each field's requested output type exactly:
    - html_paragraphs: return valid HTML using only <p> and <strong> tags.
    - plain_lines: return PLAIN TEXT ONLY, one point per line separated by \\n, with NO bullet
      characters, dashes, numbers, or HTML — the website adds its own bullet styling.
    - html_list: return HTML as <ul><li>...</li></ul>, one <li> per item, no nested tags beyond
      <strong> if truly needed.
-5. Also extract a short list of amenity names implied anywhere in the given text (e.g. "pool",
+   - seo_title: ONE line of plain text, no markup, no surrounding quotes, 60 characters or fewer,
+     leading with the primary search term (retreat type + destination).
+   - seo_description: ONE line of plain text, no markup, 155 characters or fewer, naming the main
+     benefit and the location. Only derive meta_title / meta_description from facts in the source;
+     if there is too little source content to write an accurate one, return "".
+6. Also extract a short list of amenity names implied anywhere in the given text (e.g. "pool",
    "free wifi", "on-site spa") into the "amenities" array — only ones actually mentioned or
    clearly implied, not a generic retreat-center checklist.
-6. Respond with ONLY a single JSON object, no prose, matching exactly this shape:
+7. Respond with ONLY a single JSON object, no prose, matching exactly this shape:
 {"experience": {"<field>": "<value>", ...}, "center": {"<field>": "<value>", ...}, "amenities": ["<name>", ...]}
 SYS;
 
@@ -321,11 +340,24 @@ SYS;
     private function sanitizeFields(array $values, array $fieldMap): array
     {
         $clean = [];
-        foreach (array_keys($fieldMap) as $key) {
+        foreach ($fieldMap as $key => $meta) {
             $v = $values[$key] ?? null;
-            if (is_string($v) && trim(strip_tags($v)) !== '') {
-                $clean[$key] = trim($v);
+            if (!is_string($v) || trim(strip_tags($v)) === '') {
+                continue;
             }
+            $v = trim($v);
+
+            // The meta fields render into <title>/<meta name="description">, so keep them to one
+            // plain-text line and enforce the length cap even if the model overshoots it.
+            if (($meta['type'] ?? null) === 'seo_title' || ($meta['type'] ?? null) === 'seo_description') {
+                $v = trim(preg_replace('/\s+/', ' ', strip_tags(html_entity_decode($v))), " \t\n\r\0\x0B\"'");
+                $limit = $meta['type'] === 'seo_title' ? 60 : 155;
+                if (Str::length($v) > $limit) {
+                    $v = rtrim(Str::limit($v, $limit, ''));
+                }
+            }
+
+            $clean[$key] = $v;
         }
         return $clean;
     }

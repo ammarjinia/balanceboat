@@ -7,17 +7,35 @@
     .tut-shot { cursor: zoom-in; }
     .tut-field-table td, .tut-field-table th { padding: 8px 10px; }
     .tut-field-table tr:nth-child(odd) { background: #fafaf9; }
+
+    @media print {
+        aside, #userMenu, .no-print { display: none !important; }
+        main { padding: 0 !important; max-width: none !important; }
+        body { background: #fff !important; }
+        [x-cloak] { display: block !important; }
+        #tut-app > .grid { display: block !important; }
+        #tut-app nav { display: none !important; }
+        #tut-app .space-y-8 > div { break-inside: avoid; page-break-after: always; border: none !important; box-shadow: none !important; }
+        #tut-app img { max-width: 100% !important; break-inside: avoid; }
+        #tut-lightbox { display: none !important; }
+    }
 </style>
 @endsection
 
 @section('content')
 
-<div x-data="{ open: 'dashboard', zoom: null }">
+<div id="tut-app" x-data="{ open: 'dashboard', zoom: null }">
 
-    <div class="space-y-1 mb-6">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-purple-500">Center Panel Guide</p>
-        <h1 class="text-2xl md:text-3xl font-semibold text-slate-900">Tutorials & Help</h1>
-        <p class="text-sm text-slate-500 max-w-2xl">A field-by-field walkthrough of every screen in the Center Panel, with real screenshots. Click any screenshot to zoom in.</p>
+    <div class="space-y-1 mb-6 flex items-start justify-between gap-4">
+        <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-purple-500">Center Panel Guide</p>
+            <h1 class="text-2xl md:text-3xl font-semibold text-slate-900">Tutorials & Help</h1>
+            <p class="text-sm text-slate-500 max-w-2xl">A field-by-field walkthrough of every screen in the Center Panel, with real screenshots. Click any screenshot to zoom in.</p>
+        </div>
+        <button type="button" onclick="window.print()" class="no-print shrink-0 flex items-center space-x-2 px-4 py-2 rounded-2xl text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition-all">
+            <i class="fa-solid fa-file-pdf"></i>
+            <span>Download PDF</span>
+        </button>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 items-start">
@@ -345,7 +363,7 @@
     </div>
 
     {{-- Lightbox --}}
-    <div x-show="zoom" x-cloak @click="zoom = null" @keydown.escape.window="zoom = null"
+    <div id="tut-lightbox" x-show="zoom" x-cloak @click="zoom = null" @keydown.escape.window="zoom = null"
          class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 md:p-10 cursor-zoom-out">
         <img :src="zoom" class="max-w-full max-h-full rounded-xl shadow-2xl" @click.stop>
     </div>
