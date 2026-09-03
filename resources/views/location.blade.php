@@ -1,6 +1,7 @@
 @extends('layouts.front')
-@section('title', @$destination->name)
-@section('meta_title', @$destination->name)
+<?php $locationPageTitle = trim(@$destination->name) . ' Ayurveda, Yoga & Panchakarma Retreats | BalanceBoat'; ?>
+@section('title', $locationPageTitle)
+@section('meta_title', $locationPageTitle)
 <?php if (!empty(@$destination->description)) { ?> 
     @section('description', @$destination->description)
 <?php } ?>
