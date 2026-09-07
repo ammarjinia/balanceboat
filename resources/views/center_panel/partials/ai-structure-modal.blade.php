@@ -239,10 +239,12 @@ function aiStructureModal(experienceId) {
                     }
                     this.syncOnPageFields(payload.experience);
                     this.close();
+                    const n = data.changed_count || 0;
+                    const msg = `Content structured and saved (${n} field${n === 1 ? '' : 's'}).`;
                     if (window.showToast) {
-                        window.showToast('Content structured and saved.');
+                        window.showToast(msg);
                     } else {
-                        alert('Content structured and saved.');
+                        alert(msg);
                     }
                 })
                 .catch(e => {

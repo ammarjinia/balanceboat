@@ -144,15 +144,27 @@ class RetreatContentStructuringService
      * value is just the final string to save (no before/after) — e.g.
      *   ['experience' => ['experience_overview' => '<p>...</p>'], 'center' => [...], 'amenity_ids' => [1,4,9]]
      * Nothing here calls the AI — this is a plain, reviewable database write.
+     *
+     * Returns the columns it actually changed, per scope, so the caller can tell "saved 3 fields"
+     * apart from "request arrived empty and nothing was written" (the two look identical from the
+     * outside otherwise — save() on a clean model is a silent no-op).
+     *
+     * @return array{experience: string[], center: string[]}
      */
-    public function apply(Experiences $experience, array $accepted): void
+    public function apply(Experiences $experience, array $accepted): array
     {
+        $changed = ['experience' => [], 'center' => []];
+
         foreach ($accepted['experience'] ?? [] as $field => $value) {
             if (!array_key_exists($field, self::EXPERIENCE_FIELDS)) {
                 continue; // never let an unexpected key touch an unrelated column
             }
             $experience->{$field} = $value;
         }
+        $changed['experience'] = array_values(array_intersect(
+            array_keys(self::EXPERIENCE_FIELDS),
+            array_keys($experience->getDirty())
+        ));
         $experience->save();
 
         if (!empty($accepted['center'])) {
@@ -169,9 +181,12 @@ class RetreatContentStructuringService
                     $merged = array_values(array_unique(array_merge($existing, array_map('intval', $accepted['amenity_ids']))));
                     $center->amenities = implode('||', $merged);
                 }
+                $changed['center'] = array_keys($center->getDirty());
                 $center->save();
             }
         }
+
+        return $changed;
     }
 
     // ---------------------------------------------------------------------

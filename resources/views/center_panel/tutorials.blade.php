@@ -74,6 +74,17 @@
 
                 <img @click="zoom = '{{ asset('images/tutorials/center-panel/dashboard.png') }}'" src="{{ asset('images/tutorials/center-panel/dashboard.png') }}" class="tut-shot w-full rounded-2xl border border-slate-200 shadow-sm" alt="Dashboard screenshot">
 
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Sidebar (close-up)</p>
+                        <img @click="zoom = '{{ asset('images/tutorials/center-panel/dashboard-sidebar.png') }}'" src="{{ asset('images/tutorials/center-panel/dashboard-sidebar.png') }}" class="tut-shot w-full rounded-2xl border border-slate-200 shadow-sm" alt="Dashboard sidebar close-up">
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">KPI cards (close-up)</p>
+                        <img @click="zoom = '{{ asset('images/tutorials/center-panel/dashboard-kpis.png') }}'" src="{{ asset('images/tutorials/center-panel/dashboard-kpis.png') }}" class="tut-shot w-full rounded-2xl border border-slate-200 shadow-sm" alt="Dashboard KPI cards close-up">
+                    </div>
+                </div>
+
                 <div class="overflow-x-auto">
                     <table class="tut-field-table w-full text-xs text-left border border-slate-200 rounded-xl overflow-hidden">
                         <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide"><tr><th>Element</th><th>What it means</th></tr></thead>
@@ -154,6 +165,11 @@
                                 <tr><td class="font-semibold text-slate-800">Max Guest Capacity</td><td>The most guests that can join a single run of this retreat.</td></tr>
                                 <tr><td class="font-semibold text-slate-800">Short Summary</td><td>A 2–3 sentence teaser shown in search results.</td></tr>
                                 <tr><td class="font-semibold text-slate-800">Full Description / Overview</td><td>The main body copy — philosophy, environment, the transformation guests can expect.</td></tr>
+                                <tr><td class="font-semibold text-slate-800">Languages Spoken</td><td>Chip-select the languages your instructors/hosts teach in.</td></tr>
+                                <tr><td class="font-semibold text-slate-800">Skill / Experience Level</td><td>Beginner, intermediate, advanced, or all levels.</td></tr>
+                                <tr><td class="font-semibold text-slate-800">Atmosphere / Setting Tags</td><td>Free-text descriptors like "Jungle, Beachfront, Mountain, Urban".</td></tr>
+                                <tr><td class="font-semibold text-slate-800">GPS Coordinates</td><td>Optional — pins this specific retreat's location on the map.</td></tr>
+                                <tr><td class="font-semibold text-slate-800">Tags (SEO)</td><td>Comma-separated search keywords, e.g. "ayurveda, detox, yoga, kerala, wellness".</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -162,11 +178,8 @@
                         <img @click="zoom = '{{ asset('images/tutorials/center-panel/experience-step2-type-destination.png') }}'" src="{{ asset('images/tutorials/center-panel/experience-step2-type-destination.png') }}" class="tut-shot w-full rounded-2xl border border-slate-200 shadow-sm">
                         <table class="tut-field-table w-full text-xs text-left border border-slate-200 rounded-xl overflow-hidden">
                             <tbody class="text-slate-600">
-                                <tr><td class="font-semibold text-slate-800 w-1/3">Languages Spoken</td><td>Chip-select the languages your instructors/hosts teach in.</td></tr>
-                                <tr><td class="font-semibold text-slate-800">Skill / Experience Level</td><td>Beginner, intermediate, advanced, or all levels.</td></tr>
-                                <tr><td class="font-semibold text-slate-800">Atmosphere / Setting Tags</td><td>Free-text descriptors like "Jungle, Beachfront, Mountain, Urban".</td></tr>
-                                <tr><td class="font-semibold text-slate-800">GPS Coordinates</td><td>Optional — pins this specific retreat's location on the map.</td></tr>
-                                <tr><td class="font-semibold text-slate-800">Tags (SEO)</td><td>Comma-separated search keywords, e.g. "ayurveda, detox, yoga, kerala, wellness".</td></tr>
+                                <tr><td class="font-semibold text-slate-800 w-1/3">Retreat Type & Modalities</td><td>Multi-select checkboxes for every category this retreat belongs to (Yoga, Ayurveda, Detox, Meditation, Panchakarma, Wellness, and more) — this drives which search filters and category pages the retreat appears under.</td></tr>
+                                <tr><td class="font-semibold text-slate-800">Destination</td><td>Multi-select the country/countries this retreat takes place in — used for location-based search and browsing.</td></tr>
                             </tbody>
                         </table>
                     </div>

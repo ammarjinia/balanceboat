@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Experiences;
 use App\Services\RetreatContentStructuringService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Session;
 
 /**
@@ -48,18 +49,49 @@ class CenterContentAiController extends Controller
 
         // The client only ever sends back fields it displayed on the review screen and the user
         // checked, so this is a controlled write, not an arbitrary mass-assignment from the client.
+        // Prefer Laravel's parsed input, but fall back to decoding the raw body ourselves — some
+        // setups (proxies, a missing or altered Content-Type header) leave $request->input() empty
+        // for a valid JSON POST, which previously looked like a successful save of nothing.
+        $payload = $request->all();
+        if (empty($payload['experience']) && empty($payload['center'])) {
+            $decoded = json_decode((string) $request->getContent(), true);
+            if (is_array($decoded)) {
+                $payload = $decoded;
+            }
+        }
+
         $accepted = [
-            'experience' => (array) $request->input('experience', []),
-            'center' => (array) $request->input('center', []),
-            'amenity_ids' => array_map('intval', (array) $request->input('amenity_ids', [])),
+            'experience' => (array) ($payload['experience'] ?? []),
+            'center' => (array) ($payload['center'] ?? []),
+            'amenity_ids' => array_map('intval', (array) ($payload['amenity_ids'] ?? [])),
         ];
 
+        Log::info('AI structure apply', [
+            'experience_id' => $experienceId,
+            'is_json' => $request->isJson(),
+            'content_type' => $request->header('Content-Type'),
+            'experience_keys' => array_keys($accepted['experience']),
+            'center_keys' => array_keys($accepted['center']),
+            'raw_len' => strlen((string) $request->getContent()),
+        ]);
+
         try {
-            $service->apply($experience, $accepted);
+            $changed = $service->apply($experience, $accepted);
         } catch (\Throwable $e) {
+            Log::error('AI structure apply failed', ['experience_id' => $experienceId, 'error' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 422);
         }
 
-        return response()->json(['success' => true]);
+        $changedCount = count($changed['experience']) + count($changed['center']);
+        Log::info('AI structure apply result', ['experience_id' => $experienceId, 'changed' => $changed]);
+
+        if ($changedCount === 0) {
+            return response()->json([
+                'error' => 'The request reached the server but carried no field changes, so nothing was saved. '
+                    . 'Re-open the panel and try again; if it keeps happening, check the browser Network tab for the apply request body.',
+            ], 422);
+        }
+
+        return response()->json(['success' => true, 'changed' => $changed, 'changed_count' => $changedCount]);
     }
 }
