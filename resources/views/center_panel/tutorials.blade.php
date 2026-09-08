@@ -24,7 +24,7 @@
 
 @section('content')
 
-<div id="tut-app" x-data="{ open: 'dashboard', zoom: null, video: false }">
+<div id="tut-app" x-data="{ open: 'dashboard', zoom: null, video: false, playing: false }">
 
     <div class="space-y-1 mb-6 flex items-start justify-between gap-4">
         <div>
@@ -388,23 +388,39 @@
         <img :src="zoom" class="max-w-full max-h-full rounded-xl shadow-2xl" @click.stop>
     </div>
 
-    {{-- Video tutorial modal. The <video> streams via HTTP range requests; preload="none" keeps
-         the file off the wire until the guide user actually hits play. --}}
+    {{-- Video tutorial modal. The <video> streams via HTTP range requests; preload="metadata"
+         pulls only duration/dimensions (not the 133 MB body) so the frame sizes itself correctly
+         and the poster shows. object-contain + max-h keep it inside the viewport so the native
+         controls stay visible, and the big center button is the primary play/pause affordance. --}}
     <div id="tut-video-modal" x-show="video" x-cloak
          @click="video = false; $refs.tutVideo && $refs.tutVideo.pause()"
          @keydown.escape.window="video = false; $refs.tutVideo && $refs.tutVideo.pause()"
-         class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 md:p-10">
+         class="fixed inset-0 bg-slate-900/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 md:p-10">
         <div class="relative w-full max-w-4xl" @click.stop>
             <button type="button" @click="video = false; $refs.tutVideo.pause()"
                     class="absolute -top-9 right-0 text-white/80 hover:text-white text-xs font-semibold flex items-center gap-1.5">
                 <i class="fa-solid fa-xmark"></i><span>Close</span>
             </button>
-            <video x-ref="tutVideo" controls preload="none" playsinline
-                   poster="{{ asset('images/tutorials/center-panel/dashboard.png') }}"
-                   class="w-full rounded-xl shadow-2xl bg-black">
-                <source src="{{ asset('balanceBoat-center-dashboard.mp4') }}" type="video/mp4">
-                Your browser doesn't support embedded video — <a href="{{ asset('balanceBoat-center-dashboard.mp4') }}" class="underline">download it instead</a>.
-            </video>
+
+            <div class="relative bg-black rounded-xl overflow-hidden shadow-2xl">
+                <video x-ref="tutVideo" controls preload="metadata" playsinline
+                       @play="playing = true" @pause="playing = false" @ended="playing = false"
+                       @click.stop="$refs.tutVideo.paused ? $refs.tutVideo.play() : $refs.tutVideo.pause()"
+                       poster="{{ asset('images/tutorials/center-panel/dashboard.png') }}"
+                       class="block w-full max-h-[78vh] object-contain bg-black">
+                    <source src="{{ asset('balanceBoat-center-dashboard.mp4') }}" type="video/mp4">
+                    Your browser doesn't support embedded video — <a href="{{ asset('balanceBoat-center-dashboard.mp4') }}" class="underline">download it instead</a>.
+                </video>
+
+                {{-- Big centered play button — the clear "this is a video, press here" cue --}}
+                <button type="button" x-show="!playing" x-transition.opacity
+                        @click.stop="$refs.tutVideo.play()"
+                        aria-label="Play tutorial video"
+                        class="absolute inset-0 m-auto h-16 w-16 md:h-20 md:w-20 rounded-full bg-white/90 hover:bg-white text-slate-900 flex items-center justify-center shadow-xl ring-4 ring-white/25 transition-all">
+                    <i class="fa-solid fa-play text-xl md:text-2xl ml-1"></i>
+                </button>
+            </div>
+            <p class="text-center text-white/60 text-[11px] mt-3">Center Panel walkthrough &middot; click the video to play or pause</p>
         </div>
     </div>
 </div>
