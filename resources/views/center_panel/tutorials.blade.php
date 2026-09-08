@@ -17,14 +17,14 @@
         #tut-app nav { display: none !important; }
         #tut-app .space-y-8 > div { break-inside: avoid; page-break-after: always; border: none !important; box-shadow: none !important; }
         #tut-app img { max-width: 100% !important; break-inside: avoid; }
-        #tut-lightbox { display: none !important; }
+        #tut-lightbox, #tut-video-modal { display: none !important; }
     }
 </style>
 @endsection
 
 @section('content')
 
-<div id="tut-app" x-data="{ open: 'dashboard', zoom: null }">
+<div id="tut-app" x-data="{ open: 'dashboard', zoom: null, video: false }">
 
     <div class="space-y-1 mb-6 flex items-start justify-between gap-4">
         <div>
@@ -32,10 +32,17 @@
             <h1 class="text-2xl md:text-3xl font-semibold text-slate-900">Tutorials & Help</h1>
             <p class="text-sm text-slate-500 max-w-2xl">A field-by-field walkthrough of every screen in the Center Panel, with real screenshots. Click any screenshot to zoom in.</p>
         </div>
-        <button type="button" onclick="window.print()" class="no-print shrink-0 flex items-center space-x-2 px-4 py-2 rounded-2xl text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition-all">
-            <i class="fa-solid fa-file-pdf"></i>
-            <span>Download PDF</span>
-        </button>
+        <div class="no-print shrink-0 flex items-center gap-2">
+            <button type="button" @click="video = true"
+                class="flex items-center space-x-2 px-4 py-2 rounded-2xl text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-all">
+                <i class="fa-solid fa-circle-play"></i>
+                <span>Watch Video Tutorial</span>
+            </button>
+            <button type="button" onclick="window.print()" class="flex items-center space-x-2 px-4 py-2 rounded-2xl text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition-all">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span>Download PDF</span>
+            </button>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 items-start">
@@ -379,6 +386,26 @@
     <div id="tut-lightbox" x-show="zoom" x-cloak @click="zoom = null" @keydown.escape.window="zoom = null"
          class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 md:p-10 cursor-zoom-out">
         <img :src="zoom" class="max-w-full max-h-full rounded-xl shadow-2xl" @click.stop>
+    </div>
+
+    {{-- Video tutorial modal. The <video> streams via HTTP range requests; preload="none" keeps
+         the file off the wire until the guide user actually hits play. --}}
+    <div id="tut-video-modal" x-show="video" x-cloak
+         @click="video = false; $refs.tutVideo && $refs.tutVideo.pause()"
+         @keydown.escape.window="video = false; $refs.tutVideo && $refs.tutVideo.pause()"
+         class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 md:p-10">
+        <div class="relative w-full max-w-4xl" @click.stop>
+            <button type="button" @click="video = false; $refs.tutVideo.pause()"
+                    class="absolute -top-9 right-0 text-white/80 hover:text-white text-xs font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-xmark"></i><span>Close</span>
+            </button>
+            <video x-ref="tutVideo" controls preload="none" playsinline
+                   poster="{{ asset('images/tutorials/center-panel/dashboard.png') }}"
+                   class="w-full rounded-xl shadow-2xl bg-black">
+                <source src="{{ asset('balanceBoat-center-dashboard.mp4') }}" type="video/mp4">
+                Your browser doesn't support embedded video — <a href="{{ asset('balanceBoat-center-dashboard.mp4') }}" class="underline">download it instead</a>.
+            </video>
+        </div>
     </div>
 </div>
 
