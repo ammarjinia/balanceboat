@@ -659,6 +659,7 @@ class CenterDashboardController extends Controller
         $exp->deposit_amount      = $request->input('deposit_amount');
         $exp->rest_of_payment     = $request->input('rest_of_payment', 1);
         $exp->food                = $request->input('food');
+        $exp->food_overview       = $request->input('food_overview');
         $exp->area                = $request->input('area');
         $exp->atmosphere          = $request->input('atmosphere');
         $exp->gps                 = $request->input('gps');

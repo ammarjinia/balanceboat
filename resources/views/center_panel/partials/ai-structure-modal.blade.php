@@ -179,13 +179,17 @@ function aiStructureModal(experienceId) {
                     const before = (row.before || '').trim();
                     const after = (row.after || '').trim();
                     if (!after || after === before) continue;
+                    // The DB column (`field`) is what we send back to save; `input` is the form
+                    // control it's edited through, which sometimes has a different name
+                    // (e.g. column `schedule` <-> <textarea name="experience_schedule">).
+                    const input = row.input || field;
                     rows.push({
                         key: `${scope}.${field}`,
-                        scope, field, scopeLabel,
+                        scope, field, input, scopeLabel,
                         label: row.label, type: row.type,
                         before, after,
                         accepted: true,
-                        onPage: scope === 'experience' && onPageFields.includes(field),
+                        onPage: scope === 'experience' && onPageFields.includes(input),
                     });
                 }
             }
@@ -220,6 +224,12 @@ function aiStructureModal(experienceId) {
                 payload.amenity_ids = this.amenitySuggestions.map(a => a.id);
             }
 
+            // Map accepted experience values onto their on-page form-control names (not their DB
+            // column names) so syncOnPageFields can find the right <input>/<textarea>.
+            const onPageSync = {};
+            this.rows.filter(r => r.accepted && r.scope === 'experience' && r.onPage)
+                .forEach(r => { onPageSync[r.input] = r.after; });
+
             this.saving = true;
             fetch(`/center-panel/experiences/${this.experienceId}/structure-content/apply`, {
                 method: 'POST',
@@ -237,7 +247,7 @@ function aiStructureModal(experienceId) {
                         this.errorMessage = data.error;
                         return;
                     }
-                    this.syncOnPageFields(payload.experience);
+                    this.syncOnPageFields(onPageSync);
                     this.close();
                     const n = data.changed_count || 0;
                     const msg = `Content structured and saved (${n} field${n === 1 ? '' : 's'}).`;
@@ -256,9 +266,12 @@ function aiStructureModal(experienceId) {
 
         // Reflects just-saved experience fields into this page's inputs (and their TinyMCE
         // instance, if any) so the wizard's own Update button doesn't later resubmit stale values
-        // over the top of what the AI pass just saved.
-        syncOnPageFields(experienceValues) {
-            Object.entries(experienceValues).forEach(([name, value]) => {
+        // over the top of what the AI pass just saved. Keyed by form-control name, not DB column.
+        // Note: for name="experience_schedule" this updates the hidden field the wizard submits
+        // (so Update keeps the AI value) but not the visual schedule builder, which only reads it
+        // on page load — reload to see the rows redrawn.
+        syncOnPageFields(fieldValuesByInputName) {
+            Object.entries(fieldValuesByInputName).forEach(([name, value]) => {
                 const el = document.querySelector(`#experienceForm [name="${name}"]`);
                 if (!el) return;
                 el.value = value;

@@ -54,7 +54,11 @@ class RetreatContentStructuringService
         'what_is_not_included' => ['label' => "What's Not Included", 'type' => 'html_list', 'length' => 'short list, one line per item'],
         'food_overview'        => ['label' => 'Food & Dining', 'type' => 'html_paragraphs', 'length' => 'medium prose, 1-2 short paragraphs'],
         'experience_details'   => ['label' => 'More Details', 'type' => 'html_paragraphs', 'length' => 'long prose, can keep sub-headings as <p><strong>...</strong></p>'],
-        'schedule'              => ['label' => 'Daily Schedule (fallback text)', 'type' => 'html_paragraphs', 'length' => 'medium, ideally one <p> per time block, e.g. "<p><strong>08:00</strong> — Morning practice</p>"'],
+        // 'input' = the <textarea name=""> this column is edited through on experience_form.blade.php
+        // when it differs from the column name. The AI review modal uses it to sync the accepted
+        // value into the live form (so the wizard's own Update won't later overwrite it) instead of
+        // labelling the row "saved directly". Columns whose name already matches their input omit it.
+        'schedule'              => ['label' => 'Daily Schedule (fallback text)', 'type' => 'html_paragraphs', 'input' => 'experience_schedule', 'length' => 'medium, ideally one <p> per time block, e.g. "<p><strong>08:00</strong> — Morning practice</p>"'],
     ];
 
     private const CENTER_FIELDS = [
@@ -108,6 +112,7 @@ class RetreatContentStructuringService
             $experienceDiff[$key] = [
                 'label' => $meta['label'],
                 'type' => $meta['type'],
+                'input' => $meta['input'] ?? $key,
                 'before' => $experienceRaw[$key] ?? null,
                 'after' => $structured['experience'][$key] ?? null,
             ];
@@ -208,7 +213,7 @@ class RetreatContentStructuringService
     {
         $diff = [];
         foreach ($fieldMap as $key => $meta) {
-            $diff[$key] = ['label' => $meta['label'], 'type' => $meta['type'], 'before' => $raw[$key] ?? null, 'after' => null];
+            $diff[$key] = ['label' => $meta['label'], 'type' => $meta['type'], 'input' => $meta['input'] ?? $key, 'before' => $raw[$key] ?? null, 'after' => null];
         }
         return $diff;
     }

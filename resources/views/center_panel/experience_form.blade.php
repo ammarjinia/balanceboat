@@ -452,6 +452,13 @@
                 </div>
 
                 <div>
+                    <label class="wiz-label">Food &amp; Dining <span class="text-slate-400 font-normal">(description)</span></label>
+                    <textarea name="food_overview" rows="4" class="wiz-input tiny-editor resize-y"
+                              placeholder="Cuisine style, dietary options catered for, where and how meals are served.">{{ old('food_overview', $experience?->food_overview) }}</textarea>
+                    <p class="text-[10px] text-slate-400 mt-1">Shown as the "Food &amp; Dining" section on the public retreat page.</p>
+                </div>
+
+                <div>
                     <label class="wiz-label">Area / Location Details</label>
                     <input type="text" name="area"
                            value="{{ old('area', $experience?->area) }}"
