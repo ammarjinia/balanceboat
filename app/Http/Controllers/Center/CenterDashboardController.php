@@ -288,6 +288,8 @@ class CenterDashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->value('name') ?? 'Retreat Program';
 
+        $yieldInsights = $this->yieldOptimizationInsights($centerId, $totalExperiences);
+
         return view('center_panel.experiences', [
             'center'                     => $center,
             'userName'                   => Session::get('center_user_name'),
@@ -298,12 +300,131 @@ class CenterDashboardController extends Controller
             'upcomingCyclePipelines'     => $upcomingCyclePipelines,
             'pipelineOccupancyVelocity'  => $pipelineOccupancyVelocity,
             'topConvertingProgramName'   => $topConvertingProgramName,
+            'yieldInsights'              => $yieldInsights,
         ]);
     }
 
     /**
+     * Build the data-driven "AI Yield Optimization Insights" shown on the retreat
+     * management page. Returns up to 3 insight cards derived from real views,
+     * inquiries, bookings and pricing configuration for this center's programs.
+     *
+     * @return array<int, array{tag: string, tone: string, text: string}>
+     */
+    private function yieldOptimizationInsights($centerId, int $totalExperiences): array
+    {
+        $programs = Experiences::where('center_id', $centerId)
+            ->get(['id', 'name', 'is_draft', 'eirly_bird_discount', 'offer_discount']);
+        $ids = $programs->pluck('id')->toArray();
+
+        $countBy = function ($model) use ($ids) {
+            if (empty($ids)) {
+                return collect();
+            }
+            return $model::whereIn('experience_id', $ids)
+                ->select('experience_id', DB::raw('count(*) as cnt'))
+                ->groupBy('experience_id')
+                ->pluck('cnt', 'experience_id');
+        };
+
+        $viewsBy     = $countBy(ExperienceView::class);
+        $bookingsBy  = $countBy(Bookings::class);
+        $inquiriesBy = $countBy(Inquiry::class);
+
+        $insights = [];
+
+        // 1. Strongest demand signal — most-viewed program.
+        $topViewed = $programs->sortByDesc(fn ($p) => (int) ($viewsBy[$p->id] ?? 0))->first();
+        $topViews  = $topViewed ? (int) ($viewsBy[$topViewed->id] ?? 0) : 0;
+        if ($topViews > 0) {
+            $insights[] = [
+                'tag'  => 'Demand Signal',
+                'tone' => 'purple',
+                'text' => '"' . $topViewed->name . '" is your strongest demand driver with ' . number_format($topViews)
+                    . ' unique visitor' . ($topViews == 1 ? '' : 's') . ' tracked. Keep its dates and pricing current to capture this traffic.',
+            ];
+        } else {
+            $insights[] = [
+                'tag'  => 'Demand Signal',
+                'tone' => 'purple',
+                'text' => 'No visitor activity tracked yet. Publish your programs and share their links to start building the demand history these insights learn from.',
+            ];
+        }
+
+        // 2. Conversion gap — traffic without bookings, else the best converter.
+        $leaky = $programs->first(fn ($p) => (int) ($viewsBy[$p->id] ?? 0) >= 5 && (int) ($bookingsBy[$p->id] ?? 0) === 0);
+        if ($leaky) {
+            $leakyViews = (int) ($viewsBy[$leaky->id] ?? 0);
+            $insights[] = [
+                'tag'  => 'Conversion Uplift Signal',
+                'tone' => 'amber',
+                'text' => '"' . $leaky->name . '" has drawn ' . number_format($leakyViews)
+                    . ' visitors but no bookings yet. Refresh its photos, verify upcoming dates, and consider an intro price to convert this interest.',
+            ];
+        } else {
+            $bestConverter = $programs->sortByDesc(fn ($p) => (int) ($bookingsBy[$p->id] ?? 0))->first();
+            $bestBookings  = $bestConverter ? (int) ($bookingsBy[$bestConverter->id] ?? 0) : 0;
+            if ($bestBookings > 0) {
+                $bestInq = (int) ($inquiriesBy[$bestConverter->id] ?? 0);
+                $insights[] = [
+                    'tag'  => 'Conversion Uplift Signal',
+                    'tone' => 'emerald',
+                    'text' => '"' . $bestConverter->name . '" is converting best with ' . $bestBookings . ' booking' . ($bestBookings == 1 ? '' : 's')
+                        . ($bestInq ? ' from ' . $bestInq . ($bestInq == 1 ? ' inquiry' : ' inquiries') : '')
+                        . '. Reuse its structure and pricing as a template for new programs.',
+                ];
+            }
+        }
+
+        // 3. Pricing lever — live programs with no early-bird / seasonal discount.
+        $liveCount      = $programs->where('is_draft', 0)->count();
+        $liveNoDiscount = $programs->filter(fn ($p) => !$p->is_draft && empty($p->eirly_bird_discount) && empty($p->offer_discount))->count();
+        if ($liveCount > 0 && $liveNoDiscount > 0) {
+            $insights[] = [
+                'tag'  => 'Psychological Pricing Hook',
+                'tone' => 'purple',
+                'text' => $liveNoDiscount . ' of your ' . $liveCount . ' live program' . ($liveCount == 1 ? '' : 's')
+                    . ' run without an early-bird or seasonal discount. A small advance-booking incentive typically pulls reservations forward.',
+            ];
+        } elseif ($liveCount > 0) {
+            $insights[] = [
+                'tag'  => 'Psychological Pricing Hook',
+                'tone' => 'emerald',
+                'text' => 'Every live program already carries a discount rule. Track redemption against fill rate in Bookings and tune the percentage from there.',
+            ];
+        }
+
+        // 4. Portfolio coverage — drafts waiting to publish.
+        $draftCount = $programs->where('is_draft', 1)->count();
+        if ($draftCount > 0) {
+            $insights[] = [
+                'tag'  => 'Portfolio Coverage',
+                'tone' => 'amber',
+                'text' => 'You have ' . $draftCount . ' program' . ($draftCount == 1 ? '' : 's')
+                    . ' still in draft. Publishing widens the range of dates and durations travellers can find you for.',
+            ];
+        } elseif ($totalExperiences > 0) {
+            $insights[] = [
+                'tag'  => 'Portfolio Coverage',
+                'tone' => 'emerald',
+                'text' => 'All ' . $totalExperiences . ' program' . ($totalExperiences == 1 ? '' : 's') . ' are published and live in distribution.',
+            ];
+        }
+
+        if (empty($insights)) {
+            $insights[] = [
+                'tag'  => 'Getting Started',
+                'tone' => 'purple',
+                'text' => 'Create your first retreat program to unlock demand, pricing, and conversion insights here.',
+            ];
+        }
+
+        return array_slice($insights, 0, 3);
+    }
+
+    /**
      * Get center profile/settings
-     * 
+     *
      * @return \Illuminate\View\View
      */
     /**

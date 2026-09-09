@@ -6,7 +6,10 @@
     {{-- Page Header --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-            <h1 class="text-3xl font-serif font-light text-slate-900">Center Overview</h1>
+            <div class="flex items-center gap-2">
+                <h1 class="text-3xl font-serif font-light text-slate-900">Center Overview</h1>
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full border border-purple-100">v1.0</span>
+            </div>
             <p class="text-xs text-slate-500 mt-1">Unified data streams covering demand, bookings, and profile performance for {{ $center->name ?? 'your center' }}.</p>
         </div>
         <a href="{{ route('center-panel.experiences') }}"
@@ -59,7 +62,9 @@
                 <span class="text-[11px] text-slate-400">Unique visitors, all-time</span>
             </div>
             @if($retreatViewsChart->sum('views') > 0)
-                <canvas id="retreatViewsChart" height="220"></canvas>
+                <div style="position:relative;height:{{ max(240, $retreatViewsChart->take(8)->count() * 48) }}px;">
+                    <canvas id="retreatViewsChart"></canvas>
+                </div>
             @else
                 <p class="text-xs text-slate-400 text-center py-8">No views recorded yet for your retreat programs.</p>
             @endif
@@ -272,24 +277,55 @@ document.addEventListener('DOMContentLoaded', function () {
     const retreatViewsCanvas = document.getElementById('retreatViewsChart');
     if (retreatViewsCanvas) {
         const rows = @json($retreatViewsChart->take(8)->values());
+        const truncate = (s, n) => (s && s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : (s || ''));
+        const ctx = retreatViewsCanvas.getContext('2d');
+        const barFill = ctx.createLinearGradient(0, 0, retreatViewsCanvas.width || 400, 0);
+        barFill.addColorStop(0, '#A78BFA');
+        barFill.addColorStop(1, '#7C3AED');
         new Chart(retreatViewsCanvas, {
             type: 'bar',
             data: {
-                labels: rows.map(r => r.name),
+                labels: rows.map(r => truncate(r.name, 32)),
                 datasets: [{
-                    label: 'Views',
+                    label: 'Unique visitors',
                     data: rows.map(r => r.views),
-                    backgroundColor: '#8B5CF6',
+                    backgroundColor: barFill,
+                    hoverBackgroundColor: '#6D28D9',
                     borderRadius: 6,
-                    maxBarThickness: 36,
+                    borderSkipped: false,
+                    barThickness: 18,
                 }],
             },
             options: {
+                indexAxis: 'y',
                 responsive: true,
-                plugins: { legend: { display: false } },
+                maintainAspectRatio: false,
+                layout: { padding: { right: 12 } },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0F172A',
+                        padding: 10,
+                        titleFont: { size: 11 },
+                        bodyFont: { size: 11 },
+                        callbacks: {
+                            title: items => rows[items[0].dataIndex].name,
+                            label: item => ' ' + item.parsed.x.toLocaleString() + ' unique visitors',
+                        },
+                    },
+                },
                 scales: {
-                    x: { ticks: { font: { size: 10 } } },
-                    y: { beginAtZero: true, ticks: { precision: 0, font: { size: 10 } } },
+                    x: {
+                        beginAtZero: true,
+                        border: { display: false },
+                        grid: { color: '#F1F5F9' },
+                        ticks: { precision: 0, font: { size: 10 }, color: '#94A3B8' },
+                    },
+                    y: {
+                        border: { display: false },
+                        grid: { display: false },
+                        ticks: { font: { size: 10 }, color: '#475569', crossAlign: 'far' },
+                    },
                 },
             },
         });

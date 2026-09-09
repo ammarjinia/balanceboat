@@ -299,9 +299,6 @@ foreach ($experience_destination as $edest) {
   }
   .rd-map-pin { width: 30px; height: 30px; border-radius: 50% 50% 50% 0; background: var(--rd-brand); transform: rotate(-45deg); box-shadow: var(--rd-shadow-lg); }
   .rd-map-box .rd-map-label { font-size: 0.85rem; font-weight: 600; color: var(--rd-ink); background: var(--rd-card); padding: 6px 14px; border-radius: 999px; box-shadow: var(--rd-shadow); text-align: center; max-width: 80%; }
-  .rd-contact-row { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 0.87rem; margin-top: 20px; color: var(--rd-ink-soft); }
-  .rd-contact-row a { border-bottom: 1px solid var(--rd-grey-line); }
-  .rd-contact-row a:hover { border-color: var(--rd-brand); color: var(--rd-brand); }
   /* .rd-page h1,h2,h3,h4 {margin:0} above has higher specificity (element+class beats class alone),
      so a bare .rd-subhead rule never actually wins — every rd-subhead heading site-wide rendered with
      zero margin regardless of this declaration. Scoping it to .rd-page .rd-subhead fixes that. */
@@ -477,8 +474,8 @@ foreach ($experience_destination as $edest) {
   @media (max-width: 640px) {
     .rd-page { font-size: 14.5px; }
     .rd-wrap { padding: 0 16px; }
-    .rd-util-bar .rd-wrap { padding: 10px 16px; gap: 6px 14px; }
-    .rd-crumbs { font-size: 0.76rem; gap: 5px; }
+    .rd-util-bar .rd-wrap { padding: 10px 16px; gap: 6px 14px; justify-content: flex-end; }
+    .rd-crumbs { display: none; }
     .rd-util-actions { font-size: 0.8rem; gap: 14px; }
 
     .rd-title-block { padding: 16px 0 14px; }
@@ -724,13 +721,15 @@ ksort($avByDate);
             foreach (explode("||", $experience->language_spoken) as $lg) { if (trim($lg)) $specChips[] = trim($lg); }
         }
         ?>
-        @if(sizeof($specChips) > 0)
+        <?php /*@if(sizeof($specChips) > 0)
+        <h3 class="rd-subhead" style="margin-top:0;">Quick Facts</h3>
+        <p class="rd-measure" style="color:var(--rd-grey-mid); font-size:0.88rem; margin-bottom:14px;">The key details of this experience at a glance &mdash; duration, skill level, styles taught and the languages spoken by your hosts.</p>
         <div class="rd-spec-row">
             @foreach($specChips as $chip)
             <span class="rd-spec-chip">{{ $chip }}</span>
             @endforeach
         </div>
-        @endif
+        @endif*/?>
 
         @if(@$experience->experience_overview)
         <div class="rd-measure">{!! @$experience->experience_overview !!}</div>
@@ -1113,14 +1112,6 @@ ksort($avByDate);
         </div>
         @endif
 
-        <div class="rd-contact-row">
-            @if(@$center->email_address)<a href="mailto:{{ $center->email_address }}">{{ $center->email_address }}</a>@endif
-            @if(@$center->contact_number)<a href="tel:{{ $center->contact_number }}">{{ $center->contact_number }}</a>@endif
-            @if(@$center->whatsapp_number)<a href="https://wa.me/{{ preg_replace('/\D+/', '', $center->whatsapp_number) }}" target="_blank">WhatsApp</a>@endif
-            @if(@$center->website)<a href="{{ $center->website }}" target="_blank">Website</a>@endif
-            @if(@$center->facebook_url)<a href="{{ $center->facebook_url }}" target="_blank">Facebook</a>@endif
-            @if(@$center->instagram_url)<a href="{{ $center->instagram_url }}" target="_blank">Instagram</a>@endif
-        </div>
       </section>
       @endif
 

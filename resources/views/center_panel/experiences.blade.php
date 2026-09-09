@@ -190,19 +190,24 @@
                         <i class="fa-solid fa-wand-magic-sparkles text-purple-600 text-sm animate-pulse"></i>
                         <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900">AI Yield Optimization Insights</h3>
                     </div>
+                    @php
+                        $yieldToneMap = [
+                            'purple'  => ['wrap' => 'bg-purple-50 border-purple-100',  'tag' => 'bg-purple-100 text-purple-700'],
+                            'emerald' => ['wrap' => 'bg-emerald-50 border-emerald-100', 'tag' => 'bg-emerald-100 text-emerald-700'],
+                            'amber'   => ['wrap' => 'bg-amber-50 border-amber-100',     'tag' => 'bg-amber-100 text-amber-700'],
+                            'rose'    => ['wrap' => 'bg-rose-50 border-rose-100',       'tag' => 'bg-rose-100 text-rose-700'],
+                        ];
+                    @endphp
                     <div class="space-y-3">
-                        <div class="p-4 bg-purple-50 border border-purple-100 rounded-3xl space-y-2">
-                            <span class="text-[9px] font-bold uppercase bg-purple-100 text-purple-700 px-2 py-1 rounded font-mono">Demand Matrix Detection</span>
-                            <p class="text-xs text-slate-700 font-light leading-relaxed">"7-day Ayurvedic detox structures are processing 42% higher systemic consumer search hits in Central Europe region tracks. Dynamic localization recommended."</p>
-                        </div>
-                        <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-3xl space-y-2">
-                            <span class="text-[9px] font-bold uppercase bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-mono">Psychological Pricing Hook</span>
-                            <p class="text-xs text-slate-700 font-light leading-relaxed">"Activating an early-bird 10% auto-markdown ruleset captures long-tail reservation pipelines, lifting velocity scores by 38%."</p>
-                        </div>
-                        <div class="p-4 bg-amber-50 border border-amber-100 rounded-3xl space-y-2">
-                            <span class="text-[9px] font-bold uppercase bg-amber-100 text-amber-700 px-2 py-1 rounded font-mono">Conversion Uplift Signal</span>
-                            <p class="text-xs text-slate-700 font-light leading-relaxed">"Adding a 21-day silent meditation program variant expands your addressable market by an estimated 3.2x conversion surface area."</p>
-                        </div>
+                        @forelse($yieldInsights ?? [] as $insight)
+                            @php $t = $yieldToneMap[$insight['tone']] ?? $yieldToneMap['purple']; @endphp
+                            <div class="p-4 {{ $t['wrap'] }} border rounded-3xl space-y-2">
+                                <span class="text-[9px] font-bold uppercase {{ $t['tag'] }} px-2 py-1 rounded font-mono">{{ $insight['tag'] }}</span>
+                                <p class="text-xs text-slate-700 font-light leading-relaxed">{{ $insight['text'] }}</p>
+                            </div>
+                        @empty
+                            <p class="text-xs text-slate-400 text-center py-6">Insights appear here once your programs start recording views, inquiries, and bookings.</p>
+                        @endforelse
                     </div>
                 </div>
 
@@ -218,11 +223,6 @@
                         class="w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-2xl text-xs font-medium transition-all flex items-center space-x-2">
                         <i class="fa-regular fa-copy text-xs"></i>
                         <span>Duplicate Existing Program</span>
-                    </button>
-                    <button type="button"
-                        class="w-full py-2.5 px-4 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 rounded-2xl text-xs font-medium transition-all flex items-center space-x-2">
-                        <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-                        <span>AI Program Optimizer</span>
                     </button>
                 </div>
             </div>
