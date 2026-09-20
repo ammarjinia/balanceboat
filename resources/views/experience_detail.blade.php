@@ -448,9 +448,20 @@ foreach ($experience_destination as $edest) {
   .rd-page .xd-modal-close { background: none; border: none; font-size: 16px; cursor: pointer; color: var(--rd-grey-mid); line-height: 1; }
   .rd-page footer.rd-credit { text-align: center; padding: 20px 0 40px; font-size: 0.78rem; color: var(--rd-grey-mid); border-top: 1px solid var(--rd-grey-line); }
 
+  /* "Show all photos" (#bg-gallery-popup, basicfront/js/script.js) is a fixed full-screen overlay
+     that sits OUTSIDE .rd-page in the DOM, but the shared site stylesheet only gives it z-index:15
+     — below .rd-section-nav's sticky z-index:30 and the mobile booking bar/drawer's 1500-2100. Those
+     .rd-page elements were showing through on top of it, so it looked like the Overview/Accommodation
+     menu (and the mobile booking bar) was overlaid mid-gallery when the popup opened. */
+  #bg-gallery-popup.gallery-popup { z-index: 2200; }
+
   @media (max-width: 1024px) {
     .rd-page-grid { grid-template-columns: 1fr; }
     .rd-page .xd-sidebar { display: none; }
+    /* Sticky section nav (Overview/Accommodation/Food/Terms) is a desktop affordance only — on
+       mobile there's no room for it to sit pinned under the header, so it ends up stuck mid-scroll
+       on top of the gallery photos and overview content instead. Let it scroll normally here. */
+    .rd-section-nav { position: static; top: auto; box-shadow: none; }
     .rd-page .xd-mobile-bar {
       display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1500;
       background: var(--rd-card); border-top: 1px solid var(--rd-grey-line); padding: 12px 18px;

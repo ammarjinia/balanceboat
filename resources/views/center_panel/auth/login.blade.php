@@ -131,7 +131,7 @@
                         <div class="space-y-1">
                             <div class="flex justify-between items-center">
                                 <label for="password" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Password</label>
-                                <a href="" class="text-[10px] font-semibold text-purple-600 hover:underline">Forgot Password?</a>
+                                <a href="{{ route('center-panel.password.request') }}" class="text-[10px] font-semibold text-purple-600 hover:underline">Forgot Password?</a>
                             </div>
                             <input 
                                 type="password" 

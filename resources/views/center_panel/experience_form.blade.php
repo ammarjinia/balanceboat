@@ -51,7 +51,15 @@
 @endif
 
 {{-- Wizard Container --}}
-<div x-data="wizardApp()" x-init="init()" class="space-y-6">
+<div x-data="wizardApp()" x-init="init()"
+     @goto-step.window="goTo($event.detail.step)"
+     class="space-y-6">
+
+    {{-- AI import, create only. On the edit form the equivalent entry point is the "Structure with
+         AI" button in the page header, which works on the saved record instead of a website. --}}
+    @if(!$experience)
+        @include('center_panel.partials.ai-import-card')
+    @endif
 
     {{-- Client-side validation banner --}}
     <div x-show="Object.keys(errors).length > 0"
@@ -391,7 +399,7 @@
                         $existingDurations = [['nights' => 7]];
                     }
                 @endphp
-                <div x-data='durationPkgs(@json($existingDurations))' class="space-y-3">
+                <div x-data='durationPkgs(@json($existingDurations))' id="duration-packages" class="space-y-3">
                     <div class="flex items-center justify-between">
                         <div>
                             <label class="wiz-label mb-0">Duration Packages</label>
@@ -1041,6 +1049,16 @@ document.addEventListener('alpine:init', () => {
 function durationPkgs(initial) {
     return {
         rows: initial && initial.length ? initial : [{ nights: 7 }],
+
+        // The AI import fills the wizard after this component has already rendered, so it can't
+        // rely on the initial value the way a page load does — it hands the nights over by event.
+        init() {
+            window.addEventListener('retreat-import-durations', (e) => {
+                const nights = (e.detail?.durations || []).filter(n => n > 0);
+                if (nights.length) this.rows = nights.map(n => ({ nights: n }));
+            });
+        },
+
         add() {
             this.rows.push({ nights: '' });
         },
@@ -1059,7 +1077,21 @@ function scheduleBuilder() {
         showPasteBox: false,
         pasteText: '',
 
+        _importBound: false,
+
         init() {
+            this.loadFromField();
+
+            // This builder only reads its hidden field on page load. The AI import writes that
+            // field long after load, so it says when it has, and we re-read. Guarded because
+            // this component is init'd both by x-init and by Alpine itself.
+            if (!this._importBound) {
+                this._importBound = true;
+                window.addEventListener('retreat-import-schedule', () => this.loadFromField());
+            }
+        },
+
+        loadFromField() {
             const dataField = document.getElementById('scheduleDataField');
             if (dataField && dataField.value.trim()) {
                 this.entries = this.parseScheduleData(dataField.value);
@@ -1162,7 +1194,19 @@ function highlightsBuilder() {
     return {
         entries: [],
 
+        _importBound: false,
+
         init() {
+            this.loadFromField();
+
+            // Same as the schedule builder: the AI import writes the hidden field after load.
+            if (!this._importBound) {
+                this._importBound = true;
+                window.addEventListener('retreat-import-highlights', () => this.loadFromField());
+            }
+        },
+
+        loadFromField() {
             const dataField = document.getElementById('highlightsDataField');
             if (dataField && dataField.value.trim()) {
                 this.entries = this.parseHighlightsData(dataField.value);

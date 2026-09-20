@@ -421,6 +421,7 @@ class CenterDashboardController extends Controller
 
         // Move Dropzone-uploaded gallery images from tmp to permanent
         $galleryPaths = $request->input('image_gallery_ids', '');
+        $galleryAdded = false;
         if ($galleryPaths) {
             foreach (explode('|@|@|', $galleryPaths) as $tmpPath) {
                 $tmpPath = trim($tmpPath);
@@ -432,7 +433,15 @@ class CenterDashboardController extends Controller
                     'image_url'   => $dest,
                     'image_title' => basename($dest),
                 ]);
+                $galleryAdded = true;
             }
+        }
+
+        // Feed the listing-health email triggers. A banner upload counts as a gallery refresh
+        // too — it's the image a traveler sees first.
+        Centers::touchActivity($centerId, 'profile_updated_at');
+        if ($galleryAdded || $request->hasFile('banner_image')) {
+            Centers::touchActivity($centerId, 'gallery_updated_at');
         }
 
         return back()->with('success', 'Center profile updated successfully.');
@@ -490,7 +499,10 @@ class CenterDashboardController extends Controller
             return back()->withErrors(['current_password' => 'Current password is incorrect.'])->withInput();
         }
 
-        $user->password = Hash::make($request->new_password);
+        // App\User::setPasswordAttribute() already bcrypts whatever is assigned here — assign the
+        // plain value (matching resetPassword() and every other password write in the codebase).
+        // Calling Hash::make() first double-hashed it, silently breaking login with the new password.
+        $user->password = $request->new_password;
         $user->save();
 
         return back()->with('success', 'Password updated successfully.');
@@ -562,6 +574,8 @@ class CenterDashboardController extends Controller
         $this->syncCategories($exp->id, $request->input('experience_category_id', []));
         $this->syncGalleryImages($exp->id, $request->file('image_galleries', []));
 
+        $this->afterRetreatSaved($centerId, $exp, $request);
+
         return redirect()->route('center-panel.experiences')
             ->with('success', 'Retreat program created successfully.');
     }
@@ -606,8 +620,59 @@ class CenterDashboardController extends Controller
         $this->syncCategories($id, $request->input('experience_category_id', []));
         $this->syncGalleryImages($id, $request->file('image_galleries', []));
 
+        $this->afterRetreatSaved($centerId, $exp, $request);
+
         return redirect()->route('center-panel.accommodations')
             ->with('success', 'Retreat program updated successfully.');
+    }
+
+    /**
+     * Post-save hooks for the email automation, shared by create and update.
+     *
+     * Records what the partner just touched, and fires the immediate "Retreat Needs More
+     * Information" email when required content is still absent. That email is deliberately *not*
+     * sent for drafts: a draft is a work in progress, and emailing someone about a listing they
+     * are still in the middle of writing is noise, not help.
+     *
+     * Failures here must never break a save — the partner's work is already committed, and the
+     * automation service is best-effort.
+     */
+    private function afterRetreatSaved($centerId, Experiences $exp, Request $request): void
+    {
+        Centers::touchActivity($centerId, 'pricing_updated_at');
+
+        if ($request->file('image_galleries') || $request->hasFile('banner_image')) {
+            Centers::touchActivity($centerId, 'gallery_updated_at');
+        }
+
+        if ($exp->is_draft) {
+            return;
+        }
+
+        try {
+            $health  = app(\App\Services\CenterListingHealthService::class);
+            $missing = $health->retreatMissingFields($exp->fresh());
+
+            if (empty($missing)) {
+                return;
+            }
+
+            app(\App\Services\CenterEmailAutomationService::class)->send(
+                Centers::find($centerId),
+                'retreat_incomplete',
+                [
+                    'trigger'       => 'RetreatCreatedIncomplete',
+                    'retreatName'   => $exp->name,
+                    'missingFields' => $missing,
+                ]
+            );
+        } catch (\Throwable $e) {
+            \Log::warning('Center automation: retreat_incomplete dispatch failed', [
+                'center_id'     => $centerId,
+                'experience_id' => $exp->id,
+                'error'         => $e->getMessage(),
+            ]);
+        }
     }
 
     public function experienceDestroy(Request $request)

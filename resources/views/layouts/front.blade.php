@@ -172,6 +172,9 @@
                                     <a href="{{ url("/logout") }}" class="">Logout</a>
                                 </li>
                                 @endif
+                                <li class="submenu">
+                                    <a href="{{ route('center-panel.login') }}" class="">Center Login</a>
+                                </li>
                                 <li>
                                     <a href="#requstcallPopup" data-toggle="modal" style="background: #f36;
     color: #fff;

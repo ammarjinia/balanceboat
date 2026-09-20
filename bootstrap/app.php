@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'isAdmin' => AdminMiddleware::class,
             'center.auth' => CenterAuth::class,
         ]);
+
+        $middleware->redirectGuestsTo(function ($request) {
+            return $request->is('bbadmin', 'bbadmin/*')
+                ? route('admin.login')
+                : route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

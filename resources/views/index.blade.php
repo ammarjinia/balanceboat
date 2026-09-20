@@ -124,6 +124,9 @@
                                                     <a href="{{ url("/logout") }}" class="">Logout</a>
                                                 </li>
                                                 @endif
+                                                <li>
+                                                    <a href="{{ url("center-panel/login") }}" class="">Center Login</a>
+                                                </li>
                                                 <li class="pull-right">
                                                     <a href="#requstcallPopup" data-bs-toggle="modal" style="background: #f36;
                                                        color: #fff;

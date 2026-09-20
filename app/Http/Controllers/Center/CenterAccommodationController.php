@@ -78,6 +78,10 @@ class CenterAccommodationController extends Controller
 
         $this->moveGalleryImages($request->image_gallery_ids ?? '', $accommodation->id);
 
+        if ($request->image_gallery_ids || $request->file('banner_image')) {
+            Centers::touchActivity($centerId, 'gallery_updated_at');
+        }
+
         return redirect()->route('center-panel.availability')
             ->with('success', 'Accommodation "' . $accommodation->name . '" created successfully.');
     }
@@ -134,6 +138,10 @@ class CenterAccommodationController extends Controller
         $accommodation->save();
 
         $this->moveGalleryImages($request->image_gallery_ids ?? '', $id);
+
+        if ($request->image_gallery_ids || $request->file('banner_image')) {
+            Centers::touchActivity($centerId, 'gallery_updated_at');
+        }
 
         return redirect()->route('center-panel.availability')
             ->with('success', 'Accommodation "' . $accommodation->name . '" updated successfully.');

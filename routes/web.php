@@ -114,12 +114,12 @@ Route::resource('permissions', '\App\Http\Controllers\PermissionController');
 Route::resource('posts', '\App\Http\Controllers\PostController');
 
 // Admin Routes
-Route::get('bbadmin/login', '\App\Http\Controllers\Admin\Auth\LoginController@showLoginForm')->name('login');
+Route::get('bbadmin/login', '\App\Http\Controllers\Admin\Auth\LoginController@showLoginForm')->name('admin.login');
 Route::post('bbadmin/login', '\App\Http\Controllers\Admin\Auth\LoginController@login');
-Route::get('bbadmin/logout', '\App\Http\Controllers\Admin\Auth\LoginController@logout')->name('logout');
+Route::get('bbadmin/logout', '\App\Http\Controllers\Admin\Auth\LoginController@logout')->name('admin.logout');
 
 // Registration Routes...
-Route::get('bbadmin/register', '\App\Http\Controllers\Admin\Auth\RegisterController@showRegistrationForm')->name('register');
+Route::get('bbadmin/register', '\App\Http\Controllers\Admin\Auth\RegisterController@showRegistrationForm')->name('admin.register');
 Route::post('bbadmin/register', '\App\Http\Controllers\Admin\Auth\RegisterController@register');
 
 // Password Reset Routes...
@@ -381,7 +381,23 @@ Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\C
     // Public routes (no authentication required)
     Route::get('/login', 'CenterAuthController@showLoginForm')->name('center-panel.login');
     Route::post('/login', 'CenterAuthController@login')->name('center-panel.login.submit');
-    
+
+    // Forgot / reset password
+    Route::get('/password/forgot', 'CenterAuthController@showForgotPasswordForm')->name('center-panel.password.request');
+    Route::post('/password/email', 'CenterAuthController@sendResetLinkEmail')->name('center-panel.password.email');
+    Route::get('/password/reset/{token}', 'CenterAuthController@showResetPasswordForm')->name('center-panel.password.reset');
+    Route::post('/password/reset', 'CenterAuthController@resetPassword')->name('center-panel.password.update');
+
+    // One-click unsubscribe from the automation emails. Signed rather than authenticated on
+    // purpose: the partners most likely to use it are the ones who have stopped logging in, and
+    // putting a login wall in front of "unsubscribe" is how a sender earns spam complaints.
+    Route::get('/emails/unsubscribe/{center}', 'CenterEmailPreferencesController@unsubscribe')
+        ->middleware('signed')
+        ->name('center-panel.emails.unsubscribe');
+    Route::post('/emails/unsubscribe/{center}', 'CenterEmailPreferencesController@unsubscribe')
+        ->middleware('signed')
+        ->name('center-panel.emails.unsubscribe.post');
+
     // Protected routes (authentication required)
     Route::group(['middleware' => 'center.auth'], function() {
         Route::get('/dashboard', 'CenterDashboardController@index')->name('center-panel.dashboard');
@@ -399,6 +415,15 @@ Route::group(['prefix' => 'center-panel', 'namespace' => 'App\Http\Controllers\C
         // AI Content Structuring ("Structure with AI" button on the experience edit form)
         Route::post('/experiences/{id}/structure-content/preview', 'CenterContentAiController@preview')->name('center-panel.experience.structure_content.preview');
         Route::post('/experiences/{id}/structure-content/apply', 'CenterContentAiController@apply')->name('center-panel.experience.structure_content.apply');
+
+        // AI Retreat Import ("Fill my form" card on the create-retreat wizard). Two calls: extract
+        // reads the center's website, generate turns that text into wizard fields. Neither writes
+        // to the database — the center still presses Create. Throttled because each pair of calls
+        // makes up to six outbound fetches and one paid model request.
+        Route::post('/experiences/import/extract', 'CenterRetreatImportController@extract')
+            ->middleware('throttle:20,60')->name('center-panel.experience.import.extract');
+        Route::post('/experiences/import/generate', 'CenterRetreatImportController@generate')
+            ->middleware('throttle:20,60')->name('center-panel.experience.import.generate');
 
         // Availability Management
         Route::get('/availability', 'CenterAvailabilityController@index')->name('center-panel.availability');

@@ -218,6 +218,8 @@ class CenterAvailabilityController extends Controller
             }
         }
 
+        Centers::touchActivity($centerId, 'pricing_updated_at');
+
         return redirect()->route('center-panel.availability.manage', $experienceId)
             ->with('success', 'Pricing saved successfully.');
     }
@@ -233,7 +235,12 @@ class CenterAvailabilityController extends Controller
         if ($price) {
             $belongs = Experiences::where('id', $price->experience_id)
                 ->where('center_id', $centerId)->exists();
-            if ($belongs) { $price->delete(); echo '1'; return; }
+            if ($belongs) {
+                $price->delete();
+                Centers::touchActivity($centerId, 'pricing_updated_at');
+                echo '1';
+                return;
+            }
         }
         echo 'error';
     }
@@ -330,6 +337,8 @@ class CenterAvailabilityController extends Controller
             );
         }
 
+        Centers::touchActivity($centerId, 'availability_updated_at');
+
         return redirect()
             ->route('center-panel.availability.schedule', [$experienceId, 'accom' => $accomId])
             ->with('success', 'Schedule saved successfully.');
@@ -363,6 +372,8 @@ class CenterAvailabilityController extends Controller
             ['status' => $status, 'total_rooms' => $total, 'booked_rooms' => $booked]
         );
 
+        Centers::touchActivity($centerId, 'availability_updated_at');
+
         return response()->json([
             'id'        => $row->id,
             'status'    => $row->status,
@@ -388,6 +399,9 @@ class CenterAvailabilityController extends Controller
         }
 
         $row->delete();
+
+        Centers::touchActivity($centerId, 'availability_updated_at');
+
         return response()->json(['success' => true]);
     }
 

@@ -186,6 +186,12 @@ class CenterLeadsController extends Controller
         $logEntry  = '[' . Carbon::now()->format('M j, Y g:i A') . '] Center response dispatched: ' . $message;
         $lead->note = trim(($lead->note ? $lead->note . "\n\n" : '') . $logEntry);
 
+        // First reply only — the response-SLA email measures time to *first* contact, so a later
+        // follow-up must not reset the clock.
+        if (!$lead->responded_at) {
+            $lead->responded_at = Carbon::now();
+        }
+
         if ($lead->stage === 'new') {
             $lead->stage = 'proposal_sent';
         }
